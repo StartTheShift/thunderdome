@@ -1,0 +1,30 @@
+CHANGELOG
+
+0.0.8
+* added configurable read repair chance to model definitions
+* added configurable keyspace strategy class and replication factor to keyspace creator
+
+0.0.7
+* fixed manual table name bug
+* changed model level db_name field to table_name
+
+0.0.6
+* added TimeUUID column
+
+0.0.5
+* added connection pooling
+* adding a few convenience query classmethods to the model class
+
+0.0.4-ALPHA
+* added Sphinx docs
+* changing create_column_family management function to create_table
+* changing delete_column_family management function to delete_table
+* added partition key validation to QuerySet delete method
+* added .get() method to QuerySet
+* added create method shortcut to the model class
+
+0.0.3-ALPHA
+* added queryset result caching
+* added queryset array index access and slicing
+* updating table name generation (more readable)
+
