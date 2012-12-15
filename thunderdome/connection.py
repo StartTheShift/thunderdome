@@ -52,8 +52,14 @@ def setup(hosts, graph_name, username=None, password=None):
 
     random.shuffle(_hosts)
     
+    results = execute_query('g.getIndexedKeys(Vertex.class)')
+    import ipdb; ipdb.set_trace()
+    for idx in ['vid', 'element_type']:
+        if idx not in results:
+            execute_query("g.createKeyIndex(keyname, Vertex.class)", {'keyname':idx})
     
-def execute_query(query, params):
+    
+def execute_query(query, params={}):
     host = _hosts[0]
     url = 'http://{}:{}/graphs/{}/tp/gremlin'.format(host.name, host.port, _graph_name)
     query = 'g.stopTransaction(SUCCESS);' + query
