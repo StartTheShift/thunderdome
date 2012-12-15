@@ -183,7 +183,7 @@ class Vertex(Element):
         strvids = [str(v) for v in vids]
         
         results = execute_query('vids.collect{g.V("vid", it).toList()[0]}', {'vids':strvids})
-        import ipdb; ipdb.set_trace()
+        results = filter(None, results)
         
         if len(results) != len(vids):
             raise ThunderdomeQueryError("the number of results don't match the number of vids requested")
@@ -203,12 +203,14 @@ class Vertex(Element):
     
     @classmethod
     def get(cls, vid):
-        results = cls.all([vid])
-        if not results:
+        try:
+            results = cls.all([vid])
+            if len(results) >1:
+                raise cls.MultipleObjectsReturned
+            return results[0]
+        except ThunderdomeQueryError:
             raise cls.DoesNotExist
-        if len(results) >1:
-            raise cls.MultipleObjectsReturned
-        return results[0]
+        
     
     def save(self, *args, **kwargs):
         super(Vertex, self).save(*args, **kwargs)
@@ -238,6 +240,11 @@ class Vertex(Element):
         assert len(results) == 1
         self.eid = results[0].get('_id')
         return self
+    
+    def delete(self):
+        if self.eid is None:
+            raise ThunderdomeQueryError("Can't delete vertices that haven't been saved")
+        results = execute_query('g.removeVertex(g.v(eid))', {'eid': self.eid})
         
     
 class EdgeMetaClass(ElementMetaClass):
