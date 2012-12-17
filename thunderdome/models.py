@@ -180,9 +180,12 @@ class Vertex(Element):
     def all(cls, vids, as_dict=False):
         if not isinstance(vids, (list, tuple)):
             raise ThunderdomeQueryError("vids must be of type list or tuple")
-        strvids = [str(v) for v in vids]
         
-        results = execute_query('vids.collect{g.V("vid", it).toList()[0]}', {'vids':strvids})
+        strvids = [str(v) for v in vids]
+        qs = ['vs = vids.collect{g.V("vid", it).toList()[0]}']
+        qs += ['vs.collect{it.map.toSet()}.flatten()']
+        
+        results = execute_query('\n'.join(qs), {'vids':strvids})
         results = filter(None, results)
         
         if len(results) != len(vids):
@@ -215,11 +218,12 @@ class Vertex(Element):
     def save(self, *args, **kwargs):
         super(Vertex, self).save(*args, **kwargs)
         
+        qs = ['g.stopTransaction(SUCCESS)']
         params = {}
         if self.eid is None:
-            qs = ['v = g.addVertex()']
+            qs += ['v = g.addVertex()']
         else:
-            qs = ['v = g.v(eid)']
+            qs += ['v = g.v(eid)']
             params['eid'] = self.eid
             
         values = self.as_dict()
@@ -232,10 +236,12 @@ class Vertex(Element):
             qs += ['v.setProperty("{}", {})'.format(col.db_field_name, valname)]
             params[valname] = val
             
+
+        qs += ['data = v.map.toSet()']
         qs += ['g.stopTransaction(SUCCESS)']
         qs += ['g.getVertex(v)']
         
-        results = execute_query('\n'.join(qs), params)
+        results = execute_query('\n'.join(qs), params, transaction=False)
         
         assert len(results) == 1
         self.eid = results[0].get('_id')

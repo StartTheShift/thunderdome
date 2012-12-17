@@ -58,7 +58,6 @@ class TestModelIO(BaseCassEngTestCase):
         """
         Tests that an instance's delete method deletes the instance
         """
-        import ipdb; ipdb.set_trace()
         tm = TestModel.create(count=8, text='123456789')
         eid = tm.eid
         tm.delete()
