@@ -61,21 +61,22 @@ def setup(hosts, graph_name, username=None, password=None):
     
 def execute_query(query, params={}, transaction=True):
     if transaction:
-        query = """
-        g.stopTransaction(TransactionalGraph.Conclusion.SUCCESS)
-        __operation = {
-            %s
-        };
-        try {
-            __results = __operation();
-            g.stopTransaction(TransactionalGraph.Conclusion.SUCCESS);
-            return __results;
-        } catch (e) {
-            g.stopTransaction(TransactionalGraph.Conclusion.FAILURE);
-            throw e;
-        }
-        """ % query
-        query = textwrap.dedent(query.strip())
+        query = 'g.stopTransaction(SUCCESS)\n' + query
+#        query = """
+#        g.stopTransaction(TransactionalGraph.Conclusion.SUCCESS)
+#        __operation = {
+#            %s
+#        };
+#        try {
+#            __results = __operation();
+#            g.stopTransaction(TransactionalGraph.Conclusion.SUCCESS);
+#            return __results;
+#        } catch (e) {
+#            g.stopTransaction(TransactionalGraph.Conclusion.FAILURE);
+#            throw e;
+#        }
+#        """ % query
+#        query = textwrap.dedent(query.strip())
     
     host = _hosts[0]
     url = 'http://{}:{}/graphs/{}/tp/gremlin'.format(host.name, host.port, _graph_name)

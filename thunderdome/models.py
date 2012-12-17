@@ -170,7 +170,7 @@ class Vertex(Element):
         strvids = [str(v) for v in vids]
         qs = ['vids.collect{g.V("vid", it).toList()[0]}']
         
-        results = execute_query('\n'.join(qs), {'vids':strvids}, transaction=False)
+        results = execute_query('\n'.join(qs), {'vids':strvids})
         results = filter(None, results)
         
         if len(results) != len(vids):
