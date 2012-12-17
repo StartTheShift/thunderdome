@@ -1,17 +1,14 @@
 from unittest import skip
 from thunderdome.tests.base import BaseCassEngTestCase
 
-from thunderdome.management import create_table
-from thunderdome.management import delete_table
 from thunderdome.models import Vertex
 from thunderdome import columns
 
 class TestModel(Vertex):
-    vid = columns.UUID()
     count   = columns.Integer()
     text    = columns.Text(required=False)
 
-class TestModelIO(BaseCassEngTestCase):
+class TestVertexIO(BaseCassEngTestCase):
 
     def test_model_save_and_load(self):
         """
@@ -59,19 +56,9 @@ class TestModelIO(BaseCassEngTestCase):
         Tests that an instance's delete method deletes the instance
         """
         tm = TestModel.create(count=8, text='123456789')
-        eid = tm.eid
+        vid = tm.vid
         tm.delete()
         with self.assertRaises(TestModel.DoesNotExist):
-            tm2 = TestModel.get(eid)
+            tm2 = TestModel.get(vid)
             
-    def test_edge_creation_works_properly(self):
-        """
-        Tests that edges are created properly
-        """
-
-    def test_edge_deletion_works_properly(self):
-        """
-        Tests that edges are deleted properly
-        """
-
 
