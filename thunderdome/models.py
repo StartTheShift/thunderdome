@@ -235,6 +235,25 @@ class Vertex(Element):
             raise ThunderdomeQueryError("Can't delete vertices that haven't been saved")
         results = execute_query('g.removeVertex(g.v(eid))', {'eid': self.eid})
         
+    def _simple_traversal(self, operation, label):
+        if label:
+            results = execute_query('g.v(eid).%s(lbl)'%operation, {'eid':self.eid, 'lbl':label})
+        else:
+            results = execute_query('g.v(eid).%s()'%operation, {'eid':self.eid})
+        return [Element.deserialize(r) for r in results]
+    
+    def outV(self, label=None):
+        return self._simple_traversal('out', label=label)
+        
+    def inV(self, label=None):
+        return self._simple_traversal('in', label=label)
+    
+    def outE(self, label=None):
+        return self._simple_traversal('outE', label=label)
+        
+    def inE(self, label=None):
+        return self._simple_traversal('inE', label=label)
+        
     
 class EdgeMetaClass(ElementMetaClass):
     def __new__(cls, name, bases, attrs):
@@ -242,7 +261,7 @@ class EdgeMetaClass(ElementMetaClass):
         
         label = klass.get_label()
         if label in edge_types:
-            raise ElementDefinitionException('{} is already registered as an edge'.format(element_type))
+            raise ElementDefinitionException('{} is already registered as an edge'.format(label))
         edge_types[klass.get_label()] = klass
         return klass
         
@@ -255,5 +274,19 @@ class Edge(Element):
     @classmethod
     def get_label(cls):
         return cls._type_name(cls.label)
+    
+    def delete(self):
+        if self.eid is None:
+            raise ThunderdomeQueryError("Can't delete vertices that haven't been saved")
+        results = execute_query('g.removeEdge(g.e(eid))', {'eid':self.eid})
 
+    def _simple_traversal(self, operation):
+        results = execute_query('g.v(eid).%s()'%operation, {'eid':self.eid})
+        return [Element.deserialize(r) for r in results]
+    
+    def outV(self, label=None):
+        return self._simple_traversal('outV', label=label)
+        
+    def inV(self, label=None):
+        return self._simple_traversal('inV', label=label)
 

@@ -63,6 +63,15 @@ class TestModelIO(BaseCassEngTestCase):
         tm.delete()
         with self.assertRaises(TestModel.DoesNotExist):
             tm2 = TestModel.get(eid)
+            
+    def test_edge_creation_works_properly(self):
+        """
+        Tests that edges are created properly
+        """
 
+    def test_edge_deletion_works_properly(self):
+        """
+        Tests that edges are deleted properly
+        """
 
 
