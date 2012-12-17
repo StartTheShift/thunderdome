@@ -1,6 +1,8 @@
 #column field types
 from datetime import datetime
+from decimal import Decimal as D
 import re
+import time
 from uuid import uuid1, uuid4
 
 from thunderdome.exceptions import ValidationError
@@ -170,13 +172,13 @@ class DateTime(Column):
     def to_python(self, value):
         if isinstance(value, datetime):
             return value
-        return datetime.fromtimestamp(value)
+        return datetime.fromtimestamp(float(value))
 
     def to_database(self, value):
         value = super(DateTime, self).to_database(value)
         if not isinstance(value, datetime):
             raise ValidationError("'{}' is not a datetime object".format(value))
-        return value.strftime('%Y-%m-%d %H:%M:%S')
+        return time.mktime(value.timetuple())
 
 class UUID(Column):
     """
@@ -205,17 +207,6 @@ class UUID(Column):
     def to_database(self, value):
         val = super(UUID, self).to_database(value)
         return str(val)
-    
-class TimeUUID(UUID):
-    """
-    UUID containing timestamp
-    """
-    
-    db_type = 'timeuuid'
-    
-    def __init__(self, **kwargs):
-        kwargs.setdefault('default', lambda: uuid1())
-        super(TimeUUID, self).__init__(**kwargs)
 
 class Boolean(Column):
     db_type = 'boolean'
@@ -247,6 +238,13 @@ class Float(Column):
 
 class Decimal(Column):
     db_type = 'decimal'
+    
+    def to_python(self, value):
+        val = super(Decimal, self).to_python(value)
+        return D(val)
+    def to_database(self, value):
+        val = super(Decimal, self).to_database(value)
+        return str(val)
 
 class Counter(Column):
     #TODO: counter field
