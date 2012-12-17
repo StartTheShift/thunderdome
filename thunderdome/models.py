@@ -43,13 +43,7 @@ class BaseElement(object):
             camelcase = re.compile(r'([a-z])([A-Z])')
             ccase = lambda s: camelcase.sub(lambda v: '{}_{}'.format(v.group(1), v.group(2).lower()), s)
     
-            module = cls.__module__.split('.')
-            if module:
-                cf_name = ccase(module[-1]) + '_'
-    
             cf_name += ccase(cls.__name__)
-            #trim to less than 48 characters or cassandra will complain
-            cf_name = cf_name[-48:]
             cf_name = cf_name.lower()
         return cf_name
 
