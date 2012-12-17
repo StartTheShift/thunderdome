@@ -53,10 +53,12 @@ def setup(hosts, graph_name, username=None, password=None):
 
     random.shuffle(_hosts)
     
-    results = execute_query('g.getIndexedKeys(Vertex.class)')
+    results = execute_query('g.getIndexedKeys(Vertex.class)', transaction=False)
     for idx in ['vid', 'element_type']:
         if idx not in results:
-            execute_query("g.createKeyIndex(keyname, Vertex.class)", {'keyname':idx})
+            execute_query(
+                "g.createKeyIndex(keyname, Vertex.class); g.stopTransaction(SUCCESS)",
+                {'keyname':idx}, transaction=False)
     
     
 def execute_query(query, params={}, transaction=True):
