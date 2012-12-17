@@ -64,33 +64,10 @@ class BaseElement(object):
     def create(cls, **kwargs):
         return cls(**kwargs).save()
         
-    
-    @classmethod
-    def all(cls):
-        return cls.objects.all()
-    
-    @classmethod
-    def filter(cls, **kwargs):
-        return cls.objects.filter(**kwargs)
-    
-    @classmethod
-    def get(cls, **kwargs):
-        return cls.objects.get(**kwargs)
-
-    def _create(self):
-        raise NotImplementedError
-
-    def _update(self):
-        raise NotImplementedError
-    
     def save(self):
         is_new = self.eid is None
         self.validate()
         return self
-
-    def delete(self):
-        """ Deletes this instance """
-        self.objects.delete_instance(self)
 
 class ElementMetaClass(type):
 
@@ -149,6 +126,21 @@ class Element(BaseElement):
     """
     __metaclass__ = ElementMetaClass
     
+    @classmethod
+    def deserialize(cls, data):
+        """
+        Deserializes rexster json into vertex or edge objects
+        """
+        dtype = data.get('_type')
+        if dtype == 'vertex':
+            vertex_type = data['element_type']
+            return vertex_types[vertex_type](**data)
+        elif dtype == 'edge':
+            edge_type = data['label']
+            return edge_types[edge_type](**data)
+        else:
+            raise TypeError("Can't deserialize '{}'".format(dtype))
+    
     
 class VertexMetaClass(ElementMetaClass):
     def __new__(cls, name, bases, attrs):
@@ -176,10 +168,9 @@ class Vertex(Element):
             raise ThunderdomeQueryError("vids must be of type list or tuple")
         
         strvids = [str(v) for v in vids]
-        qs = ['vs = vids.collect{g.V("vid", it).toList()[0]}']
-        qs += ['vs.collect{it.map.toSet()}.flatten()']
+        qs = ['vids.collect{g.V("vid", it).toList()[0]}']
         
-        results = execute_query('\n'.join(qs), {'vids':strvids})
+        results = execute_query('\n'.join(qs), {'vids':strvids}, transaction=False)
         results = filter(None, results)
         
         if len(results) != len(vids):
@@ -187,9 +178,8 @@ class Vertex(Element):
         
         objects = []
         for r in results:
-            etype = r['element_type']
             try:
-                objects += [vertex_types[etype](**r)]
+                objects += [Element.deserialize(r)]
             except KeyError:
                 raise ThunderdomeQueryError('Vertex type "{}" is unknown'.format())
             
@@ -212,7 +202,7 @@ class Vertex(Element):
     def save(self, *args, **kwargs):
         super(Vertex, self).save(*args, **kwargs)
         
-        qs = ['g.stopTransaction(SUCCESS)']
+        qs = []
         params = {}
         if self.eid is None:
             qs += ['v = g.addVertex()']
@@ -229,13 +219,12 @@ class Vertex(Element):
             valname = name + '_val'
             qs += ['v.setProperty("{}", {})'.format(col.db_field_name, valname)]
             params[valname] = val
-            
 
         qs += ['data = v.map.toSet()']
         qs += ['g.stopTransaction(SUCCESS)']
         qs += ['g.getVertex(v)']
         
-        results = execute_query('\n'.join(qs), params, transaction=False)
+        results = execute_query('\n'.join(qs), params)
         
         assert len(results) == 1
         self.eid = results[0].get('_id')
