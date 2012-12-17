@@ -1,12 +1,6 @@
 from unittest import skip
 from thunderdome.tests.base import BaseCassEngTestCase
-
-from thunderdome.models import Vertex
-from thunderdome import columns
-
-class TestModel(Vertex):
-    count   = columns.Integer()
-    text    = columns.Text(required=False)
+from thunderdome.tests.base import TestModel
 
 class TestVertexIO(BaseCassEngTestCase):
 

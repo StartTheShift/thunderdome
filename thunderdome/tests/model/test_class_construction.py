@@ -1,9 +1,18 @@
 from thunderdome.tests.base import BaseCassEngTestCase
 
 from thunderdome.exceptions import ModelException
-from thunderdome.models import Model
+from thunderdome.models import Vertex, Edge
 from thunderdome import columns
 import thunderdome
+
+from thunderdome.tests.base import TestModel
+
+class WildDBNames(Vertex):
+    content = columns.Text(db_field='words_and_whatnot')
+    numbers = columns.Integer(db_field='integers_etc')
+            
+class Stuff(Vertex):
+    num = columns.Integer()
 
 class TestModelClassFunction(BaseCassEngTestCase):
     """
@@ -16,19 +25,16 @@ class TestModelClassFunction(BaseCassEngTestCase):
         and replaced with simple value attributes
         """
 
-        class TestModel(Model):
-            text = columns.Text()
-
         #check class attibutes
         self.assertHasAttr(TestModel, '_columns')
-        self.assertHasAttr(TestModel, 'id')
+        self.assertHasAttr(TestModel, 'vid')
         self.assertHasAttr(TestModel, 'text')
 
         #check instance attributes
         inst = TestModel()
-        self.assertHasAttr(inst, 'id')
+        self.assertHasAttr(inst, 'vid')
         self.assertHasAttr(inst, 'text')
-        self.assertIsNone(inst.id)
+        self.assertIsNone(inst.vid)
         self.assertIsNone(inst.text)
 
     def test_db_map(self):
@@ -36,9 +42,7 @@ class TestModelClassFunction(BaseCassEngTestCase):
         Tests that the db_map is properly defined
         -the db_map allows columns
         """
-        class WildDBNames(Model):
-            content = columns.Text(db_field='words_and_whatnot')
-            numbers = columns.Integer(db_field='integers_etc')
+
 
         db_map = WildDBNames._db_map
         self.assertEquals(db_map['words_and_whatnot'], 'content')
@@ -50,73 +54,31 @@ class TestModelClassFunction(BaseCassEngTestCase):
         """
 
         with self.assertRaises(ModelException):
-            class BadNames(Model):
+            class BadNames(Vertex):
                 words = columns.Text()
                 content = columns.Text(db_field='words')
-
-    def test_column_ordering_is_preserved(self):
-        """
-        Tests that the _columns dics retains the ordering of the class definition
-        """
-
-        class Stuff(Model):
-            words = columns.Text()
-            content = columns.Text()
-            numbers = columns.Integer()
-
-        self.assertEquals(Stuff._columns.keys(), ['id', 'words', 'content', 'numbers'])
 
     def test_value_managers_are_keeping_model_instances_isolated(self):
         """
         Tests that instance value managers are isolated from other instances
         """
-        class Stuff(Model):
-            num = columns.Integer()
+        inst1 = TestModel(count=5)
+        inst2 = TestModel(count=7)
 
-        inst1 = Stuff(num=5)
-        inst2 = Stuff(num=7)
+        self.assertNotEquals(inst1.count, inst2.count)
+        self.assertEquals(inst1.count, 5)
+        self.assertEquals(inst2.count, 7)
 
-        self.assertNotEquals(inst1.num, inst2.num)
-        self.assertEquals(inst1.num, 5)
-        self.assertEquals(inst2.num, 7)
-
-    def test_normal_fields_can_be_defined_between_primary_keys(self):
-        """
-        Tests tha non primary key fields can be defined between primary key fields
-        """
-
-    def test_at_least_one_non_primary_key_column_is_required(self):
-        """
-        Tests that an error is raised if a model doesn't contain at least one primary key field
-        """
-
-    def test_model_keyspace_attribute_must_be_a_string(self):
-        """
-        Tests that users can't set the keyspace to None, or something else
-        """
-
-    def test_indexes_arent_allowed_on_models_with_multiple_primary_keys(self):
-        """
-        Tests that attempting to define an index on a model with multiple primary keys fails
-        """
-
-    def test_meta_data_is_not_inherited(self):
-        """
-        Test that metadata defined in one class, is not inherited by subclasses
-        """
+class RenamedTest(thunderdome.Vertex):
+    element_type = 'manual_name'
+    
+    id = thunderdome.UUID(primary_key=True)
+    data = thunderdome.Text()
         
 class TestManualTableNaming(BaseCassEngTestCase):
     
-    class RenamedTest(thunderdome.Model):
-        keyspace = 'whatever'
-        table_name = 'manual_name'
-        
-        id = thunderdome.UUID(primary_key=True)
-        data = thunderdome.Text()
-        
     def test_proper_table_naming(self):
-        assert self.RenamedTest.column_family_name(include_keyspace=False) == 'manual_name'
-        assert self.RenamedTest.column_family_name(include_keyspace=True) == 'whatever.manual_name'
+        assert RenamedTest.get_element_type() == 'manual_name'
 
 
 
