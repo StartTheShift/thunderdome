@@ -4,7 +4,7 @@ from uuid import UUID
 
 from thunderdome import columns
 from thunderdome.connection import execute_query, ThunderdomeQueryError
-from thunderdome.exceptions import ModelException
+from thunderdome.exceptions import ModelException, ValidationError
 from thunderdome.query import QuerySet, QueryException
 
 #dict of node and edge types for rehydrating results
@@ -61,8 +61,8 @@ class BaseElement(object):
         return values
 
     @classmethod
-    def create(cls, **kwargs):
-        return cls(**kwargs).save()
+    def create(cls, *args, **kwargs):
+        return cls(*args, **kwargs).save()
         
     def save(self):
         is_new = self.eid is None
@@ -77,6 +77,13 @@ class ElementMetaClass(type):
         #move column definitions into columns dict
         #and set default column names
         column_dict = OrderedDict()
+        
+        #get inherited properties
+        for base in bases:
+            if hasattr(base, '_columns'):
+                for k,v in base._columns.items():
+                    if k not in column_dict:
+                        column_dict[k] = v
 
         def _transform_column(col_name, col_obj):
             column_dict[col_name] = col_obj
@@ -136,8 +143,8 @@ class Element(BaseElement):
             vertex_type = data['element_type']
             return vertex_types[vertex_type](**data)
         elif dtype == 'edge':
-            edge_type = data['label']
-            return edge_types[edge_type](**data)
+            edge_type = data['_label']
+            return edge_types[edge_type](data['_inV'], data['_outV'], **data)
         else:
             raise TypeError("Can't deserialize '{}'".format(dtype))
     
@@ -153,6 +160,9 @@ class VertexMetaClass(ElementMetaClass):
         return klass
         
 class Vertex(Element):
+    
+    #vertex id
+    vid = columns.UUID()
     
     __metaclass__ = VertexMetaClass
     
@@ -197,7 +207,13 @@ class Vertex(Element):
             return results[0]
         except ThunderdomeQueryError:
             raise cls.DoesNotExist
-        
+    
+    @classmethod
+    def get_by_eid(cls, eid):    
+        results = execute_query('g.v(eid)', {'eid':eid})
+        if not results:
+            raise cls.DoesNotExist
+        return Element.deserialize(results[0])
     
     def save(self, *args, **kwargs):
         super(Vertex, self).save(*args, **kwargs)
@@ -215,12 +231,10 @@ class Vertex(Element):
         params['element_type'] = self.get_element_type()
         for name, col in self._columns.items():
             val = values.get(name)
-            val = col.to_database(val)
             valname = name + '_val'
             qs += ['v.setProperty("{}", {})'.format(col.db_field_name, valname)]
             params[valname] = val
 
-        qs += ['data = v.map.toSet()']
         qs += ['g.stopTransaction(SUCCESS)']
         qs += ['g.getVertex(v)']
         
@@ -233,7 +247,11 @@ class Vertex(Element):
     def delete(self):
         if self.eid is None:
             raise ThunderdomeQueryError("Can't delete vertices that haven't been saved")
-        results = execute_query('g.removeVertex(g.v(eid))', {'eid': self.eid})
+        query = """
+        g.removeVertex(g.v(eid))
+        g.stopTransaction(SUCCESS)
+        """
+        results = execute_query(query, {'eid': self.eid})
         
     def _simple_traversal(self, operation, label):
         if label:
@@ -271,22 +289,90 @@ class Edge(Element):
     
     label = None
     
+    def __init__(self, inV, outV, **values):
+        self._inV = inV
+        self._outV = outV
+        super(Edge, self).__init__(**values)
+        
     @classmethod
     def get_label(cls):
         return cls._type_name(cls.label)
     
+    def validate(self):
+        if self.eid is None:
+            if self._inV is None:
+                raise ValidationError('in vertex must be set before saving new edges')
+            if self._outV is None:
+                raise ValidationError('out vertex must be set before saving new edges')
+        super(Edge, self).validate()
+        
+    def save(self, *args, **kwargs):
+        super(Edge, self).save(*args, **kwargs)
+        qs = []
+        params = {'label': self.get_label()}
+        if self.eid is None:
+            qs += ['v1 = g.v(v1eid)']
+            qs += ['v2 = g.v(v2eid)']
+            qs += ['e = g.addEdge(v1, v2, label)']
+            params['v1eid'] = self.inV.eid
+            params['v2eid'] = self.outV.eid
+        else:
+            qs += ['e = g.e(eid)']
+            params['eid'] = self.eid
+        
+        values = self.as_dict()
+        for name, col in self._columns.items():
+            val = values.get(name)
+            valname = name + '_val'
+            qs += ['e.setProperty("{}", {})'.format(col.db_field_name, valname)]
+            params[valname] = val
+
+        qs += ['g.stopTransaction(SUCCESS)']
+        qs += ['g.e(e.id)']
+        
+        results = execute_query('\n'.join(qs), params)
+        
+        assert len(results) == 1
+        self.eid = results[0].get('_id')
+        return self
+        
     def delete(self):
         if self.eid is None:
             raise ThunderdomeQueryError("Can't delete vertices that haven't been saved")
-        results = execute_query('g.removeEdge(g.e(eid))', {'eid':self.eid})
+        query = """
+        g.removeEdge(g.e(eid))
+        g.stopTransaction(SUCCESS)
+        """
+        results = execute_query(query, {'eid':self.eid})
 
     def _simple_traversal(self, operation):
-        results = execute_query('g.v(eid).%s()'%operation, {'eid':self.eid})
+        results = execute_query('g.e(eid).%s()'%operation, {'eid':self.eid})
         return [Element.deserialize(r) for r in results]
-    
-    def outV(self, label=None):
-        return self._simple_traversal('outV', label=label)
         
-    def inV(self, label=None):
-        return self._simple_traversal('inV', label=label)
+    @property
+    def inV(self):
+        if self._inV is None:
+            self._inV = self._simple_traversal('inV')
+        elif isinstance(self._inV, (int, long)):
+            self._inV = Vertex.get_by_eid(self._inV)
+        return self._inV
+    
+    @property
+    def outV(self):
+        if self._outV is None:
+            self._outV = self._simple_traversal('outV')
+        elif isinstance(self._outV, (int, long)):
+            self._outV = Vertex.get_by_eid(self._outV)
+        return self._outV
+    
+    
+
+
+
+
+
+
+
+
+
 
