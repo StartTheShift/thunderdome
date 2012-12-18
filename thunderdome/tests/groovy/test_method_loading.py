@@ -5,9 +5,11 @@ from thunderdome import columns
 from thunderdome import gremlin
 
 class GroovyTestModel(Vertex):
+    gremlin_path = 'test.groovy'
+    
     text    = columns.Text()
-    get_self = gremlin.GremlinMethod(path='test.groovy')
-    cm_get_self = gremlin.GremlinMethod(path='test.groovy', method_name='get_self', classmethod=True)
+    get_self = gremlin.GremlinMethod()
+    cm_get_self = gremlin.GremlinMethod(method_name='get_self', classmethod=True)
     
 class TestMethodLoading(BaseCassEngTestCase):
     
@@ -19,3 +21,8 @@ class TestMethodLoading(BaseCassEngTestCase):
         
         v3 = v1.cm_get_self(v1.eid)
         assert v1.vid == v3[0].vid
+        
+    
+    
+
+

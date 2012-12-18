@@ -19,7 +19,7 @@ class BaseGremlinMethod(object):
         :param default_args: default values for arguments
         """
         self.is_configured = False
-        self.path = path or 'gremlin.groovy'
+        self.path = path
         self.method_name = method_name
         self.classmethod = classmethod
         self.default_args = default_args
@@ -29,7 +29,7 @@ class BaseGremlinMethod(object):
         self.function_body = None
         self.function_def = None
         
-    def configure_method(self, klass, attr_name):
+    def configure_method(self, klass, attr_name, gremlin_path):
         """
         Configures the methods internals
         
@@ -39,6 +39,7 @@ class BaseGremlinMethod(object):
         self.attr_name = attr_name
         self.method_name = self.method_name or self.attr_name
         if not self.is_configured:
+            self.path = self.path or gremlin_path or 'gremlin.groovy'
             if self.path.startswith('/'):
                 path = self.path
             else:

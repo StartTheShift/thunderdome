@@ -127,6 +127,10 @@ class ElementMetaClass(type):
         for base in bases:
             for k,v in getattr(base, '_gremlin_methods', {}).items():
                 gremlin_methods.setdefault(k, v)
+                
+        #short circuit path inheritance
+        gremlin_path = attrs.get('gremlin_path')
+        attrs['gremlin_path'] = gremlin_path
 
         def wrap_method(method):
             def method_wrapper(self, *args, **kwargs):
@@ -147,7 +151,7 @@ class ElementMetaClass(type):
         
         #configure the gremlin methods
         for name, method in gremlin_methods.items():
-            method.configure_method(klass, name)
+            method.configure_method(klass, name, gremlin_path)
             
         return klass
 
