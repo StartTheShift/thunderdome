@@ -3,6 +3,10 @@ import pyparsing
 import re
 
 
+# Cache of parsed files
+_parsed_file_cache = {}
+
+
 class GroovyFunctionParser(object):
     """
     Given a string containing a single function definition this class will 
@@ -52,6 +56,11 @@ def parse(file):
     :rtype: 
     
     """
+    # Check cache before parsing file
+    global _parsed_file_cache
+    if file in _parsed_file_cache:
+        return _parsed_file_cache[file]
+    
     FuncDefnRegexp = r'^def.*\{'
     FuncEndRegexp = r'^\}$'
     with open(file, 'r') as f:
@@ -73,4 +82,6 @@ def parse(file):
     func_results = []
     for fn in all_fns:
         func_results += [GroovyFunctionParser.parse(fn)]
+        
+    _parsed_file_cache[file] = func_results
     return func_results
