@@ -147,6 +147,14 @@ class Ascii(Column):
 
 class Text(Column):
     db_type = 'text'
+    
+    def __init__(self, *args, **kwargs):
+        self.max_length = kwargs.get('max_length', None)
+
+    def validate(self, value):
+        if self.max_length:
+            if len(value) > self.max_length:
+                raise ValidationError('{} is longer than {} characters'.format(self.column_name, self.max_length))
 
 class Integer(Column):
     db_type = 'int'

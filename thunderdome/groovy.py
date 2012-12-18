@@ -17,7 +17,6 @@ class GroovyFunctionParser(object):
     KeywordDef  = pyparsing.Keyword('def')
     VarName     = pyparsing.Regex(r'[A-Za-z0-9]\w*')
     FuncName    = VarName
-    StmtList    = pyparsing.Regex(r'.*')
     FuncDefn    = KeywordDef + FuncName + "(" + pyparsing.delimitedList(VarName) + ")" + "{"
     
     # Result named tuple
