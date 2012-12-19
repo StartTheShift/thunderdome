@@ -6,7 +6,7 @@ from thunderdome import columns
 from thunderdome.connection import execute_query, ThunderdomeQueryError
 from thunderdome.exceptions import ModelException, ValidationError
 from thunderdome.query import QuerySet, QueryException
-from thunderdome.gremlin import BaseGremlinMethod
+from thunderdome.gremlin import BaseGremlinMethod, GremlinMethod
 
 #dict of node and edge types for rehydrating results
 vertex_types = {}
@@ -327,6 +327,10 @@ class Edge(Element):
     
     label = None
     
+    gremlin_path = 'edge.groovy'
+    
+    _save_edge = GremlinMethod()
+    
     def __init__(self, inV, outV, **values):
         self._inV = inV
         self._outV = outV
@@ -344,36 +348,21 @@ class Edge(Element):
                 raise ValidationError('out vertex must be set before saving new edges')
         super(Edge, self).validate()
         
-    def save(self, *args, **kwargs):
+    def save(self, exclusive=True, *args, **kwargs):
+        """
+        :param exclusive: if set to True, will not create multiple edges between 2 vertices with the same label
+        """
         super(Edge, self).save(*args, **kwargs)
-        qs = []
-        params = {'label': self.get_label()}
-        if self.eid is None:
-            qs += ['v1 = g.v(v1eid)']
-            qs += ['v2 = g.v(v2eid)']
-            qs += ['e = g.addEdge(v1, v2, label)']
-            params['v1eid'] = self.inV.eid
-            params['v2eid'] = self.outV.eid
-        else:
-            qs += ['e = g.e(eid)']
-            params['eid'] = self.eid
+        return self._save_edge(self._inV,
+                               self._outV,
+                               self.get_label(),
+                               self.as_dict(),
+                               exclusive=exclusive)
         
-        values = self.as_dict()
-        for name, col in self._columns.items():
-            val = values.get(name)
-            valname = name + '_val'
-            qs += ['e.setProperty("{}", {})'.format(col.db_field_name, valname)]
-            params[valname] = val
-
-        qs += ['g.stopTransaction(SUCCESS)']
-        qs += ['g.e(e.id)']
-        
-        results = execute_query('\n'.join(qs), params)
-        
-        assert len(results) == 1
-        self.eid = results[0].get('_id')
-        return self
-        
+    @classmethod
+    def create(cls, inV, outV, *args, **kwargs):
+        return super(Edge, self).create(inV, outV, *args, **kwargs)
+    
     def delete(self):
         if self.eid is None:
             raise ThunderdomeQueryError("Can't delete vertices that haven't been saved")
