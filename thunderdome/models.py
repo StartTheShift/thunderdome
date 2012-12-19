@@ -4,8 +4,7 @@ from uuid import UUID
 
 from thunderdome import columns
 from thunderdome.connection import execute_query, ThunderdomeQueryError
-from thunderdome.exceptions import ModelException, ValidationError
-from thunderdome.query import QuerySet, QueryException
+from thunderdome.exceptions import ModelException, ValidationError, ThunderdomeException
 from thunderdome.gremlin import BaseGremlinMethod
 
 #dict of node and edge types for rehydrating results
@@ -19,8 +18,8 @@ class BaseElement(object):
     The base model class, don't inherit from this, inherit from Model, defined below
     """
     
-    class DoesNotExist(QueryException): pass
-    class MultipleObjectsReturned(QueryException): pass
+    class DoesNotExist(ThunderdomeException): pass
+    class MultipleObjectsReturned(ThunderdomeException): pass
 
     def __init__(self, **values):
         self.eid = values.get('_id')
