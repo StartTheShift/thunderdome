@@ -93,7 +93,13 @@ class BaseGremlinMethod(object):
             arglist.pop(arglist.index(k))
             params[k] = v
             
-        return execute_query(self.function_body, params)
+        #convert graph elements into their eids
+        from thunderdome.models import BaseElement
+        for k,v in params.items():
+            if isinstance(v, BaseElement):
+                params[k] = v.eid
+                
+        return execute_query(self.function_body, params, transaction=self.transaction)
     
 class GremlinMethod(BaseGremlinMethod):
     
