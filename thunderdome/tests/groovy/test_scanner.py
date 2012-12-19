@@ -11,4 +11,4 @@ class GroovyScannerTest(TestCase):
     def test_parsing_complicated_function(self):
         groovy_file = os.path.join(os.path.dirname(__file__), 'test.groovy')
         result = parse(groovy_file)
-        import ipdb; ipdb.set_trace()
+        
