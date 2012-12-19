@@ -65,9 +65,11 @@ class BaseElement(object):
     def create(cls, *args, **kwargs):
         return cls(*args, **kwargs).save()
         
-    def save(self):
-        is_new = self.eid is None
+    def pre_save(self):
         self.validate()
+        
+    def save(self):
+        self.pre_save()
         return self
 
 class ElementMetaClass(type):
@@ -287,6 +289,9 @@ class Vertex(Element):
         results = execute_query(query, {'eid': self.eid})
         
     def _simple_traversal(self, operation, label):
+        if issubclass(label, Edge) or isinstance(label, Edge):
+            label = label.get_label()
+        
         if label:
             results = execute_query('g.v(eid).%s(lbl)'%operation, {'eid':self.eid, 'lbl':label})
         else:
