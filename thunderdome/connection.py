@@ -52,8 +52,7 @@ def setup(hosts, graph_name, username=None, password=None):
         raise ThunderdomeConnectionError("At least one host required")
 
     random.shuffle(_hosts)
-    
-    results = execute_query('g.getIndexedKeys(Vertex.class)', transaction=False)
+    results = execute_query('g.getIndexedKeys(Vertex.class)')
     for idx in ['vid', 'element_type']:
         if idx not in results:
             execute_query(
@@ -63,7 +62,7 @@ def setup(hosts, graph_name, username=None, password=None):
     
 def execute_query(query, params={}, transaction=True):
     if transaction:
-        query = 'g.stopTransaction(SUCCESS)\n' + query
+        query = 'g.stopTransaction(FAILURE)\n' + query
 #        query = """
 #        g.stopTransaction(TransactionalGraph.Conclusion.SUCCESS)
 #        __operation = {
@@ -86,11 +85,11 @@ def execute_query(query, params={}, transaction=True):
     headers = {'Content-Type':'application/json', 'Accept':'application/json'}
     response = requests.post(url, data=data, headers=headers)
     
-    logger.info(response.request.data)
+    logger.info(response.request.body)
     logger.info(response.content)
     
     if response.status_code != 200:
         raise ThunderdomeQueryError(response.content)
-    return response.json['results'] 
+    return response.json()['results'] 
 
 
