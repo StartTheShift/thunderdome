@@ -66,6 +66,7 @@ class BaseGremlinMethod(object):
             
             self.function_body = gremlin_obj.body
             self.function_def = gremlin_obj.defn
+            self.is_configured = True
         
     def __call__(self, instance, *args, **kwargs):
         args = list(args)
