@@ -150,11 +150,14 @@ class Text(Column):
     
     def __init__(self, *args, **kwargs):
         self.max_length = kwargs.get('max_length', None)
+        super(Text, self).__init__(*args, **kwargs)
 
     def validate(self, value):
+        value = super(Text, self).validate(value)
         if self.max_length:
             if len(value) > self.max_length:
                 raise ValidationError('{} is longer than {} characters'.format(self.column_name, self.max_length))
+        return value
 
 class Integer(Column):
     db_type = 'int'
