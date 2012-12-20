@@ -9,13 +9,12 @@ def _save_edge(eid, v1, v2, label, attrs, exclusive) {
 	 * :param attrs: map of parameters to set on the edge
 	 * :param exclusive: if true, this will check for an existing edge of the same label and modify it, instead of creating another edge
 	 */
-	t = g.startTransaction()
 	try{
 		try {
 			e = g.e(eid)
 		} catch (err) {
 			existing = g.v(v1).out(label).filter{it.id == v2}
-			if(existing.count > 0 && exclusive) {
+			if(existing.count() > 0 && exclusive) {
 				e = existing[0]
 			} else {
 				e = g.addEdge(g.v(v1), g.v(v2), label)
@@ -24,10 +23,10 @@ def _save_edge(eid, v1, v2, label, attrs, exclusive) {
 		for (item in attrs.entrySet()) {
 			e.setProperty(item.key, item.value)
 		}
-		t.stopTransaction(SUCCESS)
-		g.e(e)
+		g.stopTransaction(SUCCESS)
+		return g.getEdge(e.id)
 	} catch (err) {
-		t.stopTransaction(FAILURE)
+		g.stopTransaction(FAILURE)
 		throw(err)
 	}
 }

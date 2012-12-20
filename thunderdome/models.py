@@ -1,11 +1,11 @@
 from collections import OrderedDict
+import inspect
 import re
 from uuid import UUID
 
 from thunderdome import columns
 from thunderdome.connection import execute_query, ThunderdomeQueryError
-from thunderdome.exceptions import ModelException, ValidationError
-from thunderdome.query import QuerySet, QueryException
+from thunderdome.exceptions import ModelException, ValidationError, ThunderdomeException
 from thunderdome.gremlin import BaseGremlinMethod, GremlinMethod
 
 #dict of node and edge types for rehydrating results
@@ -19,8 +19,8 @@ class BaseElement(object):
     The base model class, don't inherit from this, inherit from Model, defined below
     """
     
-    class DoesNotExist(QueryException): pass
-    class MultipleObjectsReturned(QueryException): pass
+    class DoesNotExist(ThunderdomeException): pass
+    class MultipleObjectsReturned(ThunderdomeException): pass
 
     def __init__(self, **values):
         self.eid = values.get('_id')
@@ -289,7 +289,9 @@ class Vertex(Element):
         results = execute_query(query, {'eid': self.eid})
         
     def _simple_traversal(self, operation, label):
-        if issubclass(label, Edge) or isinstance(label, Edge):
+        if inspect.isclass(label) and issubclass(label, Edge):
+            label = label.get_label()
+        elif isinstance(label, Edge):
             label = label.get_label()
         
         if label:
@@ -357,11 +359,11 @@ class Edge(Element):
                                self._outV,
                                self.get_label(),
                                self.as_dict(),
-                               exclusive=exclusive)
+                               exclusive=exclusive)[0]
         
     @classmethod
     def create(cls, inV, outV, *args, **kwargs):
-        return super(Edge, self).create(inV, outV, *args, **kwargs)
+        return super(Edge, cls).create(inV, outV, *args, **kwargs)
     
     def delete(self):
         if self.eid is None:

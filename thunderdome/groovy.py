@@ -39,7 +39,9 @@ class GroovyFunctionParser(object):
             result_list = result.asList()
             args = result_list[3:result_list.index(')')]
             # Return single line or multi-line function body
-            fn_body = re.sub(r'\}$', '', re.sub(r'[^\{]+\{', '', data))
+            fn_body = re.sub(r'[^\{]+\{', '', data, count=1)
+            parts = fn_body.strip().split('\n')
+            fn_body = '\n'.join(parts[0:-1])
             return cls.GroovyFunction(result[1], args, fn_body, data)
         except Exception, ex:
             return {}
