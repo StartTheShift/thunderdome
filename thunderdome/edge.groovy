@@ -1,11 +1,11 @@
 
-def _save_edge(eid, v1, v2, label, attrs, exclusive) {
+def _save_edge(eid, inV, outV, label, attrs, exclusive) {
 	/**
 	 * Saves an edge between two vertices
 	 * 
 	 * :param eid: edge id, if null, a new vertex is created
-	 * :param v1: edge inv id
-	 * :param v2: edge outv id
+	 * :param inV: edge inv id
+	 * :param outV: edge outv id
 	 * :param attrs: map of parameters to set on the edge
 	 * :param exclusive: if true, this will check for an existing edge of the same label and modify it, instead of creating another edge
 	 */
@@ -13,11 +13,11 @@ def _save_edge(eid, v1, v2, label, attrs, exclusive) {
 		try {
 			e = g.e(eid)
 		} catch (err) {
-			existing = g.v(v1).out(label).filter{it.id == v2}
+			existing = g.v(inV).out(label).filter{it.id == outV}
 			if(existing.count() > 0 && exclusive) {
 				e = existing[0]
 			} else {
-				e = g.addEdge(g.v(v1), g.v(v2), label)
+				e = g.addEdge(g.v(inV), g.v(outV), label)
 			}
 		}
 		for (item in attrs.entrySet()) {
