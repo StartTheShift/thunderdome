@@ -287,11 +287,10 @@ class Vertex(Element):
         """
         results = execute_query(query, {'eid': self.eid})
         
-    def _simple_traversal(self, operation, label):
-        if issubclass(label, Edge) or isinstance(label, Edge):
-            label = label.get_label()
-        
+    def _simple_traversal(self, operation, label):        
         if label:
+            if issubclass(label, Edge) or isinstance(label, Edge):
+                label = label.get_label()
             results = execute_query('g.v(eid).%s(lbl)'%operation, {'eid':self.eid, 'lbl':label})
         else:
             results = execute_query('g.v(eid).%s()'%operation, {'eid':self.eid})
