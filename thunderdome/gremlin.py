@@ -9,7 +9,7 @@ class ThunderdomeGremlinException(ThunderdomeException):pass
 
 class BaseGremlinMethod(object):
     
-    def __init__(self, path=None, method_name=None, classmethod=False, default_args={}):
+    def __init__(self, path=None, method_name=None, classmethod=False, default_args={}, transaction=True):
         """
         :param path: path to the source gremlin file, relative to the file the class is defined in
             absolute paths also work, defaults to gremlin.groovy if left blank
@@ -17,12 +17,14 @@ class BaseGremlinMethod(object):
             defaults to the attribute name this is instantiated on
         :param classmethod: method will behave as a classmethod if this is True, defaults to False
         :param default_args: default values for arguments
+        :param transaction: defaults to True, closes any previous transactions before executing query
         """
         self.is_configured = False
         self.path = path
         self.method_name = method_name
         self.classmethod = classmethod
         self.default_args = default_args
+        self.transaction = transaction
         
         self.attr_name = None
         self.arg_list = []
@@ -64,6 +66,7 @@ class BaseGremlinMethod(object):
             
             self.function_body = gremlin_obj.body
             self.function_def = gremlin_obj.defn
+            self.is_configured = True
         
     def __call__(self, instance, *args, **kwargs):
         args = list(args)
@@ -90,7 +93,13 @@ class BaseGremlinMethod(object):
             arglist.pop(arglist.index(k))
             params[k] = v
             
-        return execute_query(self.function_body, params)
+        #convert graph elements into their eids
+        from thunderdome.models import BaseElement
+        for k,v in params.items():
+            if isinstance(v, BaseElement):
+                params[k] = v.eid
+                
+        return execute_query(self.function_body, params, transaction=self.transaction)
     
 class GremlinMethod(BaseGremlinMethod):
     

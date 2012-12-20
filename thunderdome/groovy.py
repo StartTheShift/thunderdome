@@ -15,7 +15,7 @@ class GroovyFunctionParser(object):
 
     # Simple Groovy sub-grammar definitions
     KeywordDef  = pyparsing.Keyword('def')
-    VarName     = pyparsing.Regex(r'[A-Za-z0-9]\w*')
+    VarName     = pyparsing.Regex(r'[A-Za-z_]\w*')
     FuncName    = VarName
     FuncDefn    = KeywordDef + FuncName + "(" + pyparsing.delimitedList(VarName) + ")" + "{"
     
@@ -43,7 +43,7 @@ class GroovyFunctionParser(object):
             parts = fn_body.strip().split('\n')
             fn_body = '\n'.join(parts[0:-1])
             return cls.GroovyFunction(result[1], args, fn_body, data)
-        except:
+        except Exception, ex:
             return {}
         
 
