@@ -292,16 +292,30 @@ class Vertex(Element):
         """
         results = execute_query(query, {'eid': self.eid})
         
-    def _simple_traversal(self, operation, label):
+    def _simple_traversal(self, operation, label, start=0, max_results=100):
+        """
+        Perform simple graph database traversals with ubiquitous pagination.
+
+        :param operation: The operation to be performed
+        :type operation: str
+        :param label: The edge label to be used
+        :type label: str or Edge
+        :param start: The starting offset
+        :type start: int
+        :param max_results: The maximum number of results to return
+        :type max_results: int
+        
+        """
         if inspect.isclass(label) and issubclass(label, Edge):
             label = label.get_label()
         elif isinstance(label, Edge):
             label = label.get_label()
-        
+
+        end = start + max_results
         if label:
-            results = execute_query('g.v(eid).%s(lbl)'%operation, {'eid':self.eid, 'lbl':label})
+            results = execute_query('g.v(eid).%s(lbl)[start..<end]'%operation, {'eid':self.eid, 'lbl':label, 'start': start, 'end': end})
         else:
-            results = execute_query('g.v(eid).%s()'%operation, {'eid':self.eid})
+            results = execute_query('g.v(eid).%s()[start..<end]'%operation, {'eid':self.eid, 'start': start, 'end': end})
         return [Element.deserialize(r) for r in results]
     
     def outV(self, label=None, page_num=None, per_page=None):
@@ -336,6 +350,7 @@ class Edge(Element):
     gremlin_path = 'edge.groovy'
     
     _save_edge = GremlinMethod()
+    _get_edges_between = GremlinMethod(classmethod=True)
     
     def __init__(self, inV, outV, **values):
         self._inV = inV
@@ -345,6 +360,26 @@ class Edge(Element):
     @classmethod
     def get_label(cls):
         return cls._type_name(cls.label)
+    
+    @classmethod
+    def get_between(cls, outV, inV, start=0, max_results=100):
+        """
+        Return all the edges with a given label between two vertices.
+        
+        :param outV: The vertex the edge comes out of.
+        :type outV: Vertex
+        :param inV: The vertex the edge goes into.
+        :type inV: Vertex
+        :param start: The start index of the results
+        :type start: int
+        :param max_results: The maximum number of results to return
+        :type max_results: int
+        :rtype: list
+        
+        """
+        return cls._get_edges_between(outV=outV, inV=inV,
+                                      label=cls.get_label(),
+                                      start=start, max_results=max_results)
     
     def validate(self):
         if self.eid is None:
