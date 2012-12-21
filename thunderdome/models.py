@@ -197,7 +197,11 @@ class Vertex(Element):
     from the subclass name, but can optionally be set manually
     """
     __metaclass__ = VertexMetaClass
-    
+
+    gremlin_path = 'vertex.groovy'
+
+    _traversal = GremlinMethod()
+
     #vertex id
     vid = columns.UUID()
     
@@ -300,18 +304,18 @@ class Vertex(Element):
             results = execute_query('g.v(eid).%s()'%operation, {'eid':self.eid})
         return [Element.deserialize(r) for r in results]
     
-    def outV(self, label=None):
-        return self._simple_traversal('out', label=label)
-        
-    def inV(self, label=None):
-        return self._simple_traversal('in', label=label)
-    
-    def outE(self, label=None):
-        return self._simple_traversal('outE', label=label)
-        
-    def inE(self, label=None):
-        return self._simple_traversal('inE', label=label)
-        
+    def outV(self, label=None, page_num=None, per_page=None):
+        return self._traversal('outV', label, page_num, per_page)
+
+    def inV(self, label=None, page_num=None, per_page=None):
+        return self._traversal('inV', label, page_num, per_page)
+
+    def outE(self, label=None, page_num=None, per_page=None):
+        return self._traversal('outE', label, page_num, per_page)
+
+    def inE(self, label=None, page_num=None, per_page=None):
+        return self._traversal('inE', label, page_num, per_page)
+
     
 class EdgeMetaClass(ElementMetaClass):
     def __new__(cls, name, bases, attrs):
