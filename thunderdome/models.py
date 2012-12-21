@@ -344,7 +344,7 @@ class Edge(Element):
         return cls._type_name(cls.label)
     
     @classmethod
-    def get_between(cls, outV, inV):
+    def get_between(cls, outV, inV, start=0, max_results=100):
         """
         Return all the edges with a given label between two vertices.
         
@@ -352,10 +352,16 @@ class Edge(Element):
         :type outV: Vertex
         :param inV: The vertex the edge goes into.
         :type inV: Vertex
+        :param start: The start index of the results
+        :type start: int
+        :param max_results: The maximum number of results to return
+        :type max_results: int
         :rtype: list
         
         """
-        return cls._get_edges_between(outV=outV, inV=inV, label=cls.get_label())
+        return cls._get_edges_between(outV=outV, inV=inV,
+                                      label=cls.get_label(),
+                                      start=start, max_results=max_results)
     
     def validate(self):
         if self.eid is None:
