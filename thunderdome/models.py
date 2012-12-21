@@ -288,16 +288,30 @@ class Vertex(Element):
         """
         results = execute_query(query, {'eid': self.eid})
         
-    def _simple_traversal(self, operation, label):
+    def _simple_traversal(self, operation, label, start=0, max_results=100):
+        """
+        Perform simple graph database traversals with ubiquitous pagination.
+
+        :param operation: The operation to be performed
+        :type operation: str
+        :param label: The edge label to be used
+        :type label: str or Edge
+        :param start: The starting offset
+        :type start: int
+        :param max_results: The maximum number of results to return
+        :type max_results: int
+        
+        """
         if inspect.isclass(label) and issubclass(label, Edge):
             label = label.get_label()
         elif isinstance(label, Edge):
             label = label.get_label()
-        
+
+        end = start + max_results
         if label:
-            results = execute_query('g.v(eid).%s(lbl)'%operation, {'eid':self.eid, 'lbl':label})
+            results = execute_query('g.v(eid).%s(lbl)[start..<end]'%operation, {'eid':self.eid, 'lbl':label, 'start': start, 'end': end})
         else:
-            results = execute_query('g.v(eid).%s()'%operation, {'eid':self.eid})
+            results = execute_query('g.v(eid).%s()[start..<end]'%operation, {'eid':self.eid, 'start': start, 'end': end})
         return [Element.deserialize(r) for r in results]
     
     def outV(self, label=None):
