@@ -32,11 +32,16 @@ def _save_edge(eid, inV, outV, label, attrs, exclusive) {
 }
 
 
-def _get_edges_between(outV, inV, label, start, max_results) {
+def _get_edges_between(outV, inV, label, page_num, per_page) {
   try {
-    end = start + max_results
     results = g.v(outV).outE(label).as('e').inV().filter{it.id == inV}.back('e')
-    return results[start..<end]
+    if (page_num != null && per_page != null) {
+        start = (page_num - 1) * per_page
+        end = start + per_page
+        return results[start..<end]
+    } else {
+        return results
+    }
   } catch(err) {
     g.stopTransaction(FAILURE)
     throw(err)

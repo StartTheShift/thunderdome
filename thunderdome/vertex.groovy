@@ -36,6 +36,6 @@ def _traversal(eid, operation, label, page_num, per_page) {
 
 def _delete_related(eid, operation, edge_label) {
     /**
-     * deletes connected vertex
+     * deletes connected vertices / edges
      */
 }
