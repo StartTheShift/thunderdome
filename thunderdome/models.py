@@ -292,7 +292,7 @@ class Vertex(Element):
         """
         results = execute_query(query, {'eid': self.eid})
         
-    def _simple_traversal(self, operation, label, start=0, max_results=100):
+    def _simple_traversal(self, operation, label, page_num=None, per_page=None):
         """
         Perform simple graph database traversals with ubiquitous pagination.
 
@@ -311,24 +311,19 @@ class Vertex(Element):
         elif isinstance(label, Edge):
             label = label.get_label()
 
-        end = start + max_results
-        if label:
-            results = execute_query('g.v(eid).%s(lbl)[start..<end]'%operation, {'eid':self.eid, 'lbl':label, 'start': start, 'end': end})
-        else:
-            results = execute_query('g.v(eid).%s()[start..<end]'%operation, {'eid':self.eid, 'start': start, 'end': end})
-        return [Element.deserialize(r) for r in results]
-    
+        return self._traversal(operation, label, page_num, per_page)
+
     def outV(self, label=None, page_num=None, per_page=None):
-        return self._traversal('outV', label, page_num, per_page)
+        return self._simple_traversal('outV', label, page_num, per_page)
 
     def inV(self, label=None, page_num=None, per_page=None):
-        return self._traversal('inV', label, page_num, per_page)
+        return self._simple_traversal('inV', label, page_num, per_page)
 
     def outE(self, label=None, page_num=None, per_page=None):
-        return self._traversal('outE', label, page_num, per_page)
+        return self._simple_traversal('outE', label, page_num, per_page)
 
     def inE(self, label=None, page_num=None, per_page=None):
-        return self._traversal('inE', label, page_num, per_page)
+        return self._simple_traversal('inE', label, page_num, per_page)
 
     
 class EdgeMetaClass(ElementMetaClass):
