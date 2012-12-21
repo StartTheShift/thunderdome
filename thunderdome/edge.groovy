@@ -30,3 +30,12 @@ def _save_edge(eid, v1, v2, label, attrs, exclusive) {
 		throw(err)
 	}
 }
+
+def _get_edges_between(outV, inV, label) {
+  try {
+    return g.v(outV).outE(label).as('e').inV().filter{it.id == inV}.back('e')
+  } catch(err) {
+    g.stopTransaction(FAILURE)
+    throw(err)
+  }
+}

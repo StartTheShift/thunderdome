@@ -332,6 +332,7 @@ class Edge(Element):
     gremlin_path = 'edge.groovy'
     
     _save_edge = GremlinMethod()
+    _get_edges_between = GremlinMethod(classmethod=True)
     
     def __init__(self, inV, outV, **values):
         self._inV = inV
@@ -341,6 +342,20 @@ class Edge(Element):
     @classmethod
     def get_label(cls):
         return cls._type_name(cls.label)
+    
+    @classmethod
+    def get_between(cls, outV, inV):
+        """
+        Return all the edges with a given label between two vertices.
+        
+        :param outV: The vertex the edge comes out of.
+        :type outV: Vertex
+        :param inV: The vertex the edge goes into.
+        :type inV: Vertex
+        :rtype: list
+        
+        """
+        return cls._get_edges_between(outV=outV, inV=inV, label=cls.get_label())
     
     def validate(self):
         if self.eid is None:
