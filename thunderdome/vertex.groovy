@@ -34,8 +34,40 @@ def _traversal(eid, operation, label, page_num, per_page) {
     return results
 }
 
-def _delete_related(eid, operation, edge_label) {
+def _delete_related(eid, operation, label) {
+  try{
     /**
      * deletes connected vertices / edges
      */
+    results = g.v(eid)
+    label_args = label == null ? [] : [label]
+    vertices = true
+    switch (operation) {
+    case "inV":
+    results = results.in(*label_args)
+    break
+    case "outV":
+    results = results.out(*label_args)
+    break
+    case "inE":
+    results = results.inE(*label_args)
+    vertices = false
+    break
+    case "outE":
+    results = results.outE(*label_args)
+    vertices = false
+    break
+    default:
+    throw NamingException()
+    }
+    if (vertices) {
+      results.each{g.removeVertex(it)}
+    } else {
+      results.each{g.removeEdge(it)}
+    }
+    g.stopTransaction(SUCCESS)
+  } catch (err) {
+    g.stopTransaction(FAILURE)
+    raise(err)
+  }
 }
