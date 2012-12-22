@@ -21,7 +21,11 @@ def _save_edge(eid, inV, outV, label, attrs, exclusive) {
 			}
 		}
 		for (item in attrs.entrySet()) {
-			e.setProperty(item.key, item.value)
+            if (item.value == null) {
+                e.removeProperty(item.name)
+            } else {
+                e.setProperty(item.key, item.value)
+            }
 		}
 		g.stopTransaction(SUCCESS)
 		return g.getEdge(e.id)

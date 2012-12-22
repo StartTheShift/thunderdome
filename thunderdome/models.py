@@ -200,6 +200,7 @@ class Vertex(Element):
 
     gremlin_path = 'vertex.groovy'
 
+    _save_vertex = GremlinMethod()
     _traversal = GremlinMethod()
 
     #vertex id
@@ -256,31 +257,10 @@ class Vertex(Element):
     
     def save(self, *args, **kwargs):
         super(Vertex, self).save(*args, **kwargs)
-        
-        qs = []
-        params = {}
-        if self.eid is None:
-            qs += ['v = g.addVertex()']
-        else:
-            qs += ['v = g.v(eid)']
-            params['eid'] = self.eid
-            
-        values = self.as_dict()
-        qs += ['v.setProperty("element_type", element_type)']
+        params = self.as_dict()
         params['element_type'] = self.get_element_type()
-        for name, col in self._columns.items():
-            val = values.get(name)
-            valname = name + '_val'
-            qs += ['v.setProperty("{}", {})'.format(col.db_field_name, valname)]
-            params[valname] = val
-
-        qs += ['g.stopTransaction(SUCCESS)']
-        qs += ['g.getVertex(v)']
-        
-        results = execute_query('\n'.join(qs), params)
-        
-        assert len(results) == 1
-        self.eid = results[0].get('_id')
+        result = self._save_vertex(params)[0]
+        self.eid = result.eid
         return self
     
     def delete(self):

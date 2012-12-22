@@ -1,4 +1,29 @@
 
+def _save_vertex(eid, attrs) {
+    /**
+     * Saves a vertex
+     *
+     * :param eid: edge id, if null, a new vertex is created
+     * :param attrs: map of parameters to set on the edge
+     */
+    try {
+        v = eid == null ? g.addVertex() : g.v(eid)
+
+        for (item in attrs.entrySet()) {
+            if (item.value == null) {
+                v.removeProperty(item.key)
+            } else {
+                v.setProperty(item.key, item.value)
+            }
+        }
+        g.stopTransaction(SUCCESS)
+        return g.getVertex(v.id)
+    } catch (err) {
+        g.stopTransaction(FAILURE)
+        throw(err)
+    }
+}
+
 def _traversal(eid, operation, label, page_num, per_page) {
     /**
      * performs vertex/edge traversals with optional edge labels and pagination

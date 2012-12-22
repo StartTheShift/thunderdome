@@ -19,7 +19,7 @@ from thunderdome.models import Vertex
 
 class DatetimeTest(Vertex):
     test_id = Integer(primary_key=True)
-    created_at = DateTime()
+    created_at = DateTime(required=False)
     
 class TestDatetime(BaseCassEngTestCase):
 
@@ -28,6 +28,15 @@ class TestDatetime(BaseCassEngTestCase):
         dt = DatetimeTest.create(test_id=0, created_at=now)
         dt2 = DatetimeTest.get(dt.vid)
         assert dt2.created_at.timetuple()[:6] == now.timetuple()[:6]
+
+    def test_none_handling(self):
+        """
+        Tests the handling of NoneType
+        :return:
+        """
+        dt = DatetimeTest.create(test_id=0, created_at=None)
+
+
 
 class DecimalTest(Vertex):
     test_id = Integer(primary_key=True)
