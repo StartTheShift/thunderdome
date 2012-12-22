@@ -22,7 +22,7 @@ def _save_edge(eid, inV, outV, label, attrs, exclusive) {
 		}
 		for (item in attrs.entrySet()) {
             if (item.value == null) {
-                e.removeProperty(item.name)
+                e.removeProperty(item.key)
             } else {
                 e.setProperty(item.key, item.value)
             }
