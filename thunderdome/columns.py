@@ -187,6 +187,7 @@ class DateTime(Column):
 
     def to_database(self, value):
         value = super(DateTime, self).to_database(value)
+        if value is None: return
         if not isinstance(value, datetime):
             raise ValidationError("'{}' is not a datetime object".format(value))
         return time.mktime(value.timetuple())
@@ -217,6 +218,7 @@ class UUID(Column):
     
     def to_database(self, value):
         val = super(UUID, self).to_database(value)
+        if value is None: return
         return str(val)
 
 class Boolean(Column):
