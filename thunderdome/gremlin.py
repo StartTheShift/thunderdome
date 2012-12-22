@@ -106,5 +106,6 @@ class GremlinMethod(BaseGremlinMethod):
     def __call__(self, instance, *args, **kwargs):
         from thunderdome.models import Element
         results = super(GremlinMethod, self).__call__(instance, *args, **kwargs)
-        return [Element.deserialize(r) for r in results]
+        if results is not None:
+            return [Element.deserialize(r) for r in results]
         

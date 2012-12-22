@@ -202,6 +202,7 @@ class Vertex(Element):
 
     _save_vertex = GremlinMethod()
     _traversal = GremlinMethod()
+    _delete_related = GremlinMethod()
 
     #vertex id
     vid = columns.UUID()
@@ -293,6 +294,23 @@ class Vertex(Element):
 
         return self._traversal(operation, label, page_num, per_page)
 
+    def _simple_deletion(self, operation, label):
+        """
+        Perform simple bulk graph deletion operation.
+
+        :param operation: The operation to be performed
+        :type operation: str
+        :param label: The edge label to be used
+        :type label: str or Edge
+        
+        """
+        if inspect.isclass(label) and issubclass(label, Edge):
+            label = label.get_label()
+        elif isinstance(label, Edge):
+            label = label.get_label()
+
+        return self._delete_related(operation, label)
+
     def outV(self, label=None, page_num=None, per_page=None):
         return self._simple_traversal('outV', label, page_num, per_page)
 
@@ -304,6 +322,19 @@ class Vertex(Element):
 
     def inE(self, label=None, page_num=None, per_page=None):
         return self._simple_traversal('inE', label, page_num, per_page)
+
+    def delete_outE(self, label=None):
+        self._simple_deletion('outE', label)
+
+    def delete_inE(self, label=None):
+        self._simple_deletion('inE', label)
+
+    def delete_outV(self, label=None):
+        self._simple_deletion('outV', label)
+
+    def delete_inV(self, label=None):
+        self._simple_deletion('inV', label)
+        
 
     
 class EdgeMetaClass(ElementMetaClass):
