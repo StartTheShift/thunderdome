@@ -23,6 +23,8 @@ html/
 .project
 .pydevproject
 .settings/
+.idea/
+*.iml
 
 # Unit test / coverage reports
 .coverage
