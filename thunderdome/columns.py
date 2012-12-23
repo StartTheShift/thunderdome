@@ -259,9 +259,3 @@ class Decimal(Column):
         val = super(Decimal, self).to_database(value)
         return str(val)
 
-class Counter(Column):
-    #TODO: counter field
-    def __init__(self, **kwargs):
-        super(Counter, self).__init__(**kwargs)
-        raise NotImplementedError
-
