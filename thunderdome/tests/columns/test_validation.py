@@ -52,7 +52,27 @@ class TestDecimal(BaseCassEngTestCase):
         dt = DecimalTest.create(test_id=0, dec_val=5)
         dt2 = DecimalTest.get(dt.vid)
         assert dt2.dec_val == D('5')
-        
+
+class TestText(BaseCassEngTestCase):
+
+    def test_max_length_validation(self):
+        """
+        Tests that the max_length kwarg works
+        """
+
+class TestInteger(BaseCassEngTestCase):
+
+    def test_non_integral_validation(self):
+        """
+        Tests that attempting to save non integral values raises a ValidationError
+        """
+
+class TestFloat(BaseCassEngTestCase):
+
+    def test_non_numberic_validation(self):
+        """
+        Tests that attempting to save a non numeric value raises a ValidationError
+        """
 
 
 

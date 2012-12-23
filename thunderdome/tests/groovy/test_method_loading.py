@@ -22,7 +22,18 @@ class TestMethodLoading(BaseCassEngTestCase):
         v3 = v1.cm_get_self(v1.eid)
         assert v1.vid == v3[0].vid
         
-    
+
+class TestMethodArgumentHandling(BaseCassEngTestCase):
+
+    def test_proper_argument_handling(self):
+        """
+        Test that supplying too many or too few arguments raises a TypeError
+        """
+
+    def test_proper_kwargs_handling(self):
+        """
+        Tests that supplying a mix of args and kwargs works
+        """
     
 
 
