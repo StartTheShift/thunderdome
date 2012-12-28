@@ -75,6 +75,19 @@ class BaseElement(object):
         self.pre_save()
         return self
 
+    def update(self, **values):
+        """
+        performs an update of this element with the given values and returns the saved object
+        """
+        for key in values.keys():
+            if key not in self._columns:
+                raise TypeError("unrecognized attribute name: '{}'".format(key))
+
+        for k,v in values.items():
+            setattr(self, k, v)
+
+        return self.save()
+
 class ElementMetaClass(type):
 
     def __new__(cls, name, bases, attrs):
@@ -179,7 +192,7 @@ class Element(BaseElement):
             return vertex_types[vertex_type](**data)
         elif dtype == 'edge':
             edge_type = data['_label']
-            return edge_types[edge_type](data['_inV'], data['_outV'], **data)
+            return edge_types[edge_type](data['_outV'], data['_inV'], **data)
         else:
             raise TypeError("Can't deserialize '{}'".format(dtype))
     
@@ -361,9 +374,9 @@ class Edge(Element):
     _save_edge = GremlinMethod()
     _get_edges_between = GremlinMethod(classmethod=True)
     
-    def __init__(self, inV, outV, **values):
-        self._inV = inV
+    def __init__(self, outV, inV, **values):
         self._outV = outV
+        self._inV = inV
         super(Edge, self).__init__(**values)
         
     @classmethod
@@ -404,15 +417,15 @@ class Edge(Element):
         :param exclusive: if set to True, will not create multiple edges between 2 vertices with the same label
         """
         super(Edge, self).save(*args, **kwargs)
-        return self._save_edge(self._inV,
-                               self._outV,
+        return self._save_edge(self._outV,
+                               self._inV,
                                self.get_label(),
                                self.as_dict(),
                                exclusive=exclusive)[0]
         
     @classmethod
-    def create(cls, inV, outV, *args, **kwargs):
-        return super(Edge, cls).create(inV, outV, *args, **kwargs)
+    def create(cls, outV, inV, *args, **kwargs):
+        return super(Edge, cls).create(outV, inV, *args, **kwargs)
     
     def delete(self):
         if self.eid is None:

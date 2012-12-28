@@ -1,5 +1,5 @@
 
-def _save_edge(eid, inV, outV, label, attrs, exclusive) {
+def _save_edge(eid, outV, inV, label, attrs, exclusive) {
 	/**
 	 * Saves an edge between two vertices
 	 * 
@@ -17,7 +17,7 @@ def _save_edge(eid, inV, outV, label, attrs, exclusive) {
 			if(existing.count() > 0 && exclusive) {
 				e = existing[0]
 			} else {
-				e = g.addEdge(g.v(inV), g.v(outV), label)
+				e = g.addEdge(g.v(outV), g.v(inV), label)
 			}
 		}
 		for (item in attrs.entrySet()) {
