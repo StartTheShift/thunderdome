@@ -31,6 +31,9 @@ class BaseElement(object):
             value_mngr = column.value_manager(self, column, value)
             self._values[name] = value_mngr
 
+    def __eq__(self, other):
+        return self.as_dict() == other.as_dict() and self.eid == other.eid
+
     @classmethod
     def _type_name(cls, manual_name):
         """
