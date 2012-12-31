@@ -287,7 +287,7 @@ class Vertex(Element):
     
     def delete(self):
         if self.eid is None:
-            raise ThunderdomeQueryError("Can't delete vertices that haven't been saved")
+            return self
         query = """
         g.removeVertex(g.v(eid))
         g.stopTransaction(SUCCESS)
@@ -434,7 +434,7 @@ class Edge(Element):
     
     def delete(self):
         if self.eid is None:
-            raise ThunderdomeQueryError("Can't delete vertices that haven't been saved")
+            return self
         query = """
         g.removeEdge(g.e(eid))
         g.stopTransaction(SUCCESS)
