@@ -75,10 +75,15 @@ class BaseElement(object):
         self.pre_save()
         return self
 
+    def pre_update(self, **values):
+        """ Override this to perform pre-update validation """
+        pass
+
     def update(self, **values):
         """
         performs an update of this element with the given values and returns the saved object
         """
+        self.pre_update(**values)
         for key in values.keys():
             if key not in self._columns:
                 raise TypeError("unrecognized attribute name: '{}'".format(key))
