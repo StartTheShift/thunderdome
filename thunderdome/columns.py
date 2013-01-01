@@ -155,6 +155,8 @@ class Text(Column):
 
     def validate(self, value):
         value = super(Text, self).validate(value)
+        if not isinstance(value, basestring) and value is not None:
+            raise ValidationError('{} is not a string'.format(type(value)))
         if self.max_length:
             if len(value) > self.max_length:
                 raise ValidationError('{} is longer than {} characters'.format(self.column_name, self.max_length))
