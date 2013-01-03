@@ -34,6 +34,9 @@ class BaseElement(object):
     def __eq__(self, other):
         return self.as_dict() == other.as_dict() and self.eid == other.eid
 
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     @classmethod
     def _type_name(cls, manual_name):
         """
@@ -368,7 +371,6 @@ class Vertex(Element):
         self._simple_deletion('inV', label)
         
 
-    
 class EdgeMetaClass(ElementMetaClass):
     def __new__(cls, name, bases, attrs):
         klass = super(EdgeMetaClass, cls).__new__(cls, name, bases, attrs)
