@@ -149,9 +149,9 @@ class Text(Column):
     db_type = 'text'
     
     def __init__(self, *args, **kwargs):
+        self.min_length = kwargs.pop('min_length', 1 if kwargs.get('required', True) else None)
+        self.max_length = kwargs.pop('max_length', None)
         super(Text, self).__init__(*args, **kwargs)
-        self.min_length = kwargs.get('min_length', 1 if self.required else None)
-        self.max_length = kwargs.get('max_length', None)
 
     def validate(self, value):
         value = super(Text, self).validate(value)
@@ -260,8 +260,11 @@ class Decimal(Column):
     
     def to_python(self, value):
         val = super(Decimal, self).to_python(value)
-        return D(val)
+        if val is not None:
+            return D(val)
+
     def to_database(self, value):
         val = super(Decimal, self).to_database(value)
-        return str(val)
+        if val is not None:
+            return str(val)
 
