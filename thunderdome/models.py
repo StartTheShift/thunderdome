@@ -5,7 +5,7 @@ from uuid import UUID
 
 from thunderdome import columns
 from thunderdome.connection import execute_query, ThunderdomeQueryError
-from thunderdome.exceptions import ModelException, ValidationError, DoesNotExist, MultipleObjectsReturned
+from thunderdome.exceptions import ModelException, ValidationError, DoesNotExist, MultipleObjectsReturned, ThunderdomeException
 from thunderdome.gremlin import BaseGremlinMethod, GremlinMethod
 
 #dict of node and edge types for rehydrating results
@@ -72,6 +72,8 @@ class BaseElement(object):
         self.validate()
         
     def save(self):
+        if self.__abstract__:
+            raise ThunderdomeException('cant save abstract elements')
         self.pre_save()
         return self
 
@@ -83,6 +85,8 @@ class BaseElement(object):
         """
         performs an update of this element with the given values and returns the saved object
         """
+        if self.__abstract__:
+            raise ThunderdomeException('cant update abstract elements')
         self.pre_update(**values)
         for key in values.keys():
             if key not in self._columns:
@@ -150,6 +154,9 @@ class ElementMetaClass(type):
         for base in bases:
             for k,v in getattr(base, '_gremlin_methods', {}).items():
                 gremlin_methods.setdefault(k, v)
+
+        #short circuit __abstract__ inheritance
+        attrs['__abstract__'] = attrs.get('__abstract__', False)
                 
         #short circuit path inheritance
         gremlin_path = attrs.get('gremlin_path')
@@ -205,11 +212,12 @@ class Element(BaseElement):
 class VertexMetaClass(ElementMetaClass):
     def __new__(cls, name, bases, attrs):
         klass = super(VertexMetaClass, cls).__new__(cls, name, bases, attrs)
-        
-        element_type = klass.get_element_type()
-        if element_type in vertex_types:
-            raise ElementDefinitionException('{} is already registered as a vertex'.format(element_type))
-        vertex_types[element_type] = klass
+
+        if not klass.__abstract__:
+            element_type = klass.get_element_type()
+            if element_type in vertex_types:
+                raise ElementDefinitionException('{} is already registered as a vertex'.format(element_type))
+            vertex_types[element_type] = klass
         return klass
         
 class Vertex(Element):
@@ -218,6 +226,7 @@ class Vertex(Element):
     from the subclass name, but can optionally be set manually
     """
     __metaclass__ = VertexMetaClass
+    __abstract__ = True
 
     gremlin_path = 'vertex.groovy'
 
@@ -286,6 +295,8 @@ class Vertex(Element):
         return self
     
     def delete(self):
+        if self.__abstract__:
+            raise ThunderdomeException('cant delete abstract elements')
         if self.eid is None:
             return self
         query = """
@@ -361,16 +372,18 @@ class Vertex(Element):
 class EdgeMetaClass(ElementMetaClass):
     def __new__(cls, name, bases, attrs):
         klass = super(EdgeMetaClass, cls).__new__(cls, name, bases, attrs)
-        
-        label = klass.get_label()
-        if label in edge_types:
-            raise ElementDefinitionException('{} is already registered as an edge'.format(label))
-        edge_types[klass.get_label()] = klass
+
+        if not klass.__abstract__:
+            label = klass.get_label()
+            if label in edge_types:
+                raise ElementDefinitionException('{} is already registered as an edge'.format(label))
+            edge_types[klass.get_label()] = klass
         return klass
         
 class Edge(Element):
     
     __metaclass__ = EdgeMetaClass
+    __abstract__ = True
     
     label = None
     
@@ -433,6 +446,8 @@ class Edge(Element):
         return super(Edge, cls).create(outV, inV, *args, **kwargs)
     
     def delete(self):
+        if self.__abstract__:
+            raise ThunderdomeException('cant delete abstract elements')
         if self.eid is None:
             return self
         query = """

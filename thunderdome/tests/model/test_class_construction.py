@@ -1,6 +1,6 @@
 from thunderdome.tests.base import BaseCassEngTestCase
 
-from thunderdome.exceptions import ModelException
+from thunderdome.exceptions import ModelException, ThunderdomeException
 from thunderdome.models import Vertex, Edge
 from thunderdome import columns
 import thunderdome
@@ -79,6 +79,31 @@ class TestManualTableNaming(BaseCassEngTestCase):
     
     def test_proper_table_naming(self):
         assert RenamedTest.get_element_type() == 'manual_name'
+
+class BaseAbstractVertex(thunderdome.Vertex):
+    __abstract__ = True
+    data = thunderdome.Text()
+
+class DerivedAbstractVertex(BaseAbstractVertex): pass
+
+class TestAbstractElementAttribute(BaseCassEngTestCase):
+
+    def test_abstract_property_is_not_inherited(self):
+        assert BaseAbstractVertex.__abstract__
+        assert not DerivedAbstractVertex.__abstract__
+
+    def test_abstract_element_persistence_methods_fail(self):
+        bm = BaseAbstractVertex(data='something')
+
+        with self.assertRaises(ThunderdomeException):
+            bm.save()
+
+        with self.assertRaises(ThunderdomeException):
+            bm.delete()
+
+        with self.assertRaises(ThunderdomeException):
+            bm.update(data='something else')
+
 
 
 
