@@ -170,6 +170,7 @@ class Integer(Column):
 
     def validate(self, value):
         val = super(Integer, self).validate(value)
+        if val is None: return
         try:
             return long(val)
         except (TypeError, ValueError):
