@@ -54,5 +54,21 @@ class TestVertexIO(BaseCassEngTestCase):
         tm.delete()
         with self.assertRaises(TestModel.DoesNotExist):
             tm2 = TestModel.get(vid)
-            
+
+class TestUpdateMethod(BaseCassEngTestCase):
+    def test_success_case(self):
+        """ Tests that the update method works as expected """
+        tm = TestModel.create(count=8, text='123456789')
+        tm2 = tm.update(count=9)
+
+        tm3 = TestModel.get(tm.vid)
+        assert tm2.count == 9
+        assert tm3.count == 9
+
+    def test_unknown_names_raise_exception(self):
+        """ Tests that passing in names for columns that don't exist raises an exception """
+        tm = TestModel.create(count=8, text='123456789')
+        with self.assertRaises(TypeError):
+            tm.update(jon='beard')
+
 

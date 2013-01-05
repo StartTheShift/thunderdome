@@ -1,5 +1,5 @@
 #thunderdome exceptions
-class ThunderdomeException(BaseException): pass
+class ThunderdomeException(Exception): pass
 class ModelException(ThunderdomeException): pass
 class ValidationError(ThunderdomeException): pass
 class DoesNotExist(ThunderdomeException): pass

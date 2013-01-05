@@ -160,14 +160,20 @@ class Text(Column):
     db_type = 'text'
     
     def __init__(self, *args, **kwargs):
-        self.max_length = kwargs.get('max_length', None)
+        self.min_length = kwargs.pop('min_length', 1 if kwargs.get('required', True) else None)
+        self.max_length = kwargs.pop('max_length', None)
         super(Text, self).__init__(*args, **kwargs)
 
     def validate(self, value):
         value = super(Text, self).validate(value)
+        if not isinstance(value, basestring) and value is not None:
+            raise ValidationError('{} is not a string'.format(type(value)))
         if self.max_length:
             if len(value) > self.max_length:
                 raise ValidationError('{} is longer than {} characters'.format(self.column_name, self.max_length))
+        if self.min_length:
+            if len(value) < self.min_length:
+                raise ValidationError('{} is shorter than {} characters'.format(self.column_name, self.min_length))
         return value
 
 class Integer(Column):
@@ -264,8 +270,11 @@ class Decimal(Column):
     
     def to_python(self, value):
         val = super(Decimal, self).to_python(value)
-        return D(val)
+        if val is not None:
+            return D(val)
+
     def to_database(self, value):
         val = super(Decimal, self).to_database(value)
-        return str(val)
+        if val is not None:
+            return str(val)
 

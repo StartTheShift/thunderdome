@@ -5,7 +5,7 @@ from uuid import UUID
 
 from thunderdome import columns
 from thunderdome.connection import execute_query, ThunderdomeQueryError
-from thunderdome.exceptions import ModelException, ValidationError, DoesNotExist, MultipleObjectsReturned
+from thunderdome.exceptions import ModelException, ValidationError, DoesNotExist, MultipleObjectsReturned, ThunderdomeException
 from thunderdome.gremlin import BaseGremlinMethod, GremlinMethod
 
 #dict of node and edge types for rehydrating results
@@ -33,6 +33,9 @@ class BaseElement(object):
 
     def __eq__(self, other):
         return self.as_dict() == other.as_dict() and self.eid == other.eid
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     @classmethod
     def _type_name(cls, manual_name):
@@ -72,8 +75,30 @@ class BaseElement(object):
         self.validate()
         
     def save(self):
+        if self.__abstract__:
+            raise ThunderdomeException('cant save abstract elements')
         self.pre_save()
         return self
+
+    def pre_update(self, **values):
+        """ Override this to perform pre-update validation """
+        pass
+
+    def update(self, **values):
+        """
+        performs an update of this element with the given values and returns the saved object
+        """
+        if self.__abstract__:
+            raise ThunderdomeException('cant update abstract elements')
+        self.pre_update(**values)
+        for key in values.keys():
+            if key not in self._columns:
+                raise TypeError("unrecognized attribute name: '{}'".format(key))
+
+        for k,v in values.items():
+            setattr(self, k, v)
+
+        return self.save()
 
 class ElementMetaClass(type):
 
@@ -132,6 +157,9 @@ class ElementMetaClass(type):
         for base in bases:
             for k,v in getattr(base, '_gremlin_methods', {}).items():
                 gremlin_methods.setdefault(k, v)
+
+        #short circuit __abstract__ inheritance
+        attrs['__abstract__'] = attrs.get('__abstract__', False)
                 
         #short circuit path inheritance
         gremlin_path = attrs.get('gremlin_path')
@@ -179,7 +207,7 @@ class Element(BaseElement):
             return vertex_types[vertex_type](**data)
         elif dtype == 'edge':
             edge_type = data['_label']
-            return edge_types[edge_type](data['_inV'], data['_outV'], **data)
+            return edge_types[edge_type](data['_outV'], data['_inV'], **data)
         else:
             raise TypeError("Can't deserialize '{}'".format(dtype))
     
@@ -187,11 +215,12 @@ class Element(BaseElement):
 class VertexMetaClass(ElementMetaClass):
     def __new__(cls, name, bases, attrs):
         klass = super(VertexMetaClass, cls).__new__(cls, name, bases, attrs)
-        
-        element_type = klass.get_element_type()
-        if element_type in vertex_types:
-            raise ElementDefinitionException('{} is already registered as a vertex'.format(element_type))
-        vertex_types[element_type] = klass
+
+        if not klass.__abstract__:
+            element_type = klass.get_element_type()
+            if element_type in vertex_types:
+                raise ElementDefinitionException('{} is already registered as a vertex'.format(element_type))
+            vertex_types[element_type] = klass
         return klass
         
 class Vertex(Element):
@@ -200,6 +229,7 @@ class Vertex(Element):
     from the subclass name, but can optionally be set manually
     """
     __metaclass__ = VertexMetaClass
+    __abstract__ = True
 
     gremlin_path = 'vertex.groovy'
 
@@ -268,8 +298,10 @@ class Vertex(Element):
         return self
     
     def delete(self):
+        if self.__abstract__:
+            raise ThunderdomeException('cant delete abstract elements')
         if self.eid is None:
-            raise ThunderdomeQueryError("Can't delete vertices that haven't been saved")
+            return self
         query = """
         g.removeVertex(g.v(eid))
         g.stopTransaction(SUCCESS)
@@ -339,20 +371,21 @@ class Vertex(Element):
         self._simple_deletion('inV', label)
         
 
-    
 class EdgeMetaClass(ElementMetaClass):
     def __new__(cls, name, bases, attrs):
         klass = super(EdgeMetaClass, cls).__new__(cls, name, bases, attrs)
-        
-        label = klass.get_label()
-        if label in edge_types:
-            raise ElementDefinitionException('{} is already registered as an edge'.format(label))
-        edge_types[klass.get_label()] = klass
+
+        if not klass.__abstract__:
+            label = klass.get_label()
+            if label in edge_types:
+                raise ElementDefinitionException('{} is already registered as an edge'.format(label))
+            edge_types[klass.get_label()] = klass
         return klass
         
 class Edge(Element):
     
     __metaclass__ = EdgeMetaClass
+    __abstract__ = True
     
     label = None
     
@@ -361,9 +394,9 @@ class Edge(Element):
     _save_edge = GremlinMethod()
     _get_edges_between = GremlinMethod(classmethod=True)
     
-    def __init__(self, inV, outV, **values):
-        self._inV = inV
+    def __init__(self, outV, inV, **values):
         self._outV = outV
+        self._inV = inV
         super(Edge, self).__init__(**values)
         
     @classmethod
@@ -404,19 +437,21 @@ class Edge(Element):
         :param exclusive: if set to True, will not create multiple edges between 2 vertices with the same label
         """
         super(Edge, self).save(*args, **kwargs)
-        return self._save_edge(self._inV,
-                               self._outV,
+        return self._save_edge(self._outV,
+                               self._inV,
                                self.get_label(),
                                self.as_dict(),
                                exclusive=exclusive)[0]
         
     @classmethod
-    def create(cls, inV, outV, *args, **kwargs):
-        return super(Edge, cls).create(inV, outV, *args, **kwargs)
+    def create(cls, outV, inV, *args, **kwargs):
+        return super(Edge, cls).create(outV, inV, *args, **kwargs)
     
     def delete(self):
+        if self.__abstract__:
+            raise ThunderdomeException('cant delete abstract elements')
         if self.eid is None:
-            raise ThunderdomeQueryError("Can't delete vertices that haven't been saved")
+            return self
         query = """
         g.removeEdge(g.e(eid))
         g.stopTransaction(SUCCESS)
