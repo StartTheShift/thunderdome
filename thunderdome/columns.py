@@ -4,8 +4,19 @@ from decimal import Decimal as D
 import re
 import time
 from uuid import uuid1, uuid4
+from uuid import UUID as _UUID
 
 from thunderdome.exceptions import ValidationError
+
+
+class StringComparableUUID(_UUID):
+    """UUID type that can be compared against strings"""
+    
+    def __eq__(self, other):
+        """ Handle string comparisons for UUIDs so people don't have to explicitly cast """
+        if isinstance(other, basestring):
+            return str(self) == other
+        return str(self) == str(other)
 
 class BaseValueManager(object):
 
@@ -196,25 +207,24 @@ class UUID(Column):
     """
     Type 1 or 4 UUID
     """
+
     db_type = 'uuid'
 
     re_uuid = re.compile(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}')
 
-    def __init__(self, default=lambda:uuid4(), **kwargs):
+    def __init__(self, default=lambda:StringComparableUUID(str(uuid4())), **kwargs):
         super(UUID, self).__init__(default=default, **kwargs)
 
     def validate(self, value):
         val = super(UUID, self).validate(value)
-        from uuid import UUID as _UUID
-        if isinstance(val, _UUID): return val
-        if not self.re_uuid.match(val):
+        if isinstance(val, StringComparableUUID): return val
+        if not self.re_uuid.match(str(val)):
             raise ValidationError("{} is not a valid uuid".format(value))
-        return _UUID(val)
+        return StringComparableUUID(val)
     
     def to_python(self, value):
         val = super(UUID, self).to_python(value)
-        from uuid import UUID as _UUID
-        return _UUID(val)
+        return StringComparableUUID(val)
     
     def to_database(self, value):
         val = super(UUID, self).to_database(value)
