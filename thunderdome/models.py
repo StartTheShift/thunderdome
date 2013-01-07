@@ -173,10 +173,11 @@ class ElementMetaClass(type):
         for k,v in attrs.items():
             if isinstance(v, BaseGremlinMethod):
                 gremlin_methods[k] = v
-                if v.classmethod:
-                    attrs[k] = classmethod(wrap_method(v))
-                else:
-                    attrs[k] = wrap_method(v)
+                method = wrap_method(v)
+                attrs[k] = method
+                if v.classmethod: attrs[k] = classmethod(method)
+                if v.property: attrs[k] = property(method)
+
         attrs['_gremlin_methods'] = gremlin_methods
 
         #create the class and add a QuerySet to it

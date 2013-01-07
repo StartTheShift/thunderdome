@@ -1,5 +1,6 @@
 import inspect
 import os.path
+import time
 
 from thunderdome.connection import execute_query
 from thunderdome.exceptions import ThunderdomeException
@@ -8,22 +9,25 @@ from thunderdome.groovy import parse
 class ThunderdomeGremlinException(ThunderdomeException):pass
 
 class BaseGremlinMethod(object):
+    """ Maps a function in a groovy file to a method on a python class """
     
-    def __init__(self, path=None, method_name=None, classmethod=False, default_args={}, transaction=True):
+    def __init__(self, path=None, method_name=None, classmethod=False, property=False, defaults={}, transaction=True):
         """
         :param path: path to the source gremlin file, relative to the file the class is defined in
             absolute paths also work, defaults to gremlin.groovy if left blank
         :param method_name: the name of the function definition in the groovy file.
             defaults to the attribute name this is instantiated on
         :param classmethod: method will behave as a classmethod if this is True, defaults to False
-        :param default_args: default values for arguments
+        :param property: method will behave as a property if this is True, defaults to False
+        :param defaults: default values for arguments
         :param transaction: defaults to True, closes any previous transactions before executing query
         """
         self.is_configured = False
         self.path = path
         self.method_name = method_name
         self.classmethod = classmethod
-        self.default_args = default_args
+        self.property = property
+        self.defaults =defaults
         self.transaction = transaction
         
         self.attr_name = None
@@ -73,10 +77,15 @@ class BaseGremlinMethod(object):
         if not self.classmethod:
             args = [instance.eid] + args
             
-        params = self.default_args.copy()
+        params = self.defaults.copy()
         if len(args + kwargs.values()) > len(self.arg_list):
             raise TypeError('{}() takes {} args, {} given'.format(self.attr_name, len(self.arg_list), len(args)))
-        
+
+        #check for and calculate callable defaults
+        for k,v in params.items():
+            if callable(v):
+                params[k] = v()
+
         arglist = self.arg_list[:]
         for arg in args:
             params[arglist.pop(0)] = arg
@@ -94,18 +103,49 @@ class BaseGremlinMethod(object):
             params[k] = v
             
         #convert graph elements into their eids
+        from datetime import datetime
+        from decimal import Decimal as _Decimal
+        from uuid import UUID as _UUID
         from thunderdome.models import BaseElement
+        from thunderdome.columns import DateTime, Decimal, UUID
+
         for k,v in params.items():
             if isinstance(v, BaseElement):
                 params[k] = v.eid
-                
+            if isinstance(v, datetime):
+                params[k] = DateTime().to_database(v)
+            if isinstance(v, _UUID):
+                params[k] = UUID().to_database(v)
+            if isinstance(v, _Decimal):
+                params[k] = Decimal().to_database(v)
+
         return execute_query(self.function_body, params, transaction=self.transaction)
     
 class GremlinMethod(BaseGremlinMethod):
-    
+    """ Gremlin method that returns a graph element """
+
+
     def __call__(self, instance, *args, **kwargs):
         from thunderdome.models import Element
         results = super(GremlinMethod, self).__call__(instance, *args, **kwargs)
+
         if results is not None:
-            return [Element.deserialize(r) for r in results]
-        
+            rlist = []
+            for result in results:
+                if isinstance(result, dict) and '_id' in result and '_type' in result:
+                    rlist.append(Element.deserialize(result))
+                else:
+                    rlist.append(result)
+            return rlist
+
+class GremlinValue(GremlinMethod):
+    """ Gremlin Method that returns one value """
+    def __call__(self, instance, *args, **kwargs):
+        results = super(GremlinValue, self).__call__(instance, *args, **kwargs)
+
+        if results is None: return
+        if len(results) != 1:
+            raise ThunderdomeGremlinException('GremlinValue requires a single value is returned')
+
+        return results[0]
+
