@@ -74,7 +74,7 @@ def execute_query(query, params={}, transaction=True):
     logger.info(response.content)
     
     if response.status_code != 200:
-        raise ThunderdomeQueryError(response.content)
+        raise ThunderdomeQueryError(response.json()['error'])
 
     return response.json()['results'] 
 
