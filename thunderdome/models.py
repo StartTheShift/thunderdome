@@ -55,27 +55,18 @@ class BaseElement(object):
             cf_name = cf_name.lower()
         return cf_name
 
+    def validate_field(self, field_name, val):
+        return self._columns[field_name].validate(val)
+
     def validate(self):
         """ Cleans and validates the field values """
         for name, col in self._columns.items():
-            pre_name = 'pre_validate_{}'.format(name)
-
-            #get initial val
             val = getattr(self, name)
-
-            #perform custom pre validation
-            if hasattr(self, pre_name):
-                val = getattr(self, pre_name)(val)
-
-            #perform column validation
-            val = col.validate(val)
-
-            #perform post validation
-            post_name = 'validate_{}'.format(name)
-            if hasattr(self, post_name):
-                val = getattr(self, post_name)(val)
-
-            #set final value
+            func_name = 'validate_{}'.format(name)
+            if hasattr(self, func_name):
+                val = getattr(self, func_name)(val)
+            else:
+                val = self.validate_field(name, val)
             setattr(self, name, val)
 
     def as_dict(self):

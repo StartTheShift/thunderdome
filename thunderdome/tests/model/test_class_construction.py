@@ -111,9 +111,10 @@ class TestValidationVertex(Vertex):
     num2    = thunderdome.Integer()
 
     def validate_num(self, value):
+        val = self.validate_field('num', value)
         return 5
 
-    def pre_validate_num2(self, value):
+    def validate_num2(self, value):
         return 5
 
 class TestValidation(BaseCassEngTestCase):
