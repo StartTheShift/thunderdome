@@ -2,7 +2,7 @@ from thunderdome.tests.base import BaseCassEngTestCase
 
 from thunderdome.exceptions import ModelException, ThunderdomeException
 from thunderdome.models import Vertex, Edge
-from thunderdome import columns
+from thunderdome import columns, ValidationError
 import thunderdome
 
 from thunderdome.tests.base import TestModel
@@ -108,8 +108,12 @@ class TestAbstractElementAttribute(BaseCassEngTestCase):
 
 class TestValidationVertex(Vertex):
     num     = thunderdome.Integer()
+    num2    = thunderdome.Integer()
 
     def validate_num(self, value):
+        return 5
+
+    def pre_validate_num2(self, value):
         return 5
 
 class TestValidation(BaseCassEngTestCase):
@@ -117,6 +121,11 @@ class TestValidation(BaseCassEngTestCase):
     def test_custom_validation_method(self):
         v = TestValidationVertex.create(num=6)
         assert v.num == 5
+        assert v.num2 == 5
+
+        with self.assertRaises(ValidationError):
+            TestValidationVertex.create()
+
 
 
 

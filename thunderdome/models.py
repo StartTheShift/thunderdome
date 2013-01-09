@@ -58,10 +58,24 @@ class BaseElement(object):
     def validate(self):
         """ Cleans and validates the field values """
         for name, col in self._columns.items():
-            val = col.validate(getattr(self, name))
-            func_name = 'validate_{}'.format(name)
-            if hasattr(self, func_name):
-                val = getattr(self, func_name)(val)
+            pre_name = 'pre_validate_{}'.format(name)
+
+            #get initial val
+            val = getattr(self, name)
+
+            #perform custom pre validation
+            if hasattr(self, pre_name):
+                val = getattr(self, pre_name)(val)
+
+            #perform column validation
+            val = col.validate(val)
+
+            #perform post validation
+            post_name = 'validate_{}'.format(name)
+            if hasattr(self, post_name):
+                val = getattr(self, post_name)(val)
+
+            #set final value
             setattr(self, name, val)
 
     def as_dict(self):
