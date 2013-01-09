@@ -59,6 +59,9 @@ class BaseElement(object):
         """ Cleans and validates the field values """
         for name, col in self._columns.items():
             val = col.validate(getattr(self, name))
+            func_name = 'validate_{}'.format(name)
+            if hasattr(self, func_name):
+                val = getattr(self, func_name)(val)
             setattr(self, name, val)
 
     def as_dict(self):
@@ -216,6 +219,10 @@ class Element(BaseElement):
     
 class VertexMetaClass(ElementMetaClass):
     def __new__(cls, name, bases, attrs):
+
+        #short circuit element_type inheritance
+        attrs['element_type'] = attrs.pop('element_type', None)
+
         klass = super(VertexMetaClass, cls).__new__(cls, name, bases, attrs)
 
         if not klass.__abstract__:
@@ -280,7 +287,13 @@ class Vertex(Element):
             results = cls.all([vid])
             if len(results) >1:
                 raise cls.MultipleObjectsReturned
-            return results[0]
+
+            result = results[0]
+            if not isinstance(result, cls):
+                raise WrongElementType(
+                    '{} is not an instance or subclass of {}'.format(result.__class__.__name__, cls.__name__)
+                )
+            return result
         except ThunderdomeQueryError:
             raise cls.DoesNotExist
     
@@ -375,6 +388,10 @@ class Vertex(Element):
 
 class EdgeMetaClass(ElementMetaClass):
     def __new__(cls, name, bases, attrs):
+
+        #short circuit element_type inheritance
+        attrs['label'] = attrs.pop('label', None)
+
         klass = super(EdgeMetaClass, cls).__new__(cls, name, bases, attrs)
 
         if not klass.__abstract__:

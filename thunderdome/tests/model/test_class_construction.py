@@ -106,6 +106,17 @@ class TestAbstractElementAttribute(BaseCassEngTestCase):
 
 
 
+class TestValidationVertex(Vertex):
+    num     = thunderdome.Integer()
+
+    def validate_num(self, value):
+        return 5
+
+class TestValidation(BaseCassEngTestCase):
+
+    def test_custom_validation_method(self):
+        v = TestValidationVertex.create(num=6)
+        assert v.num == 5
 
 
 
