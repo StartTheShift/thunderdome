@@ -5,7 +5,7 @@ from uuid import UUID
 
 from thunderdome import columns
 from thunderdome.connection import execute_query, ThunderdomeQueryError
-from thunderdome.exceptions import ModelException, ValidationError, DoesNotExist, MultipleObjectsReturned, ThunderdomeException
+from thunderdome.exceptions import ModelException, ValidationError, DoesNotExist, MultipleObjectsReturned, ThunderdomeException, WrongElementType
 from thunderdome.gremlin import BaseGremlinMethod, GremlinMethod
 
 #dict of node and edge types for rehydrating results
@@ -21,6 +21,7 @@ class BaseElement(object):
     
     class DoesNotExist(DoesNotExist): pass
     class MultipleObjectsReturned(MultipleObjectsReturned): pass
+    class WrongElementType(WrongElementType): pass
 
     def __init__(self, **values):
         self.eid = values.get('_id')
