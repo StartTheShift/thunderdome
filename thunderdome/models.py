@@ -58,16 +58,24 @@ class BaseElement(object):
     def validate_field(self, field_name, val):
         return self._columns[field_name].validate(val)
 
+    def _validate_field(self, name):
+        """
+        Encapsulates the per field validation logic
+        :param name:
+        :return:
+        """
+        val = getattr(self, name)
+        func_name = 'validate_{}'.format(name)
+        if hasattr(self, func_name):
+            val = getattr(self, func_name)(val)
+        else:
+            val = self.validate_field(name, val)
+        setattr(self, name, val)
+
     def validate(self):
         """ Cleans and validates the field values """
-        for name, col in self._columns.items():
-            val = getattr(self, name)
-            func_name = 'validate_{}'.format(name)
-            if hasattr(self, func_name):
-                val = getattr(self, func_name)(val)
-            else:
-                val = self.validate_field(name, val)
-            setattr(self, name, val)
+        for name in self._columns.keys():
+            self._validate_field(name)
 
     def as_dict(self):
         """ Returns a map of column names to cleaned values """
