@@ -4,10 +4,10 @@ from setuptools import setup, find_packages
 #python setup.py register
 #python setup.py sdist upload
 
-version = '0.0.8'
+version = '0.1'
 
 long_desc = """
-thunderdome is a Cassandra CQL ORM for Python in the style of the Django orm and mongoengine
+thunderdome is an Object-Graph Mapper (OGM) for Python
 
 [Documentation](https://thunderdome.readthedocs.org/en/latest/)
 
@@ -23,8 +23,8 @@ thunderdome is a Cassandra CQL ORM for Python in the style of the Django orm and
 setup(
     name='thunderdome',
     version=version,
-    description='Cassandra CQL ORM for Python in the style of the Django orm and mongoengine',
-    dependency_links = ['https://github.com/bdeggleston/thunderdome/archive/{0}.tar.gz#egg=thunderdome-{0}'.format(version)],
+    description='Titan Object-Graph Mapper (OGM)',
+    dependency_links = ['https://github.com/StartTheShift/thunderdome/archive/{0}.tar.gz#egg=thunderdome-{0}'.format(version)],
     long_description=long_desc,
     classifiers = [
         "Development Status :: 3 - Alpha",
@@ -41,7 +41,7 @@ setup(
     install_requires = ['cql'],
     author='Blake Eggleston',
     author_email='bdeggleston@gmail.com',
-    url='https://github.com/bdeggleston/thunderdome',
+    url='https://github.com/StartTheShift/thunderdome',
     license='BSD',
     packages=find_packages(),
     include_package_data=True,
