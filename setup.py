@@ -37,7 +37,7 @@ setup(
         "Topic :: Internet :: WWW/HTTP",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
-    keywords='cassandra,cql,orm',
+    keywords='cassandra,titan,ogm,thunderdome',
     install_requires = ['cql'],
     author='Blake Eggleston',
     author_email='bdeggleston@gmail.com',
