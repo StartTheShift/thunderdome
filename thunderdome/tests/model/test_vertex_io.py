@@ -55,6 +55,16 @@ class TestVertexIO(BaseCassEngTestCase):
         with self.assertRaises(TestModel.DoesNotExist):
             tm2 = TestModel.get(vid)
 
+    def test_reload(self):
+        """ Tests that and instance's reload method does an inplace update of the instance """
+        tm0 = TestModel.create(count=8, text='123456789')
+        tm1 = TestModel.get(tm0.vid)
+        tm1.count = 7
+        tm1.save()
+
+        tm0.reload()
+        assert tm0.count == 7
+
 class TestUpdateMethod(BaseCassEngTestCase):
     def test_success_case(self):
         """ Tests that the update method works as expected """

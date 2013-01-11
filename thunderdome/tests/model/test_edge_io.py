@@ -43,4 +43,14 @@ class TestEdgeIO(BaseCassEngTestCase):
         e1.delete()
         edges = self.v1.outE()
         assert len(edges) == 0
-            
+
+    def test_reload(self):
+        """ Tests that the reload method performs an inplace update of an instance's values """
+        e1 = TestEdge.create(self.v1, self.v2, numbers=3)
+        e2 = TestEdge.get_by_eid(e1.eid)
+        e2.numbers = 5
+        e2.save()
+
+        e1.reload()
+        assert e1.numbers == 5
+

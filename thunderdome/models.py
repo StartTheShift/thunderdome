@@ -27,7 +27,7 @@ class BaseElement(object):
         self.eid = values.get('_id')
         self._values = {}
         for name, column in self._columns.items():
-            value =  values.get(name, None)
+            value = values.get(name, None)
             if value is not None: value = column.to_python(value)
             value_mngr = column.value_manager(self, column, value)
             self._values[name] = value_mngr
@@ -58,24 +58,16 @@ class BaseElement(object):
     def validate_field(self, field_name, val):
         return self._columns[field_name].validate(val)
 
-    def _validate_field(self, name):
-        """
-        Encapsulates the per field validation logic
-        :param name:
-        :return:
-        """
-        val = getattr(self, name)
-        func_name = 'validate_{}'.format(name)
-        if hasattr(self, func_name):
-            val = getattr(self, func_name)(val)
-        else:
-            val = self.validate_field(name, val)
-        setattr(self, name, val)
-
     def validate(self):
         """ Cleans and validates the field values """
         for name in self._columns.keys():
-            self._validate_field(name)
+            func_name = 'validate_{}'.format(name)
+            val = getattr(self, name)
+            if hasattr(self, func_name):
+                val = getattr(self, func_name)(val)
+            else:
+                val = self.validate_field(name, val)
+            setattr(self, name, val)
 
     def as_dict(self):
         """ Returns a map of column names to cleaned values """
@@ -116,6 +108,17 @@ class BaseElement(object):
             setattr(self, k, v)
 
         return self.save()
+
+    def _reload_values(self):
+        raise NotImplementedError
+
+    def reload(self):
+        values = self._reload_values()
+        for name, column in self._columns.items():
+            value = values.get(name, None)
+            if value is not None: value = column.to_python(value)
+            setattr(self, name, value)
+        return self
 
 class ElementMetaClass(type):
 
@@ -293,7 +296,13 @@ class Vertex(Element):
             return {v.vid:v for v in objects}
         
         return objects
-    
+
+    def _reload_values(self):
+        results = execute_query('g.v(eid)', {'eid':self.eid})[0]
+        del results['_id']
+        del results['_type']
+        return results
+
     @classmethod
     def get(cls, vid):
         try:
@@ -474,7 +483,20 @@ class Edge(Element):
                                self.get_label(),
                                self.as_dict(),
                                exclusive=exclusive)[0]
-        
+
+    def _reload_values(self):
+        results = execute_query('g.e(eid)', {'eid':self.eid})[0]
+        del results['_id']
+        del results['_type']
+        return results
+
+    @classmethod
+    def get_by_eid(cls, eid):
+        results = execute_query('g.e(eid)', {'eid':eid})
+        if not results:
+            raise cls.DoesNotExist
+        return Element.deserialize(results[0])
+
     @classmethod
     def create(cls, outV, inV, *args, **kwargs):
         return super(Edge, cls).create(outV, inV, *args, **kwargs)
