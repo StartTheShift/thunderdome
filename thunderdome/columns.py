@@ -188,10 +188,12 @@ class Integer(Column):
             raise ValidationError("{} can't be converted to integral value".format(value))
 
     def to_python(self, value):
-        return self.validate(value)
+        if value is not None:
+            return long(value)
 
     def to_database(self, value):
-        return self.validate(value)
+        if value is not None:
+            return long(value)
 
 class DateTime(Column):
     db_type = 'timestamp'
@@ -261,10 +263,12 @@ class Float(Column):
             raise ValidationError("{} is not a valid float".format(value))
 
     def to_python(self, value):
-        return self.validate(value)
+        if value is not None:
+            return float(value)
 
     def to_database(self, value):
-        return self.validate(value)
+        if value is not None:
+            return float(value)
 
 class Decimal(Column):
     db_type = 'decimal'
@@ -284,7 +288,7 @@ class Dictionary(Column):
     def validate(self, value):
         val = super(Dictionary, self).validate(value)
         if val is not None and not isinstance(value, dict):
-            raise ValidationError('{} is not a valid dict')
+            raise ValidationError('{} is not a valid dict'.format(val))
         return value
 
 class List(Column):
@@ -292,6 +296,6 @@ class List(Column):
     def validate(self, value):
         val = super(List, self).validate(value)
         if val is not None and not isinstance(value, (list, tuple)):
-            raise ValidationError('{} is not a valid list')
+            raise ValidationError('{} is not a valid list'.format(val))
         return value
 
