@@ -1,8 +1,8 @@
 from unittest import skip
 
 from thunderdome.tests.base import BaseCassEngTestCase
-from thunderdome.tests.base import TestModel
-from thunderdome.tests.base import TestEdge
+from thunderdome.tests.models import TestModel, TestEdge
+
 
 class TestEdgeIO(BaseCassEngTestCase):
 
@@ -35,7 +35,7 @@ class TestEdgeIO(BaseCassEngTestCase):
         assert edges[0].numbers == 20
 
     def test_model_deleting_works_properly(self):
-        """
+        """q
         Tests that an instance's delete method deletes the instance
         """
         e1 = TestEdge.create(self.v1, self.v2, numbers=3)

@@ -18,6 +18,9 @@ class BaseElement(object):
     """
     The base model class, don't inherit from this, inherit from Model, defined below
     """
+
+    # When true this will prepend the module name to the type name of the class
+    __use_module_name__ = False
     
     class DoesNotExist(DoesNotExist): pass
     class MultipleObjectsReturned(MultipleObjectsReturned): pass
@@ -53,6 +56,8 @@ class BaseElement(object):
     
             cf_name += ccase(cls.__name__)
             cf_name = cf_name.lower()
+        if cls.__use_module_name__:
+            cf_name = cls.__module__ + '_{}'.format(cf_name)
         return cf_name
 
     def validate_field(self, field_name, val):

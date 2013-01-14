@@ -58,26 +58,3 @@ class TestMethodArgumentHandling(BaseCassEngTestCase):
 
         uu = uuid4()
         assert v1.return_value(uu) == columns.UUID().to_database(uu)
-
-
-
-    @skip
-    def test_returning_non_elements(self):
-        """
-        Tests that returning non vertex/edges works properly
-        """
-
-    @skip
-    def test_proper_argument_handling(self):
-        """
-        Test that supplying too many or too few arguments raises a TypeError
-        """
-
-    @skip
-    def test_proper_kwargs_handling(self):
-        """
-        Tests that supplying a mix of args and kwargs works
-        """
-    
-
-
