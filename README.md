@@ -5,7 +5,10 @@ thunderdome is an object-graph mapper (OGM) designed specifically for use with T
 
 
 ```
+from thunderdome.connection import setup
 import thunderdome
+
+setup(['localhost'])
 
 # simple types
 class Person(thunderdome.Vertex):
