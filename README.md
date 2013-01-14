@@ -63,4 +63,7 @@ physics.inV(Enrollment)
 # Get all classes for a given student
 student.outV(Enrollment)
 
+# Get all moods for a list of teachers
+class_moods = [x.overall_mood for x in prof.outE(Teaches)]
+
 ```
