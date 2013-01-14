@@ -279,3 +279,19 @@ class Decimal(Column):
         if val is not None:
             return str(val)
 
+class Dictionary(Column):
+
+    def validate(self, value):
+        val = super(Dictionary, self).validate(value)
+        if val is not None and not isinstance(value, dict):
+            raise ValidationError('{} is not a valid dict')
+        return value
+
+class List(Column):
+
+    def validate(self, value):
+        val = super(List, self).validate(value)
+        if val is not None and not isinstance(value, (list, tuple)):
+            raise ValidationError('{} is not a valid list')
+        return value
+

@@ -10,12 +10,16 @@ from thunderdome.columns import Ascii
 from thunderdome.columns import Text
 from thunderdome.columns import Integer
 from thunderdome.columns import DateTime
+from thunderdome.columns import Dictionary
 from thunderdome.columns import UUID
 from thunderdome.columns import Boolean
 from thunderdome.columns import Float
+from thunderdome.columns import List
 from thunderdome.columns import Decimal
 
 from thunderdome.models import Vertex
+
+from thunderdome.exceptions import ValidationError
 
 class DatetimeTest(Vertex):
     test_id = Integer(primary_key=True)
@@ -73,6 +77,60 @@ class TestFloat(BaseCassEngTestCase):
         """
         Tests that attempting to save a non numeric value raises a ValidationError
         """
+
+class DictionaryTestVertex(Vertex):
+    test_id = Integer(primary_key=True)
+    map_val = Dictionary()
+
+class TestDictionary(BaseCassEngTestCase):
+
+    def test_dictionary_io(self):
+        """ Tests that dictionary objects are saved and loaded successfully """
+        dict_val = {'blake':31, 'something_else':'that'}
+        v1 = DictionaryTestVertex.create(test_id=5, map_val=dict_val)
+        v2 = DictionaryTestVertex.get(v1.vid)
+
+        assert v2.map_val == dict_val
+
+    def test_validation(self):
+        """ Tests that the Dictionary column validates values properly """
+
+        with self.assertRaises(ValidationError):
+            Dictionary().validate([1,2,3])
+
+        with self.assertRaises(ValidationError):
+            Dictionary().validate('stringy')
+
+        with self.assertRaises(ValidationError):
+            Dictionary().validate(1)
+
+class ListTestVertex(Vertex):
+    test_id = Integer(primary_key=True)
+    list_val = List()
+
+class TestList(BaseCassEngTestCase):
+
+    def test_dictionary_io(self):
+        """ Tests that dictionary objects are saved and loaded successfully """
+        list_val = ['blake', 31, 'something_else', 'that']
+        v1 = ListTestVertex.create(test_id=5, list_val=list_val)
+        v2 = ListTestVertex.get(v1.vid)
+
+        assert v2.list_val == list_val
+
+    def test_validation(self):
+        """ Tests that the Dictionary column validates values properly """
+
+        with self.assertRaises(ValidationError):
+            List().validate({'blake':31, 'something_else':'that'})
+
+        with self.assertRaises(ValidationError):
+            List().validate('stringy')
+
+        with self.assertRaises(ValidationError):
+            List().validate(1)
+
+
 
 
 
