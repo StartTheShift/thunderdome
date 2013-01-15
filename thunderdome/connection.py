@@ -3,11 +3,11 @@
 #http://cassandra.apache.org/doc/cql/CQL.html
 
 from collections import namedtuple
+import httplib
 import json
 import logging
 import Queue
 import random
-import requests
 import textwrap
 
 from thunderdome.exceptions import ThunderdomeException
@@ -65,17 +65,24 @@ def execute_query(query, params={}, transaction=True):
         query = 'g.stopTransaction(FAILURE)\n' + query
 
     host = _hosts[0]
-    url = 'http://{}:{}/graphs/{}/tp/gremlin'.format(host.name, host.port, _graph_name)
+    #url = 'http://{}/graphs/{}/tp/gremlin'.format(host.name, _graph_name)
     data = json.dumps({'script':query, 'params': params})
     headers = {'Content-Type':'application/json', 'Accept':'application/json'}
-    response = requests.post(url, data=data, headers=headers)
-    
-    logger.info(response.request.body)
-    logger.info(response.content)
-    
-    if response.status_code != 200:
-        raise ThunderdomeQueryError(response.json()['error'])
 
-    return response.json()['results'] 
+    conn = httplib.HTTPConnection(host.name, host.port)
+    conn.request("POST", '/graphs/{}/tp/gremlin'.format(_graph_name), data, headers)
+    response = conn.getresponse()
+    content = response.read()
+
+    
+    logger.info(json.dumps(data))
+    logger.info(content)
+
+    response_data = json.loads(content)
+    
+    if response.status != 200:
+        raise ThunderdomeQueryError(response_data['error'])
+
+    return response_data['results'] 
 
 
