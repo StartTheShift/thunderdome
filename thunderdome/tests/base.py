@@ -8,7 +8,7 @@ class BaseCassEngTestCase(TestCase):
     def setUpClass(cls):
         super(BaseCassEngTestCase, cls).setUpClass()
         if not connection._hosts:
-            connection.setup(['localhost'], 'thunderdome')
+            connection.setup(['localhost'], 'grapheffect')
 
     def assertHasAttr(self, obj, attr):
         self.assertTrue(hasattr(obj, attr), 

@@ -1,6 +1,15 @@
 from unittest import skip
 from thunderdome.tests.base import BaseCassEngTestCase
-from thunderdome.tests.models import TestModel
+from thunderdome.tests.models import TestModel, TestEdge
+
+from thunderdome.models import Vertex
+from thunderdome import columns
+
+
+class OtherTestModel(Vertex):
+    count = columns.Integer()
+    text  = columns.Text()
+
 
 class TestVertexIO(BaseCassEngTestCase):
 
@@ -82,3 +91,22 @@ class TestUpdateMethod(BaseCassEngTestCase):
             tm.update(jon='beard')
 
 
+class TestVertexTraversal(BaseCassEngTestCase):
+    
+    def test_outgoing_vertex_traversal(self):
+        """Test that outgoing vertex traversals work."""
+        v1 = TestModel.create(count=1, text='Test1')
+        v2 = TestModel.create(count=2, text='Test2')
+        v3 = OtherTestModel.create(count=3, text='Test3')
+        e1 = TestEdge.create(v1, v2, numbers=12)
+        e1 = TestEdge.create(v1, v3, numbers=13)
+        e2 = TestEdge.create(v2, v3, numbers=14)
+
+        results = v1.outV(TestEdge)
+        assert len(results) == 2
+        assert v2 in results
+        assert v3 in results
+
+        results = v1.outV(TestEdge, allowed_elements=[OtherTestModel])
+        assert len(results) == 1
+        assert v3 in results
