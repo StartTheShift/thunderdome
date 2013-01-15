@@ -89,3 +89,26 @@ for x in all_students:
     print x.name
 
 ```
+
+
+To get thunderdome unit tests running you'll need a rexster server configured with a thunderdome graph.  
+
+```
+<graph>
+    <graph-name>thunderdome</graph-name>
+    <graph-type>com.thinkaurelius.titan.tinkerpop.rexster.TitanGraphConfiguration</graph-type>
+    <graph-read-only>false</graph-read-only>
+    <graph-location>/tmp/thunderdome</graph-location>
+    <properties>
+          <storage.backend>local</storage.backend>
+  <storage.directory>/tmp/thunderdome</storage.directory>
+          <buffer-size>100</buffer-size>
+    </properties>
+
+    <extensions>
+      <allows>
+        <allow>tp:gremlin</allow>
+      </allows>
+    </extensions>
+</graph>
+```

@@ -248,7 +248,7 @@ class VertexMetaClass(ElementMetaClass):
 
         if not klass.__abstract__:
             element_type = klass.get_element_type()
-            if element_type in vertex_types:
+            if element_type in vertex_types and str(vertex_types[element_type]) != str(klass):
                 raise ElementDefinitionException('{} is already registered as a vertex'.format(element_type))
             vertex_types[element_type] = klass
         return klass
@@ -423,7 +423,7 @@ class EdgeMetaClass(ElementMetaClass):
 
         if not klass.__abstract__:
             label = klass.get_label()
-            if label in edge_types:
+            if label in edge_types and str(edge_types[label]) != str(klass):
                 raise ElementDefinitionException('{} is already registered as an edge'.format(label))
             edge_types[klass.get_label()] = klass
         return klass
