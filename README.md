@@ -60,7 +60,7 @@ print prof.vid
 print prof.eid
 
 physics = Class.create(name='Physics 264', credits=6426.3)
-bee_keeping = Class.create(name='Beekeeping', credits=23.3)
+beekeeping = Class.create(name='Beekeeping', credits=23.3)
 
 # Enroll student in both classes
 EnrolledIn.create(student, physics, date_enrolled=datetime.datetime.now())
