@@ -1,6 +1,6 @@
 from unittest import skip
 from thunderdome.tests.base import BaseCassEngTestCase
-from thunderdome.tests.base import TestModel
+from thunderdome.tests.models import TestModel
 
 class TestVertexIO(BaseCassEngTestCase):
 

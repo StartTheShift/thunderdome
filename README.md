@@ -3,6 +3,15 @@ thunderdome
 
 thunderdome is an object-graph mapper (OGM) designed specifically for use with Titan (https://github.com/thinkaurelius/titan)
 
+enrollments.groovy:
+
+```
+def all_students(eid) {
+    g.v(eid).out('teaches').in('enrolled_in')
+}
+```
+
+enrollments.py:
 
 ```
 from thunderdome.connection import setup
@@ -12,10 +21,17 @@ setup(['localhost'])
 
 # simple types
 class Person(thunderdome.Vertex):
+    # All gremlin paths are relative to the path of the file where the class
+    # is defined.
+    gremlin_path = 'enrollments.groovy'
+    
     # vid is added automatically
     name          = thunderdome.Text()
     age           = thunderdome.Integer()
     date_of_birth = thunderdome.DateTime()
+    
+    # Gremlin methods
+    all_students  = thunderdome.GremlinMethod()
 
 
 class Class(thunderdome.Vertex):
@@ -23,7 +39,7 @@ class Class(thunderdome.Vertex):
     credits       = thunderdome.Decimal()
 
 # edges
-class Enrollment(thunderdome.Edge):
+class EnrolledIn(thunderdome.Edge):
     date_enrolled = thunderdome.DateTime()
 
 class Teaches(thunderdome.Edge):
@@ -47,8 +63,8 @@ physics = Class.create(name='Physics 264', credits=6426.3)
 bee_keeping = Class.create(name='Beekeeping', credits=23.3)
 
 # Enroll student in both classes
-Enrollment.create(student, physics, date_enrolled=datetime.datetime.now())
-Enrollment.create(student, beekeeping, date_enrolled=datetime.datetime.now())
+EnrolledIn.create(student, physics, date_enrolled=datetime.datetime.now())
+EnrolledIn.create(student, beekeeping, date_enrolled=datetime.datetime.now())
 
 # Set professor as teacher of both classes
 Teaches.create(prof, physics, overall_mood='Pedantic')
@@ -58,12 +74,18 @@ Teaches.create(prof, beekeeping, overall_mood='Itchy')
 physics.inV(Teaches)
 
 # Get all students for a given class
-physics.inV(Enrollment)
+physics.inV(EnrolledIn)
 
 # Get all classes for a given student
-student.outV(Enrollment)
+student.outV(EnrolledIn)
 
 # Get all moods for a list of teachers
 class_moods = [x.overall_mood for x in prof.outE(Teaches)]
+
+# Execute Gremlin method
+# The eid is passed in automatically by thunderdome
+all_students = prof.all_students()
+for x in all_students:
+    print x.name
 
 ```

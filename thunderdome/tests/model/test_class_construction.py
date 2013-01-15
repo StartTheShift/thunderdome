@@ -5,7 +5,7 @@ from thunderdome.models import Vertex, Edge
 from thunderdome import columns, ValidationError
 import thunderdome
 
-from thunderdome.tests.base import TestModel
+from thunderdome.tests.models import TestModel
 
 class WildDBNames(Vertex):
     content = columns.Text(db_field='words_and_whatnot')
