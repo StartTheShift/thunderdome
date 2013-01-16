@@ -81,7 +81,6 @@ def execute_query(query, params={}, transaction=True):
     response_data = json.loads(content)
     
     if response.status != 200:
-        import ipdb; ipdb.set_trace()
         raise ThunderdomeQueryError(response_data['error'])
 
     return response_data['results'] 

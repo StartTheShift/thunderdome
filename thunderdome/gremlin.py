@@ -1,10 +1,13 @@
 import inspect
 import os.path
 import time
+import logging
 
 from thunderdome.connection import execute_query
 from thunderdome.exceptions import ThunderdomeException
 from thunderdome.groovy import parse
+
+logger = logging.getLogger(__name__)
 
 class ThunderdomeGremlinException(ThunderdomeException):pass
 
@@ -105,7 +108,8 @@ class BaseGremlinMethod(object):
 
         params = self.transform_params_to_database(params)
 
-        return execute_query(self.function_body, params, transaction=self.transaction)
+        tmp = execute_query(self.function_body, params, transaction=self.transaction)
+        return tmp
     
     def transform_params_to_database(self, params):
         #convert graph elements into their eids
