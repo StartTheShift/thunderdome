@@ -39,7 +39,7 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
     keywords='cassandra,titan,ogm,thunderdome',
-    install_requires = ['cql'],
+    install_requires = ['pyparsing'],
     author='Blake Eggleston',
     author_email='bdeggleston@gmail.com',
     url='https://github.com/StartTheShift/thunderdome',
