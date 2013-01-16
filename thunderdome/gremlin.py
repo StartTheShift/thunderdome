@@ -153,7 +153,7 @@ class GremlinValue(GremlinMethod):
 
         if results is None: return
         if len(results) != 1:
-            raise ThunderdomeGremlinException('GremlinValue requires a single value is returned')
+            raise ThunderdomeGremlinException('GremlinValue requires a single value is returned ({} returned)'.format(len(results)))
 
         return results[0]
 
