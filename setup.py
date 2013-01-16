@@ -1,10 +1,11 @@
 from setuptools import setup, find_packages
+from thunderdome import __version__
 
 #next time:
 #python setup.py register
 #python setup.py sdist upload
 
-version = '0.1.3'
+version = __version__
 
 long_desc = """
 thunderdome is an Object-Graph Mapper (OGM) for Python
@@ -38,7 +39,7 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
     keywords='cassandra,titan,ogm,thunderdome',
-    install_requires = ['cql'],
+    install_requires = ['pyparsing'],
     author='Blake Eggleston',
     author_email='bdeggleston@gmail.com',
     url='https://github.com/StartTheShift/thunderdome',
