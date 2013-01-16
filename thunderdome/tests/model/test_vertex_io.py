@@ -1,6 +1,18 @@
 from unittest import skip
 from thunderdome.tests.base import BaseCassEngTestCase
-from thunderdome.tests.models import TestModel
+from thunderdome.tests.models import TestModel, TestEdge
+
+from thunderdome.models import Edge, Vertex
+from thunderdome import columns
+
+
+class OtherTestModel(Vertex):
+    count = columns.Integer()
+    text  = columns.Text()
+
+class OtherTestEdge(Edge):
+    numbers = columns.Integer()
+
 
 class TestVertexIO(BaseCassEngTestCase):
 
@@ -82,3 +94,65 @@ class TestUpdateMethod(BaseCassEngTestCase):
             tm.update(jon='beard')
 
 
+class TestVertexTraversal(BaseCassEngTestCase):
+
+    def setUp(self):
+        super(TestVertexTraversal, self).setUp()
+        self.v1 = TestModel.create(count=1, text='Test1')
+        self.v2 = TestModel.create(count=2, text='Test2')
+        self.v3 = OtherTestModel.create(count=3, text='Test3')
+        
+    def test_outgoing_vertex_traversal(self):
+        """Test that outgoing vertex traversals work."""
+        e1 = TestEdge.create(self.v1, self.v2, numbers=12)
+        e2 = TestEdge.create(self.v1, self.v3, numbers=13)
+        e3 = TestEdge.create(self.v2, self.v3, numbers=14)
+
+        results = self.v1.outV(TestEdge)
+        assert len(results) == 2
+        assert self.v2 in results
+        assert self.v3 in results
+
+        results = self.v1.outV(TestEdge, allowed_elements=[OtherTestModel])
+        assert len(results) == 1
+        assert self.v3 in results
+
+    
+    def test_incoming_vertex_traversal(self):
+        """Test that incoming vertex traversals work."""
+        e1 = TestEdge.create(self.v1, self.v2, numbers=12)
+        e2 = TestEdge.create(self.v1, self.v3, numbers=13)
+        e3 = TestEdge.create(self.v2, self.v3, numbers=14)
+
+        results = self.v2.inV(TestEdge)
+        assert len(results) == 1
+        assert self.v1 in results
+
+        results = self.v2.inV(TestEdge, allowed_elements=[OtherTestModel])
+        assert len(results) == 0
+
+    def test_outgoing_edge_traversals(self):
+        """Test that outgoing edge traversals work."""
+        e1 = TestEdge.create(self.v1, self.v2, numbers=12)
+        e2 = TestEdge.create(self.v1, self.v3, numbers=13)
+        e3 = OtherTestEdge.create(self.v2, self.v3, numbers=14)
+
+        results = self.v2.outE()
+        assert len(results) == 1
+        assert e3 in results
+
+        results = self.v2.outE(allowed_elements=[TestEdge])
+        assert len(results) == 0
+
+    def test_incoming_edge_traversals(self):
+        """Test that incoming edge traversals work."""
+        e1 = TestEdge.create(self.v1, self.v2, numbers=12)
+        e2 = TestEdge.create(self.v1, self.v3, numbers=13)
+        e3 = OtherTestEdge.create(self.v2, self.v3, numbers=14)
+
+        results = self.v2.inE()
+        assert len(results) == 1
+        assert e1 in results
+
+        results = self.v2.inE(allowed_elements=[OtherTestEdge])
+        assert len(results) == 0

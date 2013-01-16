@@ -24,7 +24,7 @@ def _save_vertex(eid, attrs) {
     }
 }
 
-def _traversal(eid, operation, label, page_num, per_page) {
+def _traversal(eid, operation, label, page_num, per_page, element_types) {
     /**
      * performs vertex/edge traversals with optional edge labels and pagination
      * :param eid: vertex eid to start from
@@ -32,6 +32,7 @@ def _traversal(eid, operation, label, page_num, per_page) {
      * :param label: the edge label to filter on
      * :param page_num: the page number to start on (pagination begins at 1)
      * :param per_page: number of objects to return per page
+     * :param element_types: list of allowed element types for results
      */
     results = g.v(eid)
     label_args = label == null ? [] : [label]
@@ -55,6 +56,9 @@ def _traversal(eid, operation, label, page_num, per_page) {
         start = (page_num - 1) * per_page
         end = start + per_page
         results = results[start..<end]
+    }
+    if (element_types != null) {
+      results = results.filter{it.element_type in element_types}
     }
     return results
 }
