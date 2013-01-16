@@ -521,7 +521,6 @@ class Edge(Element):
         results = execute_query('g.e(eid).%s()'%operation, {'eid':self.eid})
         return [Element.deserialize(r) for r in results]
         
-    @property
     def inV(self):
         if self._inV is None:
             self._inV = self._simple_traversal('inV')
@@ -529,7 +528,6 @@ class Edge(Element):
             self._inV = Vertex.get_by_eid(self._inV)
         return self._inV
     
-    @property
     def outV(self):
         if self._outV is None:
             self._outV = self._simple_traversal('outV')
