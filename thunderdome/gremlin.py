@@ -102,25 +102,33 @@ class BaseGremlinMethod(object):
             arglist.pop(arglist.index(k))
             params[k] = v
             
+
+        params = self.transform_params_to_database(params)
+
+        return execute_query(self.function_body, params, transaction=self.transaction)
+    
+    def transform_params_to_database(self, params):
         #convert graph elements into their eids
         from datetime import datetime
         from decimal import Decimal as _Decimal
         from uuid import UUID as _UUID
         from thunderdome.models import BaseElement
         from thunderdome.columns import DateTime, Decimal, UUID
-
-        for k,v in params.items():
-            if isinstance(v, BaseElement):
-                params[k] = v.eid
-            if isinstance(v, datetime):
-                params[k] = DateTime().to_database(v)
-            if isinstance(v, _UUID):
-                params[k] = UUID().to_database(v)
-            if isinstance(v, _Decimal):
-                params[k] = Decimal().to_database(v)
-
-        return execute_query(self.function_body, params, transaction=self.transaction)
-    
+        
+        if isinstance(params, dict):
+            return {k:self.transform_params_to_database(v) for k,v in params.iteritems()}
+        if isinstance(params, list):
+            return [self.transform_params_to_database(x) for x in params]
+        if isinstance(params, BaseElement):
+            return params.eid
+        if isinstance(params, datetime):
+            return DateTime().to_database(params)
+        if isinstance(params, _UUID):
+            return UUID().to_database(params)
+        if isinstance(params, _Decimal):
+            return Decimal().to_database(params)
+        return params
+            
 class GremlinMethod(BaseGremlinMethod):
     """ Gremlin method that returns a graph element """
 
