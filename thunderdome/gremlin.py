@@ -136,19 +136,34 @@ class BaseGremlinMethod(object):
 class GremlinMethod(BaseGremlinMethod):
     """ Gremlin method that returns a graph element """
 
+    @staticmethod
+    def _deserialize(obj):
+        """ recursively deserializes elements returned from rexster """
+        from thunderdome.models import Element
+
+        if isinstance(obj, dict) and '_id' in obj and '_type' in obj:
+            return Element.deserialize(obj)
+        elif isinstance(obj, dict):
+            return {k:GremlinMethod._deserialize(v) for k,v in obj.items()}
+        elif isinstance(obj, list):
+            return [GremlinMethod._deserialize(v) for v in obj]
+        else:
+            return obj
+
 
     def __call__(self, instance, *args, **kwargs):
         from thunderdome.models import Element
         results = super(GremlinMethod, self).__call__(instance, *args, **kwargs)
+        return GremlinMethod._deserialize(results)
 
-        if results is not None:
-            rlist = []
-            for result in results:
-                if isinstance(result, dict) and '_id' in result and '_type' in result:
-                    rlist.append(Element.deserialize(result))
-                else:
-                    rlist.append(result)
-            return rlist
+#        if results is not None:
+#            rlist = []
+#            for result in results:
+#                if isinstance(result, dict) and '_id' in result and '_type' in result:
+#                    rlist.append(Element.deserialize(result))
+#                else:
+#                    rlist.append(result)
+#            return rlist
 
 class GremlinValue(GremlinMethod):
     """ Gremlin Method that returns one value """

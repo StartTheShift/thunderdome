@@ -4,6 +4,7 @@ from thunderdome.tests.base import BaseCassEngTestCase
 
 from thunderdome.tests.models import TestModel, TestEdge
 
+from thunderdome import gremlin
 from thunderdome import models
 from thunderdome.models import Edge, Vertex
 from thunderdome import columns
@@ -79,6 +80,52 @@ class TestVertexIO(BaseCassEngTestCase):
 
         tm0.reload()
         assert tm0.count == 7
+
+class DeserializationTestModel(Vertex):
+    count = columns.Integer()
+    text  = columns.Text()
+
+    gremlin_path = 'deserialize.groovy'
+
+    get_map = gremlin.GremlinValue()
+    get_list = gremlin.GremlinMethod()
+
+class TestNestedDeserialization(BaseCassEngTestCase):
+    """
+    Tests that vertices are properly deserialized when nested in map and list data structures
+    """
+
+    def test_map_deserialization(self):
+        """
+        Tests that elements nested in maps are properly deserialized
+        """
+        
+        original = DeserializationTestModel.create(count=5, text='happy')
+        nested = original.get_map()
+
+        assert isinstance(nested, dict)
+        assert nested['vertex'] == original
+        assert nested['number'] == 5
+
+    def test_list_deserialization(self):
+        """
+        Tests that elements nested in lists are properly deserialized
+        """
+        
+        original = DeserializationTestModel.create(count=5, text='happy')
+        nested = original.get_list()
+
+        assert isinstance(nested, list)
+        assert nested[0] == None
+        assert nested[1] == 0
+        assert nested[2] == 1
+
+        assert isinstance(nested[3], list)
+        assert nested[3][0] == 2
+        assert nested[3][1] == original
+        assert nested[3][2] == 3
+
+        assert nested[4] == 5
 
 class TestUpdateMethod(BaseCassEngTestCase):
     def test_success_case(self):
