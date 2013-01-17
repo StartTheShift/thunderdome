@@ -156,15 +156,6 @@ class GremlinMethod(BaseGremlinMethod):
         results = super(GremlinMethod, self).__call__(instance, *args, **kwargs)
         return GremlinMethod._deserialize(results)
 
-#        if results is not None:
-#            rlist = []
-#            for result in results:
-#                if isinstance(result, dict) and '_id' in result and '_type' in result:
-#                    rlist.append(Element.deserialize(result))
-#                else:
-#                    rlist.append(result)
-#            return rlist
-
 class GremlinValue(GremlinMethod):
     """ Gremlin Method that returns one value """
     def __call__(self, instance, *args, **kwargs):

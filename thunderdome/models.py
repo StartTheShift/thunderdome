@@ -36,6 +36,7 @@ class BaseElement(object):
             self._values[name] = value_mngr
 
     def __eq__(self, other):
+        if not isinstance(other, BaseElement): return False
         return self.as_dict() == other.as_dict() and self.eid == other.eid
 
     def __ne__(self, other):
