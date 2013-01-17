@@ -287,7 +287,8 @@ class Vertex(Element):
         
         if not _hosts: return
         for column in cls._columns.values():
-            create_key_index(column.db_field_name)
+            if column.index or _index_all_fields:
+                create_key_index(column.db_field_name)
     
     @classmethod
     def get_element_type(cls):

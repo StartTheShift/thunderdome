@@ -243,13 +243,13 @@ class TestIndexCreation(BaseCassEngTestCase):
         class TestIndexCreationCallTestVertex(Vertex):
             col1 = columns.Text(index=True)
             col2 = columns.Text(index=True, db_field='____column')
+            col3 = columns.Text(db_field='____column3')
 
-        TestIndexCreationCallTestVertex(col1='2', col2='3')
-
-        assert len(self.index_calls) == 3
-        assert 'vid' in self.index_calls
+        assert len(self.index_calls) == 2
+        assert 'vid' not in self.index_calls
         assert 'col1' in self.index_calls
         assert '____column' in self.index_calls
+        assert '____column3' not in self.index_calls
 
         connection._index_all_fields = True
         self.index_calls = []
@@ -258,3 +258,7 @@ class TestIndexCreation(BaseCassEngTestCase):
             col1 = columns.Text()
             col2 = columns.Text(db_field='____column')
 
+        assert len(self.index_calls) == 3
+        assert 'vid' in self.index_calls
+        assert 'col1' in self.index_calls
+        assert '____column' in self.index_calls
