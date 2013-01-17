@@ -72,7 +72,7 @@ class TestModelClassFunction(BaseCassEngTestCase):
 class RenamedTest(thunderdome.Vertex):
     element_type = 'manual_name'
     
-    id = thunderdome.UUID(primary_key=True)
+    vid = thunderdome.UUID(primary_key=True)
     data = thunderdome.Text()
         
 class TestManualTableNaming(BaseCassEngTestCase):

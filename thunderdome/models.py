@@ -4,7 +4,7 @@ import re
 from uuid import UUID
 
 from thunderdome import columns
-from thunderdome.connection import execute_query, ThunderdomeQueryError
+from thunderdome.connection import execute_query, create_key_index, ThunderdomeQueryError
 from thunderdome.exceptions import ModelException, ValidationError, DoesNotExist, MultipleObjectsReturned, ThunderdomeException, WrongElementType
 from thunderdome.gremlin import BaseGremlinMethod, GremlinMethod
 
@@ -251,6 +251,10 @@ class VertexMetaClass(ElementMetaClass):
             if element_type in vertex_types and str(vertex_types[element_type]) != str(klass):
                 raise ElementDefinitionException('{} is already registered as a vertex'.format(element_type))
             vertex_types[element_type] = klass
+
+            #index requested indexed columns
+            klass._create_indices()
+
         return klass
         
 class Vertex(Element):
@@ -271,6 +275,18 @@ class Vertex(Element):
     vid = columns.UUID()
     
     element_type = None
+
+    @classmethod
+    def _create_indices(cls):
+        """
+        Creates this model's indices. This will be skipped if connection.setup hasn't been
+        called, but connection.setup calls this method on existing vertices
+        """
+        from thunderdome.connection import _hosts, _index_all_fields, create_key_index
+        
+        if not _hosts: return
+        for column in cls._columns.values():
+            create_key_index(column.db_field_name)
     
     @classmethod
     def get_element_type(cls):
@@ -538,6 +554,10 @@ class Edge(Element):
     
     __metaclass__ = EdgeMetaClass
     __abstract__ = True
+
+    # if set to True, no more than one edge will
+    # be created between two vertices
+    __exclusive__ = False
     
     label = None
     
@@ -584,7 +604,7 @@ class Edge(Element):
                 raise ValidationError('out vertex must be set before saving new edges')
         super(Edge, self).validate()
         
-    def save(self, exclusive=True, *args, **kwargs):
+    def save(self, *args, **kwargs):
         """
         :param exclusive: if set to True, will not create multiple edges between 2 vertices with the same label
         """
@@ -593,7 +613,7 @@ class Edge(Element):
                                self._inV,
                                self.get_label(),
                                self.as_dict(),
-                               exclusive=exclusive)[0]
+                               exclusive=self.__exclusive__)[0]
 
     def _reload_values(self):
         results = execute_query('g.e(eid)', {'eid':self.eid})[0]
@@ -627,6 +647,7 @@ class Edge(Element):
         results = execute_query('g.e(eid).%s()'%operation, {'eid':self.eid})
         return [Element.deserialize(r) for r in results]
         
+    @property
     def inV(self):
         if self._inV is None:
             self._inV = self._simple_traversal('inV')
@@ -634,6 +655,7 @@ class Edge(Element):
             self._inV = Vertex.get_by_eid(self._inV)
         return self._inV
     
+    @property
     def outV(self):
         if self._outV is None:
             self._outV = self._simple_traversal('outV')

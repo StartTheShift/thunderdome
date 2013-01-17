@@ -1,7 +1,10 @@
 from unittest import skip
+from thunderdome import connection 
 from thunderdome.tests.base import BaseCassEngTestCase
+
 from thunderdome.tests.models import TestModel, TestEdge
 
+from thunderdome import models
 from thunderdome.models import Edge, Vertex
 from thunderdome import columns
 
@@ -156,3 +159,55 @@ class TestVertexTraversal(BaseCassEngTestCase):
 
         results = self.v2.inE(allowed_elements=[OtherTestEdge])
         assert len(results) == 0
+
+class TestIndexCreation(BaseCassEngTestCase):
+    """
+    Tests that automatic index creation works as expected
+    """
+    def setUp(self):
+        super(TestIndexCreation, self).setUp()
+        self.old_create_index = connection.create_key_index
+        self.index_calls = []
+        def new_create_index(name):
+            #fire blanks
+            self.index_calls.append(name)
+            #return self.old_create_index(name)
+        connection.create_key_index = new_create_index
+
+        self.old_vertex_types = models.vertex_types
+        models.vertex_types = {}
+
+        self.old_index_setting = connection._index_all_fields
+
+    def tearDown(self):
+        super(TestIndexCreation, self).tearDown()
+        models.vertex_types = self.old_vertex_types
+        connection._index_all_fields = self.old_index_setting
+        connection.create_key_index = self.old_create_index 
+
+    def test_create_index_is_called(self):
+        """
+        Tests that create_key_index is called when defining indexed columns
+        """
+        assert len(self.index_calls) == 0
+
+        connection._index_all_fields = False
+        
+        class TestIndexCreationCallTestVertex(Vertex):
+            col1 = columns.Text(index=True)
+            col2 = columns.Text(index=True, db_field='____column')
+
+        TestIndexCreationCallTestVertex(col1='2', col2='3')
+
+        assert len(self.index_calls) == 3
+        assert 'vid' in self.index_calls
+        assert 'col1' in self.index_calls
+        assert '____column' in self.index_calls
+
+        connection._index_all_fields = True
+        self.index_calls = []
+
+        class TestIndexCreationCallTestVertex2(Vertex):
+            col1 = columns.Text()
+            col2 = columns.Text(db_field='____column')
+
