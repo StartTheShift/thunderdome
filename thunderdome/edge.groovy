@@ -13,9 +13,9 @@ def _save_edge(eid, outV, inV, label, attrs, exclusive) {
 		try {
 			e = g.e(eid)
 		} catch (err) {
-			existing = g.v(inV).out(label).filter{it.id == outV}
-			if(existing.count() > 0 && exclusive) {
-				e = existing[0]
+			existing = g.v(inV).outE(label).as('edge').inV().filter{it.id == outV}.back('edge').toList()
+			if(existing.size() > 0 && exclusive) {
+				e = existing.first()
 			} else {
 				e = g.addEdge(g.v(outV), g.v(inV), label)
 			}

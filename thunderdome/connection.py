@@ -23,20 +23,35 @@ _host_idx = 0
 _graph_name = None
 _username = None
 _password = None
+_index_all_fields = True
 
-def setup(hosts, graph_name, username=None, password=None):
+def create_key_index(name):
     """
-    Records the hosts and connects to one of them
+    Creates a key index if it does not already exist
+    """
+    existing = execute_query('g.getIndexedKeys(Vertex.class)')
+    if name not in existing:
+        execute_query(
+            "g.createKeyIndex(keyname, Vertex.class); g.stopTransaction(SUCCESS)",
+            {'keyname':name}, transaction=False)
+
+def setup(hosts, graph_name, username=None, password=None, index_all_fields=True):
+    """
+    Records the hosts and connects to one of 
 
     :param hosts: list of hosts, strings in the <hostname>:<port>, or just <hostname>
+    :param graph_name:
+    :param index_all_fields: all vertex fields will be indexed if this is set to True, otherwise they must be set manually
     """
     global _hosts
     global _graph_name
     global _username
     global _password
+    global _index_all_fields
     _graph_name = graph_name
     _username = username
     _password = password
+    _index_all_fields = index_all_fields
     
     for host in hosts:
         host = host.strip()
@@ -52,12 +67,13 @@ def setup(hosts, graph_name, username=None, password=None):
         raise ThunderdomeConnectionError("At least one host required")
 
     random.shuffle(_hosts)
-    results = execute_query('g.getIndexedKeys(Vertex.class)')
     for idx in ['vid', 'element_type']:
-        if idx not in results:
-            execute_query(
-                "g.createKeyIndex(keyname, Vertex.class); g.stopTransaction(SUCCESS)",
-                {'keyname':idx}, transaction=False)
+        create_key_index(idx)
+
+    #index any models that have already been defined
+    from thunderdome.models import vertex_types
+    for klass in vertex_types.values():
+        klass._create_indices()
     
     
 def execute_query(query, params={}, transaction=True):

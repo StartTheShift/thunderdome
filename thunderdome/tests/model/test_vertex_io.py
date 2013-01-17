@@ -1,7 +1,11 @@
 from unittest import skip
+from thunderdome import connection 
 from thunderdome.tests.base import BaseCassEngTestCase
+
 from thunderdome.tests.models import TestModel, TestEdge
 
+from thunderdome import gremlin
+from thunderdome import models
 from thunderdome.models import Edge, Vertex
 from thunderdome import columns
 
@@ -76,6 +80,52 @@ class TestVertexIO(BaseCassEngTestCase):
 
         tm0.reload()
         assert tm0.count == 7
+
+class DeserializationTestModel(Vertex):
+    count = columns.Integer()
+    text  = columns.Text()
+
+    gremlin_path = 'deserialize.groovy'
+
+    get_map = gremlin.GremlinValue()
+    get_list = gremlin.GremlinMethod()
+
+class TestNestedDeserialization(BaseCassEngTestCase):
+    """
+    Tests that vertices are properly deserialized when nested in map and list data structures
+    """
+
+    def test_map_deserialization(self):
+        """
+        Tests that elements nested in maps are properly deserialized
+        """
+        
+        original = DeserializationTestModel.create(count=5, text='happy')
+        nested = original.get_map()
+
+        assert isinstance(nested, dict)
+        assert nested['vertex'] == original
+        assert nested['number'] == 5
+
+    def test_list_deserialization(self):
+        """
+        Tests that elements nested in lists are properly deserialized
+        """
+        
+        original = DeserializationTestModel.create(count=5, text='happy')
+        nested = original.get_list()
+
+        assert isinstance(nested, list)
+        assert nested[0] == None
+        assert nested[1] == 0
+        assert nested[2] == 1
+
+        assert isinstance(nested[3], list)
+        assert nested[3][0] == 2
+        assert nested[3][1] == original
+        assert nested[3][2] == 3
+
+        assert nested[4] == 5
 
 class TestUpdateMethod(BaseCassEngTestCase):
     def test_success_case(self):
@@ -156,3 +206,55 @@ class TestVertexTraversal(BaseCassEngTestCase):
 
         results = self.v2.inE(allowed_elements=[OtherTestEdge])
         assert len(results) == 0
+
+class TestIndexCreation(BaseCassEngTestCase):
+    """
+    Tests that automatic index creation works as expected
+    """
+    def setUp(self):
+        super(TestIndexCreation, self).setUp()
+        self.old_create_index = connection.create_key_index
+        self.index_calls = []
+        def new_create_index(name):
+            #fire blanks
+            self.index_calls.append(name)
+            #return self.old_create_index(name)
+        connection.create_key_index = new_create_index
+
+        self.old_vertex_types = models.vertex_types
+        models.vertex_types = {}
+
+        self.old_index_setting = connection._index_all_fields
+
+    def tearDown(self):
+        super(TestIndexCreation, self).tearDown()
+        models.vertex_types = self.old_vertex_types
+        connection._index_all_fields = self.old_index_setting
+        connection.create_key_index = self.old_create_index 
+
+    def test_create_index_is_called(self):
+        """
+        Tests that create_key_index is called when defining indexed columns
+        """
+        assert len(self.index_calls) == 0
+
+        connection._index_all_fields = False
+        
+        class TestIndexCreationCallTestVertex(Vertex):
+            col1 = columns.Text(index=True)
+            col2 = columns.Text(index=True, db_field='____column')
+
+        TestIndexCreationCallTestVertex(col1='2', col2='3')
+
+        assert len(self.index_calls) == 3
+        assert 'vid' in self.index_calls
+        assert 'col1' in self.index_calls
+        assert '____column' in self.index_calls
+
+        connection._index_all_fields = True
+        self.index_calls = []
+
+        class TestIndexCreationCallTestVertex2(Vertex):
+            col1 = columns.Text()
+            col2 = columns.Text(db_field='____column')
+
