@@ -37,11 +37,19 @@ def create_key_index(name):
 
 def setup(hosts, graph_name, username=None, password=None, index_all_fields=True):
     """
-    Records the hosts and connects to one of 
+    Records the hosts and connects to one of them.
 
-    :param hosts: list of hosts, strings in the <hostname>:<port>, or just <hostname>
-    :param graph_name:
-    :param index_all_fields: all vertex fields will be indexed if this is set to True, otherwise they must be set manually
+    :param hosts: list of hosts, strings in the <hostname>:<port> or just <hostname> format
+    :type hosts: str
+    :param graph_name: The name of the graph as defined in the rexster.xml
+    :type graph_name: str
+    :param username: The username for the rexster server
+    :type username: str
+    :param password: The password for the rexster server
+    :type password: str
+    :param index_all_fields: Toggle automatic indexing of all vertex fields
+    :type index_all_fields: boolean
+
     """
     global _hosts
     global _graph_name

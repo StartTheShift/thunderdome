@@ -17,7 +17,7 @@ enrollments.py:
 from thunderdome.connection import setup
 import thunderdome
 
-setup(['localhost'])
+setup(['localhost'], 'mygraph')
 
 # simple types
 class Person(thunderdome.Vertex):
