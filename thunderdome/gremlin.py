@@ -6,6 +6,8 @@ import logging
 from thunderdome.connection import execute_query
 from thunderdome.exceptions import ThunderdomeException
 from thunderdome.groovy import parse
+from twisted.persisted.aot import Instance
+from containers import Table
 
 logger = logging.getLogger(__name__)
 
@@ -166,4 +168,11 @@ class GremlinValue(GremlinMethod):
             raise ThunderdomeGremlinException('GremlinValue requires a single value is returned ({} returned)'.format(len(results)))
 
         return results[0]
+
+class GremlinTable(GremlinMethod):
+    def __call__(self, instance, *args, **kwargs):
+        results = super(GremlinValue, self).__call__(instance, *args, **kwargs)
+        if results is None: return
+        return Table(results)
+        
 
