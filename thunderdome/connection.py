@@ -24,16 +24,19 @@ _graph_name = None
 _username = None
 _password = None
 _index_all_fields = True
+_existing_indices = None
 
 def create_key_index(name):
     """
     Creates a key index if it does not already exist
     """
-    existing = execute_query('g.getIndexedKeys(Vertex.class)')
-    if name not in existing:
+    global _existing_indices
+    _existing_indices = _existing_indices or execute_query('g.getIndexedKeys(Vertex.class)')
+    if name not in _existing_indices:
         execute_query(
             "g.createKeyIndex(keyname, Vertex.class); g.stopTransaction(SUCCESS)",
             {'keyname':name}, transaction=False)
+        _existing_indices = None
 
 def setup(hosts, graph_name, username=None, password=None, index_all_fields=True):
     """
