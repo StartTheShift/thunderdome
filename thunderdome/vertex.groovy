@@ -53,7 +53,7 @@ def _traversal(eid, operation, label, page_num, per_page, element_types) {
             results = results.bothE(*label_args)
             break
         case "bothV":
-            results = results.bothV(*label_args)
+            results = results.both(*label_args)
             break
         default:
             throw NamingException()
