@@ -226,14 +226,13 @@ class UUID(Column):
 
     def validate(self, value):
         val = super(UUID, self).validate(value)
-        if isinstance(val, StringComparableUUID): return val
         if not self.re_uuid.match(str(val)):
             raise ValidationError("{} is not a valid uuid".format(value))
-        return StringComparableUUID(val)
+        return val
     
     def to_python(self, value):
         val = super(UUID, self).to_python(value)
-        return StringComparableUUID(val)
+        return str(val)
     
     def to_database(self, value):
         val = super(UUID, self).to_database(value)
