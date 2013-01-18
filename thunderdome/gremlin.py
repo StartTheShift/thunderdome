@@ -6,7 +6,6 @@ import logging
 from thunderdome.connection import execute_query
 from thunderdome.exceptions import ThunderdomeException
 from thunderdome.groovy import parse
-from twisted.persisted.aot import Instance
 from containers import Table
 
 logger = logging.getLogger(__name__)

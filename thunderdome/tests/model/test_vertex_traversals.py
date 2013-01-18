@@ -43,7 +43,7 @@ class TestVertexTraversals(BaseCassEngTestCase):
         cls.blake_in_theoretics = EnrolledIn.create(cls.blake, cls.theoretics, date_enrolled=datetime.now())
 
         cls.blake_beekeeping = TaughtBy.create(cls.beekeeping, cls.blake, overall_mood='Pedantic')
-        cls.jon_physics = TaughtBy.create(cls.physics, cls.jon, overall_mood='Stuffy')
+        cls.jon_physics = TaughtBy.create(cls.physics, cls.jon, overall_mood='Creepy')
         cls.eric_theoretics = TaughtBy.create(cls.theoretics, cls.eric, overall_mood='Obtuse')
         
     def test_inV_works(self):
@@ -71,6 +71,12 @@ class TestVertexTraversals(BaseCassEngTestCase):
         results = self.blake.inV()
         assert len(results) == 1
         assert self.beekeeping in results
+
+    def test_inE_traversals(self):
+        """Test that inE traversals work as expected"""
+        results = self.jon.inE()
+        assert len(results) == 1
+        assert self.jon_physics in results
 
     def test_bothE_traversals(self):
         """Test that bothE traversals works"""
