@@ -11,5 +11,9 @@ class GroovyScannerTest(TestCase):
     def test_parsing_complicated_function(self):
         groovy_file = os.path.join(os.path.dirname(__file__), 'test.groovy')
         result = parse(groovy_file)
-        import ipdb; ipdb.set_trace()
         assert len(result[6].body.split('\n')) == 8
+
+        result_map = {x.name: x for x in result}
+        assert 'get_self' in result_map
+        assert 'return_value' in result_map
+        assert 'long_func' in result_map
