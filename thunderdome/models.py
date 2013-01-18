@@ -524,6 +524,55 @@ class Vertex(Element):
                                       per_page,
                                       allowed_elements)
 
+    def bothE(self,
+              label=None,
+              page_num=None,
+              per_page=None,
+              allowed_elements=None):
+        """
+        Return a list of edges both incoming and outgoing from this vertex.
+
+        :param label: The edge label to be traversed (optional)
+        :type label: str or BaseEdge or None
+        :param page_num: The number of the page to start returning results at
+        :type page_num: int or None
+        :param per_page: The maximum number of results to return
+        :type per_page: int or None
+        :param allowed_elements: A list of allowed element types
+        :type allowed_elements: list
+        
+        """
+        return self._simple_traversal('bothE',
+                                      label,
+                                      page_num,
+                                      per_page,
+                                      allowed_elements)
+    
+    def bothV(self,
+              label=None,
+              page_num=None,
+              per_page=None,
+              allowed_elements=None):
+        """
+        Return a list of vertices both incoming and outgoing from this vertex.
+
+        :param label: The edge label to be traversed (optional)
+        :type label: str or BaseEdge or None
+        :param page_num: The number of the page to start returning results at
+        :type page_num: int or None
+        :param per_page: The maximum number of results to return
+        :type per_page: int or None
+        :param allowed_elements: A list of allowed element types
+        :type allowed_elements: list
+        
+        """
+        return self._simple_traversal('bothV',
+                                      label,
+                                      page_num,
+                                      per_page,
+                                      allowed_elements)
+
+
     def delete_outE(self, label=None):
         self._simple_deletion('outE', label)
 
