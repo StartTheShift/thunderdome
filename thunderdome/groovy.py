@@ -63,7 +63,7 @@ def parse(file):
         return _parsed_file_cache[file]
     
     FuncDefnRegexp = r'^def.*\{'
-    FuncEndRegexp = r'^\}$'
+    FuncEndRegexp = r'^\}.*$'
     with open(file, 'r') as f:
         data = f.read()
     file_lines = data.split("\n")
