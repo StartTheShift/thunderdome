@@ -170,8 +170,6 @@ class GremlinValue(GremlinMethod):
 
 class GremlinTable(GremlinMethod):
     def __call__(self, instance, *args, **kwargs):
-        results = super(GremlinValue, self).__call__(instance, *args, **kwargs)
+        results = super(GremlinMethod, self).__call__(instance, *args, **kwargs)
         if results is None: return
         return Table(results)
-        
-
