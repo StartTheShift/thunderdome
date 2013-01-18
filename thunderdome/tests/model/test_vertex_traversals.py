@@ -78,6 +78,18 @@ class TestVertexTraversals(BaseCassEngTestCase):
         assert len(results) == 1
         assert self.jon_physics in results
 
+    def test_outV_traversals(self):
+        """Test that outV traversals work as expected"""
+        results = self.eric.outV()
+        assert len(results) == 1
+        assert self.physics in results
+
+    def test_outE_traverals(self):
+        """Test that outE traversals work as expected"""
+        results = self.blake.outE()
+        assert len(results) == 1
+        assert self.blake_in_theoretics in results
+
     def test_bothE_traversals(self):
         """Test that bothE traversals works"""
         results = self.jon.bothE()
