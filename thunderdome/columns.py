@@ -166,6 +166,10 @@ class Text(Column):
 
     def validate(self, value):
         value = super(Text, self).validate(value)
+        # we've already done the required check in validate
+        if value is None:
+            return None
+        
         if not isinstance(value, basestring) and value is not None:
             raise ValidationError('{} is not a string'.format(type(value)))
         if self.max_length:
@@ -226,6 +230,8 @@ class UUID(Column):
 
     def validate(self, value):
         val = super(UUID, self).validate(value)
+        
+        if val is None: return None # if required = False and not given
         if not self.re_uuid.match(str(val)):
             raise ValidationError("{} is not a valid uuid".format(value))
         return val
@@ -256,6 +262,8 @@ class Float(Column):
         super(Float, self).__init__(**kwargs)
 
     def validate(self, value):
+        val = super(Float, self).validate(value)
+        if val is None: return None # required = False
         try:
             return float(value)
         except (TypeError, ValueError):
@@ -286,15 +294,17 @@ class Dictionary(Column):
 
     def validate(self, value):
         val = super(Dictionary, self).validate(value)
-        if val is not None and not isinstance(value, dict):
+        if val is None: return None # required = False
+        if not isinstance(val, dict):
             raise ValidationError('{} is not a valid dict'.format(val))
-        return value
+        return val
 
 class List(Column):
 
     def validate(self, value):
         val = super(List, self).validate(value)
-        if val is not None and not isinstance(value, (list, tuple)):
+        if val is None: return None # required = False
+        if not isinstance(val, (list, tuple)):
             raise ValidationError('{} is not a valid list'.format(val))
-        return value
+        return val
 
