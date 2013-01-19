@@ -57,7 +57,7 @@ class Column(object):
 
     instance_counter = 0
 
-    def __init__(self, primary_key=False, index=False, db_field=None, default=None, required=True):
+    def __init__(self, primary_key=False, index=False, db_field=None, default=None, required=False):
         """
         :param primary_key: bool flag, indicates this column is a primary key. The first primary key defined
         on a model is the partition key, all others are cluster keys

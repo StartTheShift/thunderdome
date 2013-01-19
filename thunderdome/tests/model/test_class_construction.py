@@ -107,8 +107,8 @@ class TestAbstractElementAttribute(BaseCassEngTestCase):
 
 
 class TestValidationVertex(Vertex):
-    num     = thunderdome.Integer()
-    num2    = thunderdome.Integer()
+    num     = thunderdome.Integer(required=True)
+    num2    = thunderdome.Integer(required=True)
 
     def validate_num(self, value):
         val = self.validate_field('num', value)
