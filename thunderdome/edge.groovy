@@ -13,7 +13,7 @@ def _save_edge(eid, outV, inV, label, attrs, exclusive) {
 		try {
 			e = g.e(eid)
 		} catch (err) {
-			existing = g.v(inV).outE(label).as('edge').inV().filter{it.id == outV}.back('edge').toList()
+			existing = g.v(outV).outE(label).as('edge').inV().filter{it.id == inV}.back('edge').toList()
 			if(existing.size() > 0 && exclusive) {
 				e = existing.first()
 			} else {
