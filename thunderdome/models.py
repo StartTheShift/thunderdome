@@ -373,8 +373,8 @@ class Vertex(Element):
     def _simple_traversal(self,
                           operation,
                           label,
-                          page_num=None,
-                          per_page=None,
+                          limit=None,
+                          offset=None,
                           allowed_elements=None):
         """
         Perform simple graph database traversals with ubiquitous pagination.
@@ -405,10 +405,16 @@ class Vertex(Element):
                 elif issubclass(e, Edge):
                     allowed_elts += [e.get_label()]
 
+        if limit is not None and offset is not None:
+            start = offset
+            end = offset + limit
+        else:
+            start = end = None
+        
         return self._traversal(operation,
                                label,
-                               page_num,
-                               per_page,
+                               start,
+                               end,
                                allowed_elts)
 
     def _simple_deletion(self, operation, label):
@@ -430,8 +436,8 @@ class Vertex(Element):
 
     def outV(self,
              label=None,
-             page_num=None,
-             per_page=None,
+             limit=None,
+             offset=None,
              allowed_elements=None):
         """
         Return a list of vertices reached by traversing the outgoing edge
@@ -439,24 +445,24 @@ class Vertex(Element):
         
         :param label: The edge label to be traversed
         :type label: str or BaseEdge
-        :param page_num: The number of the page to start returning results at
-        :type page_num: int or None
-        :param per_page: The maximum number of results to return
-        :type per_page: int or None
+        :param limit: The number of the page to start returning results at
+        :type limit: int or None
+        :param offset: The maximum number of results to return
+        :type offset: int or None
         :param allowed_elements: A list of allowed element types
         :type allowed_elements: list
         
         """
         return self._simple_traversal('outV',
                                       label,
-                                      page_num,
-                                      per_page,
+                                      limit,
+                                      offset,
                                       allowed_elements)
 
     def inV(self,
             label=None,
-            page_num=None,
-            per_page=None,
+            limit=None,
+            offset=None,
             allowed_elements=None):
         """
         Return a list of vertices reached by traversing the incoming edge
@@ -464,114 +470,114 @@ class Vertex(Element):
         
         :param label: The edge label to be traversed
         :type label: str or BaseEdge
-        :param page_num: The number of the page to start returning results at
-        :type page_num: int or None
-        :param per_page: The maximum number of results to return
-        :type per_page: int or None
+        :param limit: The number of the page to start returning results at
+        :type limit: int or None
+        :param offset: The maximum number of results to return
+        :type offset: int or None
         :param allowed_elements: A list of allowed element types
         :type allowed_elements: list
         
         """
         return self._simple_traversal('inV',
                                       label,
-                                      page_num,
-                                      per_page,
+                                      limit,
+                                      offset,
                                       allowed_elements)
 
     def outE(self,
              label=None,
-             page_num=None,
-             per_page=None,
+             limit=None,
+             offset=None,
              allowed_elements=None):
         """
         Return a list of edges with the given label going out of this vertex.
         
         :param label: The edge label to be traversed
         :type label: str or BaseEdge
-        :param page_num: The number of the page to start returning results at
-        :type page_num: int or None
-        :param per_page: The maximum number of results to return
-        :type per_page: int or None
+        :param limit: The number of the page to start returning results at
+        :type limit: int or None
+        :param offset: The maximum number of results to return
+        :type offset: int or None
         :param allowed_elements: A list of allowed element types
         :type allowed_elements: list
         
         """
         return self._simple_traversal('outE',
                                       label,
-                                      page_num,
-                                      per_page,
+                                      limit,
+                                      offset,
                                       allowed_elements)
 
     def inE(self,
             label=None,
-            page_num=None,
-            per_page=None,
+            limit=None,
+            offset=None,
             allowed_elements=None):
         """
         Return a list of edges with the given label coming into this vertex.
         
         :param label: The edge label to be traversed
         :type label: str or BaseEdge
-        :param page_num: The number of the page to start returning results at
-        :type page_num: int or None
-        :param per_page: The maximum number of results to return
-        :type per_page: int or None
+        :param limit: The number of the page to start returning results at
+        :type limit: int or None
+        :param offset: The maximum number of results to return
+        :type offset: int or None
         :param allowed_elements: A list of allowed element types
         :type allowed_elements: list
         
         """
         return self._simple_traversal('inE',
                                       label,
-                                      page_num,
-                                      per_page,
+                                      limit,
+                                      offset,
                                       allowed_elements)
 
     def bothE(self,
               label=None,
-              page_num=None,
-              per_page=None,
+              limit=None,
+              offset=None,
               allowed_elements=None):
         """
         Return a list of edges both incoming and outgoing from this vertex.
 
         :param label: The edge label to be traversed (optional)
         :type label: str or BaseEdge or None
-        :param page_num: The number of the page to start returning results at
-        :type page_num: int or None
-        :param per_page: The maximum number of results to return
-        :type per_page: int or None
+        :param limit: The number of the page to start returning results at
+        :type limit: int or None
+        :param offset: The maximum number of results to return
+        :type offset: int or None
         :param allowed_elements: A list of allowed element types
         :type allowed_elements: list
         
         """
         return self._simple_traversal('bothE',
                                       label,
-                                      page_num,
-                                      per_page,
+                                      limit,
+                                      offset,
                                       allowed_elements)
     
     def bothV(self,
               label=None,
-              page_num=None,
-              per_page=None,
+              limit=None,
+              offset=None,
               allowed_elements=None):
         """
         Return a list of vertices both incoming and outgoing from this vertex.
 
         :param label: The edge label to be traversed (optional)
         :type label: str or BaseEdge or None
-        :param page_num: The number of the page to start returning results at
-        :type page_num: int or None
-        :param per_page: The maximum number of results to return
-        :type per_page: int or None
+        :param limit: The number of the page to start returning results at
+        :type limit: int or None
+        :param offset: The maximum number of results to return
+        :type offset: int or None
         :param allowed_elements: A list of allowed element types
         :type allowed_elements: list
         
         """
         return self._simple_traversal('bothV',
                                       label,
-                                      page_num,
-                                      per_page,
+                                      limit,
+                                      offset,
                                       allowed_elements)
 
 
@@ -587,7 +593,63 @@ class Vertex(Element):
     def delete_inV(self, label=None):
         self._simple_deletion('inV', label)
         
-
+        
+def to_offset(page_num, per_page):
+    if page_num and per_page:
+        return (page_num-1) * per_page
+    else:
+        return None
+    
+    
+    
+class PaginatedVertex(Vertex):
+    """
+    Convenience class to easily handle pagination for traversals
+    """
+    __abstract__ = True
+    def outV(self,
+         label=None,
+         page_num=None,
+         per_page=None,
+         allowed_elements=None):
+        return super(PaginatedVertex, self).outV(label, per_page, to_offset(page_num, per_page), allowed_elements)
+    
+    def outE(self,
+         label=None,
+         page_num=None,
+         per_page=None,
+         allowed_elements=None):
+        return super(PaginatedVertex, self).outE(label, per_page, to_offset(page_num, per_page), allowed_elements)
+            
+    def inV(self,
+         label=None,
+         page_num=None,
+         per_page=None,
+         allowed_elements=None):
+        return super(PaginatedVertex, self).inV(label, per_page, to_offset(page_num, per_page), allowed_elements)
+    
+    def inE(self,
+         label=None,
+         page_num=None,
+         per_page=None,
+         allowed_elements=None):
+        return super(PaginatedVertex, self).inE(label, per_page, to_offset(page_num, per_page), allowed_elements)
+    
+    def bothV(self,
+         label=None,
+         page_num=None,
+         per_page=None,
+         allowed_elements=None):
+        return super(PaginatedVertex, self).bothV(label, per_page, to_offset(page_num, per_page), allowed_elements)
+    
+    def bothE(self,
+         label=None,
+         page_num=None,
+         per_page=None,
+         allowed_elements=None):
+        return super(PaginatedVertex, self).bothE(label, per_page, to_offset(page_num, per_page), allowed_elements)
+    
+    
 class EdgeMetaClass(ElementMetaClass):
     def __new__(cls, name, bases, attrs):
 
