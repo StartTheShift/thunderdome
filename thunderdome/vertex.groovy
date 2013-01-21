@@ -24,7 +24,7 @@ def _save_vertex(eid, attrs) {
     }
 }
 
-def _traversal(eid, operation, label, page_num, per_page, element_types) {
+def _traversal(eid, operation, label, start, end, element_types) {
     /**
      * performs vertex/edge traversals with optional edge labels and pagination
      * :param eid: vertex eid to start from
@@ -58,9 +58,7 @@ def _traversal(eid, operation, label, page_num, per_page, element_types) {
         default:
             throw NamingException()
     }
-    if (page_num != null && per_page != null) {
-        start = (page_num - 1) * per_page
-        end = start + per_page
+    if (start != null && end != null) {
         results = results[start..<end]
     }
     if (element_types != null) {
