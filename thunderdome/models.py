@@ -355,7 +355,9 @@ class Vertex(Element):
         params['element_type'] = self.get_element_type()
         result = self._save_vertex(params)[0]
         self.eid = result.eid
-        return self
+        for k,v in self._values.items():
+            v.previous_value = result._values[k].previous_value
+        return result
     
     def delete(self):
         if self.__abstract__:

@@ -23,12 +23,12 @@ class BaseValueManager(object):
     def __init__(self, instance, column, value):
         self.instance = instance
         self.column = column
-        self.initial_value = value
+        self.previous_value = value
         self.value = value
 
     @property
     def deleted(self):
-        return self.value is None and self.initial_value is not None
+        return self.value is None and self.previous_value is not None
 
     def getval(self):
         return self.value
