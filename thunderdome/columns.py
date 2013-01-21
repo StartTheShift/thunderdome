@@ -18,9 +18,25 @@ class StringComparableUUID(_UUID):
             return str(self) == other
         return str(self) == str(other)
 
+    
 class BaseValueManager(object):
-
+    """
+    Value managers are used to manage values pulled from the database and
+    track state changes.
+    """
+    
     def __init__(self, instance, column, value):
+        """
+        Initialize the value manager.
+
+        :param instance: An object instance
+        :type instance: mixed
+        :param column: The column to manage
+        :type column: thunder.columns.Column
+        :param value: The initial value of the column
+        :type value: mixed
+        
+        """
         self.instance = instance
         self.column = column
         self.previous_value = value
@@ -28,18 +44,39 @@ class BaseValueManager(object):
 
     @property
     def deleted(self):
+        """
+        Indicates whether or not this value has been deleted.
+
+        :rtype: boolean
+        
+        """
         return self.value is None and self.previous_value is not None
 
     def getval(self):
+        """Return the current value."""
         return self.value
 
     def setval(self, val):
+        """
+        Updates the current value.
+
+        :param val: The new value
+        :type val: mixed
+        
+        """
         self.value = val
 
     def delval(self):
+        """Delete a given value"""
         self.value = None
 
     def get_property(self):
+        """
+        Returns a value-managed property attributes
+
+        :rtype: property
+        
+        """
         _get = lambda slf: self.getval()
         _set = lambda slf, val: self.setval(val)
         _del = lambda slf: self.delval()
@@ -49,6 +86,7 @@ class BaseValueManager(object):
         else:
             return property(_get, _set)
 
+        
 class Column(object):
 
     #the cassandra type this column maps to
