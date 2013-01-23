@@ -32,7 +32,7 @@ class Person(thunderdome.Vertex):
     age           = thunderdome.Integer()
     date_of_birth = thunderdome.DateTime()
     
-    # Gremlin methods
+    # Gremlin methods (automatically parsed and attached from Groovy file)
     all_students  = thunderdome.GremlinMethod()
 
 
