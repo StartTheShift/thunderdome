@@ -5,7 +5,7 @@ thunderdome is an object-graph mapper (OGM) designed specifically for use with T
 Thunderdome supports easily integrating Gremlin graph-traversals with vertex and edge models. For those already familiar with
 Blueprints (https://github.com/tinkerpop/blueprints/wiki) the following is a simple example:
 
-enrollments.groovy:
+./enrollments.groovy:
 
 ```
 def all_students(eid) {
@@ -13,7 +13,7 @@ def all_students(eid) {
 }
 ```
 
-enrollments.py:
+./enrollments.py:
 
 ```
 from thunderdome.connection import setup
