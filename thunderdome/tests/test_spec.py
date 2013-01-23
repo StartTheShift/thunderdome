@@ -11,7 +11,8 @@ class SpecParserTest(BaseCassEngTestCase):
             'type': 'property',
             'name': 'updated_at',
             'data_type': 'Integer',
-            'functional': True
+            'functional': True,
+            'locking': True
         }
         self.edge_spec = {
             'type': 'edge',

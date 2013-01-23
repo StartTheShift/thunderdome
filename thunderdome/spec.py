@@ -109,7 +109,8 @@ class SpecParser(object):
             "type":"property",
             "name":"updated_at",
             "data_type":"Integer",
-            "functional":true
+            "functional":true,
+            "locking": true
         },
         {
             "type":"edge",
