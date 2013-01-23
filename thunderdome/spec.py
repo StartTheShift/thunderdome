@@ -125,7 +125,7 @@ class SpecParser(object):
         
         """
         self._properties = {}
-        self._names = {}
+        self._names = []
 
         self._results = [self.parse_statement(x) for x in self._specs]
         self.validate(self._results)
