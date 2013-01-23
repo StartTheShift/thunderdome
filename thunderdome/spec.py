@@ -99,6 +99,7 @@ class SpecParser(object):
         """
         self._specs = self._load_spec(filename)
         self._properties = {}
+        self._names = []
 
     def _load_spec(self, filename=None):
         """
@@ -124,6 +125,7 @@ class SpecParser(object):
         
         """
         self._properties = {}
+        self._names = {}
 
         self._results = [self.parse_statement(x) for x in self._specs]
         self.validate(self._results)
@@ -156,10 +158,13 @@ class SpecParser(object):
         """
         if stmt['name'] in self._properties:
             raise ValueError('There is already a property called {}'.format(stmt['name']))
+        if stmt['name'] in self._names:
+            raise ValueError('There is already a value with name {}'.format(stmt['name']))
         prop = Property(name=stmt['name'],
                         data_type=stmt['data_type'],
                         functional=stmt.get('functional', False))
         self._properties[prop.name] = prop
+        self._names += [prop.name]
         return prop
 
     def parse_edge(self, stmt):
@@ -172,8 +177,12 @@ class SpecParser(object):
         :rtype: thunderdome.spec.Edge
         
         """
-        return Edge(label=stmt['label'],
+        if stmt['label'] in self._names:
+            raise ValueError('There is already a value with name {}'.format(stmt['label']))
+        edge = Edge(label=stmt['label'],
                     primary_key=stmt.get('primary_key', None))
+        self._names += [edge.label]
+        return edge
 
     def parse_statement(self, stmt):
         """
@@ -239,7 +248,10 @@ class Spec(object):
         first_undefined = first_undefined[0]
 
         q = ""
-        
+
+        # Assign any already defined types to variables and search for the
+        # first undefined type to be used as the starting point for executing
+        # the remaining statements.
         results = []
         for i,x in enumerate(self._results):
             if isinstance(x, Property):

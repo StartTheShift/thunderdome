@@ -29,6 +29,13 @@ class SpecParserTest(BaseCassEngTestCase):
         with self.assertRaises(ValueError):
             self.spec_parser.parse_statement({'type': 'sugar'})
 
+    def test_should_raise_error_for_duplicate_names(self):
+        """Should raise error if duplicate names given"""
+        self.edge_spec['label'] = 'updated_at'
+        with self.assertRaises(ValueError):
+            self.spec_parser.parse_statement(self.property_spec)
+            self.spec_parser.parse_statement(self.edge_spec)
+
     def test_should_return_correct_gremlin_for_property(self):
         """Should construct the correct Gremlin code for a property"""
         expected = 'updated_at = g.makeType().name("updated_at").dataType(Integer.class).functional().makePropertyKey()'
@@ -38,6 +45,7 @@ class SpecParserTest(BaseCassEngTestCase):
         expected = 'updated_at = g.makeType().name("updated_at").dataType(Integer.class).makePropertyKey()'
         self.property_spec['functional'] = False
         self.spec_parser._properties = {} # Reset saved properties
+        self.spec_parser._names = []
         prop = self.spec_parser.parse_property(self.property_spec)
         assert prop.gremlin == expected
 
@@ -48,6 +56,7 @@ class SpecParserTest(BaseCassEngTestCase):
         assert edge.gremlin == expected
 
         expected = 'subscribed_to = g.makeType().name("subscribed_to").makeEdgeLabel()'
+        self.spec_parser._names = []
         del self.edge_spec['primary_key']
         edge = self.spec_parser.parse_edge(self.edge_spec)
         assert edge.gremlin == expected
