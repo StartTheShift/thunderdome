@@ -231,32 +231,57 @@ class Spec(object):
               password=password,
               index_all_fields=False)
         
+        first_undefined = self._get_first_undefined(self._results)
+        
+        if first_undefined is None:
+            return
+
+        first_undefined = first_undefined[0]
+
         q = ""
-        for stmt in self._results:
+        
+        results = []
+        for i,x in enumerate(self._results):
+            if isinstance(x, Property):
+                if x.name == first_undefined:
+                    results = self._results[i:]
+                    break
+                else:
+                    q += "{} = g.getType('{}')\n".format(x.name, x.name)
+            elif isinstance(x, Edge):
+                if x.label == first_undefined:
+                    results = self._results[i:]
+                    break
+                else:
+                    q += "{} = g.getType('{}')\n".format(x.label, x.label)
+        
+        for stmt in results:
             q += "{}\n".format(stmt.gremlin)
         q += "g.stopTransaction(SUCCESS)"
-    
+
+        print q
+        
         execute_query(q)
 
-    def _get_types(self, types):
+    def _get_first_undefined(self, types):
         """
-        Returns the types of all the defined types from the current spec.
+        Returns the name of the first undefined type in the graph.
 
         :param types: All types defined in the current spec
         :type types: list
 
-        :rtype: dict
+        :rtype: str
         
         """
         q  = "results = [:]\n"
         q += "for (x in names) {\n"
         q += "  t = g.getType(x)\n"
-        q += "  if (t == null) { break }\n"
-        q += "  results[x] = [data_type: t.getDataType(), functional: t.isFunctional()]\n"
+        q += "  if (t == null) {\n"
+        q += "    return x\n"
+        q += "  }\n"
         q += "}\n"
-        q += "results"
+        q += "null"
 
-        names = [x.name if isinstance(x, Property) else x.label for x in self._results]
-
+        names = [x.name if isinstance(x, Property) else x.label for x in types]
         from thunderdome.connection import execute_query
         return execute_query(q, {'names': names})
