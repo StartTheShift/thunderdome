@@ -1,7 +1,9 @@
 thunderdome
 ===========
 
-thunderdome is an object-graph mapper (OGM) designed specifically for use with Titan (https://github.com/thinkaurelius/titan)
+thunderdome is an object-graph mapper (OGM) designed specifically for use with Titan (https://github.com/thinkaurelius/titan).
+Thunderdome supports easily integrating Gremlin graph-traversals with vertex and edge models. For those already familiar with
+Blueprints (https://github.com/tinkerpop/blueprints/wiki) the following is a simple example:
 
 enrollments.groovy:
 
