@@ -66,6 +66,34 @@ class Edge(object):
         return initial.format(self.label, self.label, primary_key)
 
 
+class KeyIndex(object):
+    """Abstracts key index parsed from spec file."""
+
+    def __init__(self, name, data_type):
+        """
+        Defines a key index parsed from spec file.
+
+        :param name: The name for this key index
+        :type name: str
+        :param data_type: The data type for this key index
+        :type data_type: str
+        
+        """
+        self.name = name
+        self.data_type = data_type
+
+    @property
+    def gremlin(self):
+        """
+        Return the gremlin code for creating this key index.
+
+        :rtype: str
+        
+        """
+        initial = 'g.createKeyIndex("{}", {}.class)'
+        return initial.format(self.name, self.data_type)
+
+
 class SpecParser(object):
     """
     Parser for a spec file describing properties and primary keys for edges.
@@ -84,6 +112,11 @@ class SpecParser(object):
             "type":"edge",
             "label":"subscribed_to",
             "primary_key":"updated_at"
+        },
+        {
+            "type": "key_index",
+            "name": "email",
+            "type": "Vertex"
         }
     ]
 
@@ -184,6 +217,22 @@ class SpecParser(object):
         self._names += [edge.label]
         return edge
 
+    def parse_key_index(self, stmt):
+        """
+        Takes the given spec statement and converts it into an object.
+
+        :param stmt: The statement
+        :type stmt: dict
+
+        :rtype: thunderdome.spec.KeyIndex
+        
+        """
+        if stmt['name'] in self._names:
+            raise ValueError('There is already a value with name {}'.format(stmt['name']))
+        key_index = KeyIndex(name=stmt['name'],
+                             data_type=stmt['data_type'])
+        return key_index
+
     def parse_statement(self, stmt):
         """
         Takes the given spec statement and converts it into an object.
@@ -191,7 +240,7 @@ class SpecParser(object):
         :param stmt: The statement
         :type stmt: dict
 
-        :rtype: thunderdome.spec.Property or thunderdome.spec.Edge
+        :rtype: thunderdome.spec.Property, thunderdome.spec.Edge, thunderdome.spec.KeyIndex
 
         """
         if 'type' not in stmt:
@@ -201,8 +250,11 @@ class SpecParser(object):
             return self.parse_property(stmt)
         elif stmt['type'] == 'edge':
             return self.parse_edge(stmt)
+        elif stmt['type'] == 'key_index':
+            return self.parse_key_index(stmt)
         else:
             raise ValueError('Invalid `type` value {}'.format(stmt['type']))
+        
 
 
 class Spec(object):
@@ -266,6 +318,10 @@ class Spec(object):
                     break
                 else:
                     q += "{} = g.getType('{}')\n".format(x.label, x.label)
+            elif isinstance(x, KeyIndex):
+                if x.name == first_undefined:
+                    results = self._results[i:]
+                    break
 
         for stmt in results:
             q += "{}\n".format(stmt.gremlin)

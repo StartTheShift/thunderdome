@@ -18,6 +18,11 @@ class SpecParserTest(BaseCassEngTestCase):
             'label': 'subscribed_to',
             'primary_key': 'updated_at'
         }
+        self.key_index_spec = {
+            'type': 'key_index',
+            'name': 'email',
+            'data_type': 'Vertex'
+        }
         
     def test_should_return_error_if_stmt_contains_no_type(self):
         """Should raise error if statement contains no type"""
@@ -61,6 +66,12 @@ class SpecParserTest(BaseCassEngTestCase):
         edge = self.spec_parser.parse_edge(self.edge_spec)
         assert edge.gremlin == expected
 
+    def test_should_return_correct_gremlin_for_key_index_creation(self):
+        """Should return correct gremlin for key index"""
+        expected = 'g.createKeyIndex("email", Vertex.class)'
+        key_index = self.spec_parser.parse_key_index(self.key_index_spec)
+        assert key_index.gremlin == expected
+
     def test_should_return_appropriate_type(self):
         """Should return appropriate type when parsing a statement"""
         assert isinstance(self.spec_parser.parse_statement(self.edge_spec), Edge)
@@ -77,4 +88,4 @@ class SpecParserTest(BaseCassEngTestCase):
         results = [self.spec_parser.parse_statement(edge_spec)]
         results += [self.spec_parser.parse_statement(self.property_spec)]
         with self.assertRaises(ValueError):
-            self.spec_parser.validate(results)
+            self.spec_parser.validate(results)        
