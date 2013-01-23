@@ -4,7 +4,7 @@ import json
 class Property(object):
     """Abstracts a property parsed from a spec file."""
 
-    def __init__(self, name, data_type, functional=False):
+    def __init__(self, name, data_type, functional=False, locking=True):
         """
         Defines a property parsed from a spec file.
 
@@ -14,11 +14,14 @@ class Property(object):
         :type data_type: str
         :param functional: Indicates whether or not this is a functional property
         :type functional: boolean
+        :param locking: Indicates whether or not to make this a locking property
+        :type locking: boolean
 
         """
         self.name = name
         self.data_type = data_type
         self.functional = functional
+        self.locking = locking
 
     @property
     def gremlin(self):
@@ -31,7 +34,7 @@ class Property(object):
         initial = '{} = g.makeType().name("{}").dataType({}.class).{}makePropertyKey()'
         func = ''
         if self.functional:
-            func = 'functional().'
+            func = 'functional({}).'.format("true" if self.locking else "false")
         return initial.format(self.name, self.name, self.data_type, func)
 
 
@@ -195,7 +198,8 @@ class SpecParser(object):
             raise ValueError('There is already a value with name {}'.format(stmt['name']))
         prop = Property(name=stmt['name'],
                         data_type=stmt['data_type'],
-                        functional=stmt.get('functional', False))
+                        functional=stmt.get('functional', False),
+                        locking=stmt.get('locking', True))
         self._properties[prop.name] = prop
         self._names += [prop.name]
         return prop

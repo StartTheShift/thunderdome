@@ -43,7 +43,14 @@ class SpecParserTest(BaseCassEngTestCase):
 
     def test_should_return_correct_gremlin_for_property(self):
         """Should construct the correct Gremlin code for a property"""
-        expected = 'updated_at = g.makeType().name("updated_at").dataType(Integer.class).functional().makePropertyKey()'
+        expected = 'updated_at = g.makeType().name("updated_at").dataType(Integer.class).functional(true).makePropertyKey()'
+        prop = self.spec_parser.parse_property(self.property_spec)
+        assert prop.gremlin == expected
+
+        expected = 'updated_at = g.makeType().name("updated_at").dataType(Integer.class).functional(false).makePropertyKey()'
+        self.property_spec['locking'] = False
+        self.spec_parser._properties = {} # Reset saved properties
+        self.spec_parser._names = []
         prop = self.spec_parser.parse_property(self.property_spec)
         assert prop.gremlin == expected
 
