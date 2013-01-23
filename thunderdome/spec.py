@@ -28,11 +28,11 @@ class Property(object):
         :rtype: str
         
         """
-        initial = 'g.makeType().name("{}").dataType({}.class).{}makePropertyKey()'
+        initial = '{} = g.makeType().name("{}").dataType({}.class).{}makePropertyKey()'
         func = ''
         if self.functional:
             func = 'functional().'
-        return initial.format(self.name, self.data_type, func)
+        return initial.format(self.name, self.name, self.data_type, func)
 
 
 class Edge(object):
@@ -59,11 +59,11 @@ class Edge(object):
         :rtype: str
         
         """
-        initial = 'g.makeType().name("{}").{}makeEdgeLabel()'
+        initial = '{} = g.makeType().name("{}").{}makeEdgeLabel()'
         primary_key = ''
         if self.primary_key:
             primary_key = "primaryKey({}).".format(self.primary_key)
-        return initial.format(self.label, primary_key)
+        return initial.format(self.label, self.label, primary_key)
     
 
 class SpecParser(object):
@@ -79,18 +79,15 @@ class SpecParser(object):
             "name":"updated_at",
             "data_type":"Integer",
             "functional":true
-        }
+        },
         {
             "type":"edge",
             "label":"subscribed_to",
             "primary_key":"updated_at"
-        }
- 
+        } 
     ]
 
     """
-
-    _specs = {}
 
     def __init__(self, filename=None):
         """
@@ -98,12 +95,26 @@ class SpecParser(object):
         
         :param filename: The path to the file to be parsed
         :type filename: str
-
-        :rtype: dict
         
         """
+        self._specs = self._load_spec(filename)
+        self._properties = {}
+
+    def _load_spec(self, filename=None):
+        """
+        Loads the spec with the given filename or returns an empty
+        list.
+
+        :param filename: The filename to be opened (optional)
+        :type filename: str or None
+        :rtype: list
+        
+        """
+        specs = []
         if filename:
-            self._specs = json.dumps(filename)
+            with open(filename) as spec_file:
+                specs = json.load(spec_file)
+        return specs
 
     def parse(self):
         """
@@ -112,7 +123,26 @@ class SpecParser(object):
         :rtype: list
         
         """
-        return []
+        self._properties = {}
+
+        self._results = [self.parse_statement(x) for x in self._specs]
+        self.validate(self._results)
+        return self._results
+
+    def validate(self, results):
+        """
+        Validate the given set of results.
+
+        :param results: List of parsed objects
+        :type results: list
+        
+        """
+        edges = [x for x in results if isinstance(x, Edge)]
+        props = {x.name: x for x in results if isinstance(x, Property)}
+
+        for e in edges:
+            if e.primary_key and e.primary_key not in props:
+                raise ValueError('Missing primary key {} for edge {}'.format(e.primary_key, e.label))
 
     def parse_property(self, stmt):
         """
@@ -124,9 +154,13 @@ class SpecParser(object):
         :rtype: thunderdome.spec.Property
 
         """
-        return Property(name=stmt['name'],
+        if stmt['name'] in self._properties:
+            raise ValueError('There is already a property called {}'.format(stmt['name']))
+        prop = Property(name=stmt['name'],
                         data_type=stmt['data_type'],
                         functional=stmt.get('functional', False))
+        self._properties[prop.name] = prop
+        return prop
 
     def parse_edge(self, stmt):
         """
@@ -139,7 +173,7 @@ class SpecParser(object):
         
         """
         return Edge(label=stmt['label'],
-                    primary_key=stmt.get('primary_key'))
+                    primary_key=stmt.get('primary_key', None))
 
     def parse_statement(self, stmt):
         """
@@ -155,8 +189,74 @@ class SpecParser(object):
             raise TypeError('Type field required')
 
         if stmt['type'] == 'property':
-            return parse_property(stmt)
+            return self.parse_property(stmt)
         elif stmt['type'] == 'edge':
-            return parse_edge(stmt)
+            return self.parse_edge(stmt)
         else:
             raise ValueError('Invalid `type` value {}'.format(stmt['type']))
+
+        
+class Spec(object):
+    """Represents a generic type spec for thunderdome."""
+
+    def __init__(self, filename):
+        """
+        Parse and attempt to initialize the spec with the contents of the given
+        file.
+
+        :param filename: The spec file to be parsed
+        :type filename: str
+        
+        """
+        self._results = SpecParser(filename).parse()
+
+    def sync(self, host, graph_name, username=None, password=None):
+        """
+        Sync the current internal spec using the given graph on the given host.
+
+        :param host: The host in <hostname>:<port> or <hostname> format
+        :type host: str
+        :param graph_name: The name of the graph as defined in rexster.xml
+        :type graph_name: str
+        :param username: The username for the rexster server
+        :type username: str
+        :param password: The password for the rexster server
+        :type password: str
+        
+        """
+        from thunderdome.connection import setup, execute_query
+        setup(hosts=[host],
+              graph_name=graph_name,
+              username=username,
+              password=password,
+              index_all_fields=False)
+        
+        q = ""
+        for stmt in self._results:
+            q += "{}\n".format(stmt.gremlin)
+        q += "g.stopTransaction(SUCCESS)"
+    
+        execute_query(q)
+
+    def _get_types(self, types):
+        """
+        Returns the types of all the defined types from the current spec.
+
+        :param types: All types defined in the current spec
+        :type types: list
+
+        :rtype: dict
+        
+        """
+        q  = "results = [:]\n"
+        q += "for (x in names) {\n"
+        q += "  t = g.getType(x)\n"
+        q += "  if (t == null) { break }\n"
+        q += "  results[x] = [data_type: t.getDataType(), functional: t.isFunctional()]\n"
+        q += "}\n"
+        q += "results"
+
+        names = [x.name if isinstance(x, Property) else x.label for x in self._results]
+
+        from thunderdome.connection import execute_query
+        return execute_query(q, {'names': names})

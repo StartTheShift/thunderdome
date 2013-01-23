@@ -11,6 +11,7 @@ import random
 import textwrap
 
 from thunderdome.exceptions import ThunderdomeException
+from thunderdome.spec import Spec
 
 logger = logging.getLogger(__name__)
 
@@ -113,3 +114,16 @@ def execute_query(query, params={}, transaction=True):
     return response_data['results'] 
 
 
+def sync_spec(filename, host, graph_name):
+    """
+    Sync the given spec file to thunderdome.
+
+    :param filename: The filename of the spec file
+    :type filename: str
+    :param host: The host the be synced
+    :type host: str
+    :param graph_name: The name of the graph to be synced
+    :type graph_name: str
+    
+    """
+    Spec(filename).sync(host, graph_name)
