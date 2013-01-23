@@ -14,7 +14,7 @@ class Property(object):
         :type data_type: str
         :param functional: Indicates whether or not this is a functional property
         :type functional: boolean
-        
+
         """
         self.name = name
         self.data_type = data_type
@@ -26,7 +26,7 @@ class Property(object):
         Return the gremlin code for creating this property.
 
         :rtype: str
-        
+
         """
         initial = '{} = g.makeType().name("{}").dataType({}.class).{}makePropertyKey()'
         func = ''
@@ -46,7 +46,7 @@ class Edge(object):
         :type label: str
         :param primary_key: The primary key for this edge
         :type primary_key: thunderdome.spec.Property or None
-        
+
         """
         self.label = label
         self.primary_key = primary_key
@@ -57,14 +57,14 @@ class Edge(object):
         Return the gremlin code for creating this edge.
 
         :rtype: str
-        
+
         """
         initial = '{} = g.makeType().name("{}").{}makeEdgeLabel()'
         primary_key = ''
         if self.primary_key:
             primary_key = "primaryKey({}).".format(self.primary_key)
         return initial.format(self.label, self.label, primary_key)
-    
+
 
 class SpecParser(object):
     """
@@ -84,18 +84,18 @@ class SpecParser(object):
             "type":"edge",
             "label":"subscribed_to",
             "primary_key":"updated_at"
-        } 
+        }
     ]
 
     """
 
     def __init__(self, filename=None):
         """
-        Pass in the 
-        
+        Pass in the
+
         :param filename: The path to the file to be parsed
         :type filename: str
-        
+
         """
         self._specs = self._load_spec(filename)
         self._properties = {}
@@ -109,7 +109,7 @@ class SpecParser(object):
         :param filename: The filename to be opened (optional)
         :type filename: str or None
         :rtype: list
-        
+
         """
         specs = []
         if filename:
@@ -122,10 +122,10 @@ class SpecParser(object):
         Parse the internal spec and return a list of gremlin statements.
 
         :rtype: list
-        
+
         """
         self._properties = {}
-        self._names = {}
+        self._names = []
 
         self._results = [self.parse_statement(x) for x in self._specs]
         self.validate(self._results)
@@ -137,7 +137,7 @@ class SpecParser(object):
 
         :param results: List of parsed objects
         :type results: list
-        
+
         """
         edges = [x for x in results if isinstance(x, Edge)]
         props = {x.name: x for x in results if isinstance(x, Property)}
@@ -175,7 +175,7 @@ class SpecParser(object):
         :type stmt: str
 
         :rtype: thunderdome.spec.Edge
-        
+
         """
         if stmt['label'] in self._names:
             raise ValueError('There is already a value with name {}'.format(stmt['label']))
@@ -204,7 +204,7 @@ class SpecParser(object):
         else:
             raise ValueError('Invalid `type` value {}'.format(stmt['type']))
 
-        
+
 class Spec(object):
     """Represents a generic type spec for thunderdome."""
 
@@ -215,7 +215,7 @@ class Spec(object):
 
         :param filename: The spec file to be parsed
         :type filename: str
-        
+
         """
         self._results = SpecParser(filename).parse()
 
@@ -231,7 +231,7 @@ class Spec(object):
         :type username: str
         :param password: The password for the rexster server
         :type password: str
-        
+
         """
         from thunderdome.connection import setup, execute_query
         setup(hosts=[host],
@@ -239,9 +239,9 @@ class Spec(object):
               username=username,
               password=password,
               index_all_fields=False)
-        
+
         first_undefined = self._get_first_undefined(self._results)
-        
+
         if first_undefined is None:
             return
 
@@ -266,13 +266,13 @@ class Spec(object):
                     break
                 else:
                     q += "{} = g.getType('{}')\n".format(x.label, x.label)
-        
+
         for stmt in results:
             q += "{}\n".format(stmt.gremlin)
         q += "g.stopTransaction(SUCCESS)"
 
         print q
-        
+
         execute_query(q)
 
     def _get_first_undefined(self, types):
@@ -283,7 +283,7 @@ class Spec(object):
         :type types: list
 
         :rtype: str
-        
+
         """
         q  = "results = [:]\n"
         q += "for (x in names) {\n"
