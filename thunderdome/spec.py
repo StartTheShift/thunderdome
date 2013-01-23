@@ -72,7 +72,7 @@ class Edge(object):
 class KeyIndex(object):
     """Abstracts key index parsed from spec file."""
 
-    def __init__(self, name, data_type):
+    def __init__(self, name, data_type="Vertex"):
         """
         Defines a key index parsed from spec file.
 
@@ -235,7 +235,7 @@ class SpecParser(object):
         if stmt['name'] in self._names:
             raise ValueError('There is already a value with name {}'.format(stmt['name']))
         key_index = KeyIndex(name=stmt['name'],
-                             data_type=stmt['data_type'])
+                             data_type=stmt.get('data_type', 'Vertex'))
         return key_index
 
     def parse_statement(self, stmt):
@@ -346,6 +346,21 @@ class Spec(object):
         :rtype: str
 
         """
+        def _get_name(x):
+            """
+            Return the name for the given object.
+
+            :param x: The object
+            :type x: Property, Edge, KeyIndex
+            :rtype: str
+            
+            """
+            if isinstance(x, Property) or isinstance(x, KeyIndex):
+                return x.name
+            elif isinstance(x, Edge):
+                return x.label
+            raise RuntimeError("Invalid object type {}".format(type(x)))
+        
         q  = "results = [:]\n"
         q += "for (x in names) {\n"
         q += "  t = g.getType(x)\n"
@@ -355,6 +370,7 @@ class Spec(object):
         q += "}\n"
         q += "null"
 
-        names = [x.name if isinstance(x, Property) else x.label for x in types]
+        
+        names = [_get_name(x) for x in types]
         from thunderdome.connection import execute_query
         return execute_query(q, {'names': names})
