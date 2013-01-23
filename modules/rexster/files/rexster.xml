@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rexster>
+    <rexster-server-port>8182</rexster-server-port>
+    <rexster-server-host>0.0.0.0</rexster-server-host>
+    <rexster-shutdown-port>8183</rexster-shutdown-port>
+    <rexster-shutdown-host>127.0.0.1</rexster-shutdown-host>
+    <rexpro-server-port>8184</rexpro-server-port>
+    <rexpro-server-host>0.0.0.0</rexpro-server-host>
+    <rexpro-session-max-idle>1790000</rexpro-session-max-idle>
+    <rexpro-session-check-interval>3000000</rexpro-session-check-interval>
+    <base-uri>http://localhost</base-uri>
+    <web-root>public</web-root>
+    <character-set>UTF-8</character-set>
+    <security>
+        <authentication>
+            <type>none</type>
+            <configuration>
+                <users>
+                    <user>
+                        <username>rexster</username>
+                        <password>rexster</password>
+                    </user>
+                </users>
+            </configuration>
+        </authentication>
+    </security>
+    <graphs>
+        <graph>
+          <graph-name>thunderdome</graph-name>
+          <graph-type>com.thinkaurelius.titan.tinkerpop.rexster.TitanGraphConfiguration</graph-type>
+          <graph-read-only>false</graph-read-only>
+          <graph-location>/tmp/thunderdome</graph-location>
+          <properties>
+            <storage.backend>local</storage.backend>
+            <storage.directory>/tmp/thunderdome</storage.directory>
+            <buffer-size>100</buffer-size>
+          </properties>
+
+          <extensions>
+            <allows>
+              <allow>tp:gremlin</allow>
+            </allows>
+          </extensions>
+        </graph>                
+    </graphs>
+</rexster>
