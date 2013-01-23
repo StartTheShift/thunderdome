@@ -258,8 +258,7 @@ class SpecParser(object):
         elif stmt['type'] == 'key_index':
             return self.parse_key_index(stmt)
         else:
-            raise ValueError('Invalid `type` value {}'.format(stmt['type']))
-        
+            raise ValueError('Invalid `type` value {}'.format(stmt['type']))     
 
 
 class Spec(object):
