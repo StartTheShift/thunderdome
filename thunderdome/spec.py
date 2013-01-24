@@ -16,12 +16,15 @@ class Property(object):
         :type functional: boolean
         :param locking: Indicates whether or not to make this a locking property
         :type locking: boolean
+        :param index: Indicates whether or not this field should be indexed
+        :type index: boolean
 
         """
         self.name = name
         self.data_type = data_type
         self.functional = functional
         self.locking = locking
+        self.indexed = indexed
 
     @property
     def gremlin(self):
@@ -31,11 +34,14 @@ class Property(object):
         :rtype: str
 
         """
-        initial = '{} = g.makeType().name("{}").dataType({}.class).{}makePropertyKey()'
+        initial = '{} = g.makeType().name("{}").dataType({}.class).{}{}makePropertyKey()'
         func = ''
+        idx = ''
         if self.functional:
             func = 'functional({}).'.format("true" if self.locking else "false")
-        return initial.format(self.name, self.name, self.data_type, func)
+        if self.indexed:
+            idx = 'indexed().'
+        return initial.format(self.name, self.name, self.data_type, func, idx)
 
 
 class Edge(object):
@@ -193,14 +199,15 @@ class SpecParser(object):
         :rtype: thunderdome.spec.Property
 
         """
-        if stmt['name'] in self._properties:
-            raise ValueError('There is already a property called {}'.format(stmt['name']))
-        if stmt['name'] in self._names:
-            raise ValueError('There is already a value with name {}'.format(stmt['name']))
+        # if stmt['name'] in self._properties:
+        #     raise ValueError('There is already a property called {}'.format(stmt['name']))
+        # if stmt['name'] in self._names:
+        #     raise ValueError('There is already a value with name {}'.format(stmt['name']))
         prop = Property(name=stmt['name'],
                         data_type=stmt['data_type'],
                         functional=stmt.get('functional', False),
-                        locking=stmt.get('locking', True))
+                        locking=stmt.get('locking', True),
+                        indexed=stmt.get('indexed', False))
         self._properties[prop.name] = prop
         self._names += [prop.name]
         return prop
@@ -215,8 +222,8 @@ class SpecParser(object):
         :rtype: thunderdome.spec.Edge
 
         """
-        if stmt['label'] in self._names:
-            raise ValueError('There is already a value with name {}'.format(stmt['label']))
+        # if stmt['label'] in self._names:
+        #     raise ValueError('There is already a value with name {}'.format(stmt['label']))
         edge = Edge(label=stmt['label'],
                     primary_key=stmt.get('primary_key', None))
         self._names += [edge.label]
@@ -232,8 +239,8 @@ class SpecParser(object):
         :rtype: thunderdome.spec.KeyIndex
         
         """
-        if stmt['name'] in self._names:
-            raise ValueError('There is already a value with name {}'.format(stmt['name']))
+        # if stmt['name'] in self._names:
+        #     raise ValueError('There is already a value with name {}'.format(stmt['name']))
         key_index = KeyIndex(name=stmt['name'],
                              data_type=stmt.get('data_type', 'Vertex'))
         return key_index
