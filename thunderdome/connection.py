@@ -39,6 +39,19 @@ def create_key_index(name):
             {'keyname':name}, transaction=False)
         _existing_indices = None
 
+def create_unique_index(name, data_type):
+    """
+    Creates a key index if it does not already exist
+    """
+    global _existing_indices
+    _existing_indices = _existing_indices or execute_query('g.getIndexedKeys(Vertex.class)')
+    
+    if name not in _existing_indices:
+        execute_query(
+            "g.makeType().name(name).dataType({}.class).unique().indexed().makePropertyKey(); g.stopTransaction(SUCCESS)".format(data_type),
+            {'name':name}, transaction=False)
+        _existing_indices = None
+        
 def setup(hosts, graph_name, username=None, password=None, index_all_fields=True):
     """
     Records the hosts and connects to one of them.
@@ -79,8 +92,9 @@ def setup(hosts, graph_name, username=None, password=None, index_all_fields=True
         raise ThunderdomeConnectionError("At least one host required")
 
     random.shuffle(_hosts)
-    for idx in ['vid', 'element_type']:
-        create_key_index(idx)
+    
+    create_key_index('element_type')
+    create_unique_index('vid', 'String')
 
     #index any models that have already been defined
     from thunderdome.models import vertex_types
