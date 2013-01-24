@@ -15,6 +15,7 @@ edge_types = {}
 
 
 class ElementDefinitionException(ModelException): pass
+class SaveStrategyException(ModelException): pass
 
 
 class BaseElement(object):
@@ -126,6 +127,36 @@ class BaseElement(object):
         values = {}
         for name, col in self._columns.items():
             values[name] = col.to_database(getattr(self, name, None))
+        return values
+
+    def as_save_params(self):
+        """
+        Returns a map of column names to cleaned values containing only the
+        columns which should be persisted on save.
+
+        :rtype: dict
+        
+        """
+        values = {}
+        was_saved = self.eid is not None
+        for name, col in self._columns.items():
+            # Default to ALWAYS save strategy
+            should_save = True
+            
+            if col.has_save_strategy:
+                if col.get_save_strategy() == columns.SAVE_ONCE:
+                    if was_saved:
+                        if self._values[name].changed:
+                            raise SaveStrategyException("Attempt to change column '{}' with save strategy SAVE_ONCE".format(name))
+                        else:
+                            should_save = False
+                elif col.get_save_strategy() == columns.SAVE_ONCHANGE:
+                    if was_saved and not self._values[name].changed:
+                        should_save = False
+            
+            if should_save:
+                values[name] = col.to_database(getattr(self, name, None))
+                
         return values
 
     @classmethod
@@ -335,7 +366,7 @@ class Vertex(Element):
     _delete_related = GremlinMethod()
 
     #vertex id
-    vid = columns.UUID()
+    vid = columns.UUID(save_strategy=columns.SAVE_ONCE)
     
     element_type = None
 
@@ -459,7 +490,7 @@ class Vertex(Element):
         save strategy is to re-save all fields every time the object is saved.
         """
         super(Vertex, self).save(*args, **kwargs)
-        params = self.as_dict()
+        params = self.as_save_params()
         params['element_type'] = self.get_element_type()
         result = self._save_vertex(params)[0]
         self.eid = result.eid
@@ -876,7 +907,7 @@ class Edge(Element):
         return self._save_edge(self._outV,
                                self._inV,
                                self.get_label(),
-                               self.as_dict(),
+                               self.as_save_params(),
                                exclusive=self.__exclusive__)[0]
 
     def _reload_values(self):

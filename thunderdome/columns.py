@@ -8,7 +8,15 @@ from uuid import UUID as _UUID
 
 from thunderdome.exceptions import ValidationError
 
+"""
+Saving strategies for thunderdome. These are used to indicate when a property
+should be saved after the initial vertex/edge creation.
+"""
+SAVE_ONCE     = 1
+SAVE_ONCHANGE = 2
+SAVE_ALWAYS   = 3
 
+    
 class StringComparableUUID(_UUID):
     """UUID type that can be compared against strings"""
     
@@ -51,6 +59,16 @@ class BaseValueManager(object):
         
         """
         return self.value is None and self.previous_value is not None
+
+    @property
+    def changed(self):
+        """
+        Indicates whether or not this value has changed.
+
+        :rtype: boolean
+        
+        """
+        return self.value != self.previous_value
 
     def getval(self):
         """Return the current value."""
@@ -95,20 +113,32 @@ class Column(object):
 
     instance_counter = 0
 
-    def __init__(self, primary_key=False, index=False, db_field=None, default=None, required=False):
+    def __init__(self,
+                 primary_key=False,
+                 index=False,
+                 db_field=None,
+                 default=None,
+                 required=False,
+                 save_strategy=None):
         """
+        Initialize this column with the given information.
+        
         :param primary_key: bool flag, indicates this column is a primary key. The first primary key defined
         on a model is the partition key, all others are cluster keys
         :param index: bool flag, indicates an index should be created for this column
         :param db_field: the fieldname this field will map to in the database
         :param default: the default value, can be a value or a callable (no args)
         :param required: boolean, is the field required?
+        :param save_strategy: Strategy used when persisting the value of the column
+        :type save_strategy: int
+        
         """
         self.primary_key = primary_key
         self.index = index
         self.db_field = db_field
         self.default = default
         self.required = required
+        self.save_strategy = save_strategy
 
         #the column name in the model definition
         self.column_name = None
@@ -148,16 +178,47 @@ class Column(object):
 
     @property
     def has_default(self):
+        """
+        Indicates whether or not this column has a default value.
+
+        :rtype: boolean
+
+        """
         return self.default is not None
 
     @property
+    def has_save_strategy(self):
+        """
+        Indicates whether or not this column has a save strategy.
+
+        :rtype: boolean
+        
+        """
+        return self.save_strategy is not None
+
+    @property
     def is_primary_key(self):
+        """
+        Indicates whether or not this column is a primary key.
+
+        :rtype: boolean
+        
+        """
         return self.primary_key
 
     @property
     def can_delete(self):
         return not self.primary_key
 
+    def get_save_strategy(self):
+        """
+        Returns the save strategy attached to this column.
+
+        :rtype: int or None
+        
+        """
+        return self.save_strategy
+    
     def get_default(self):
         if self.has_default:
             if callable(self.default):
@@ -188,12 +249,15 @@ class Column(object):
         """ Returns the name of the cql index """
         return 'index_{}'.format(self.db_field_name)
 
+    
 class Bytes(Column):
     db_type = 'blob'
 
+    
 class Ascii(Column):
     db_type = 'ascii'
 
+    
 class Text(Column):
     db_type = 'text'
     
@@ -218,6 +282,7 @@ class Text(Column):
                 raise ValidationError('{} is shorter than {} characters'.format(self.column_name, self.min_length))
         return value
 
+    
 class Integer(Column):
     db_type = 'int'
 
@@ -237,6 +302,7 @@ class Integer(Column):
         if value is not None:
             return long(value)
 
+        
 class DateTime(Column):
     db_type = 'timestamp'
     def __init__(self, **kwargs):
@@ -254,6 +320,7 @@ class DateTime(Column):
             raise ValidationError("'{}' is not a datetime object".format(value))
         return time.mktime(value.timetuple())
 
+    
 class UUID(Column):
     """
     Type 1 or 4 UUID
@@ -283,6 +350,7 @@ class UUID(Column):
         if value is None: return
         return str(val)
 
+    
 class Boolean(Column):
     db_type = 'boolean'
 
@@ -292,6 +360,7 @@ class Boolean(Column):
     def to_database(self, value):
         return bool(value)
 
+    
 class Float(Column):
     db_type = 'double'
 
@@ -315,6 +384,7 @@ class Float(Column):
         if value is not None:
             return float(value)
 
+        
 class Decimal(Column):
     db_type = 'decimal'
     
@@ -328,6 +398,7 @@ class Decimal(Column):
         if val is not None:
             return str(val)
 
+        
 class Dictionary(Column):
 
     def validate(self, value):
@@ -337,6 +408,7 @@ class Dictionary(Column):
             raise ValidationError('{} is not a valid dict'.format(val))
         return val
 
+    
 class List(Column):
 
     def validate(self, value):
