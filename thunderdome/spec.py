@@ -4,7 +4,7 @@ import json
 class Property(object):
     """Abstracts a property parsed from a spec file."""
 
-    def __init__(self, name, data_type, functional=False, locking=True):
+    def __init__(self, name, data_type, functional=False, locking=True, indexed=False):
         """
         Defines a property parsed from a spec file.
 
@@ -199,10 +199,10 @@ class SpecParser(object):
         :rtype: thunderdome.spec.Property
 
         """
-        # if stmt['name'] in self._properties:
-        #     raise ValueError('There is already a property called {}'.format(stmt['name']))
-        # if stmt['name'] in self._names:
-        #     raise ValueError('There is already a value with name {}'.format(stmt['name']))
+        if stmt['name'] in self._properties:
+            raise ValueError('There is already a property called {}'.format(stmt['name']))
+        if stmt['name'] in self._names:
+            raise ValueError('There is already a value with name {}'.format(stmt['name']))
         prop = Property(name=stmt['name'],
                         data_type=stmt['data_type'],
                         functional=stmt.get('functional', False),
@@ -222,8 +222,8 @@ class SpecParser(object):
         :rtype: thunderdome.spec.Edge
 
         """
-        # if stmt['label'] in self._names:
-        #     raise ValueError('There is already a value with name {}'.format(stmt['label']))
+        if stmt['label'] in self._names:
+            raise ValueError('There is already a value with name {}'.format(stmt['label']))
         edge = Edge(label=stmt['label'],
                     primary_key=stmt.get('primary_key', None))
         self._names += [edge.label]
@@ -239,8 +239,8 @@ class SpecParser(object):
         :rtype: thunderdome.spec.KeyIndex
         
         """
-        # if stmt['name'] in self._names:
-        #     raise ValueError('There is already a value with name {}'.format(stmt['name']))
+        if stmt['name'] in self._names:
+            raise ValueError('There is already a value with name {}'.format(stmt['name']))
         key_index = KeyIndex(name=stmt['name'],
                              data_type=stmt.get('data_type', 'Vertex'))
         return key_index
