@@ -48,7 +48,7 @@ def create_unique_index(name, data_type):
     
     if name not in _existing_indices:
         execute_query(
-            "g.makeType().name(name).dataType({}.class).unique().indexed().makePropertyKey(); g.stopTransaction(SUCCESS)".format(data_type),
+            "g.makeType().name(name).dataType({}.class).functional().unique().indexed().makePropertyKey(); g.stopTransaction(SUCCESS)".format(data_type),
             {'name':name}, transaction=False)
         _existing_indices = None
         

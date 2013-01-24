@@ -8,11 +8,14 @@ from thunderdome.connection import execute_query, create_key_index, ThunderdomeQ
 from thunderdome.exceptions import ModelException, ValidationError, DoesNotExist, MultipleObjectsReturned, ThunderdomeException, WrongElementType
 from thunderdome.gremlin import BaseGremlinMethod, GremlinMethod
 
+
 #dict of node and edge types for rehydrating results
 vertex_types = {}
 edge_types = {}
 
+
 class ElementDefinitionException(ModelException): pass
+
 
 class BaseElement(object):
     """
@@ -27,6 +30,13 @@ class BaseElement(object):
     class WrongElementType(WrongElementType): pass
 
     def __init__(self, **values):
+        """
+        Initialize the element with the given properties.
+
+        :param values: The properties for this element
+        :type values: dict
+        
+        """
         self.eid = values.get('_id')
         self._values = {}
         for name, column in self._columns.items():
@@ -36,17 +46,38 @@ class BaseElement(object):
             self._values[name] = value_mngr
 
     def __eq__(self, other):
+        """
+        Check for equality between two elements.
+
+        :param other: Element to be compared to
+        :type other: BaseElement
+        :rtype: boolean
+        
+        """
         if not isinstance(other, BaseElement): return False
         return self.as_dict() == other.as_dict() and self.eid == other.eid
 
     def __ne__(self, other):
+        """
+        Check for inequality between two elements.
+
+        :param other: Element to be compared to
+        :type other: BaseElement
+        :rtype: boolean
+        
+        """
         return not self.__eq__(other)
 
     @classmethod
     def _type_name(cls, manual_name):
         """
-        Returns the column family name if it's been defined
-        otherwise, it creates it from the module and class name
+        Returns the column family name if it has been defined, otherwise it
+        creates it from the module and class name.
+
+        :param manual_name: Name to override the default type name
+        :type manual_name: str
+        :rtype: str
+        
         """
         cf_name = ''
         if manual_name:
@@ -62,10 +93,20 @@ class BaseElement(object):
         return cf_name
 
     def validate_field(self, field_name, val):
+        """
+        Perform the validations associated with the field with the given name on
+        the value passed.
+
+        :param field_name: The name of column whose validations will be run
+        :type field_name: str
+        :param val: The value to be validated
+        :type val: mixed
+        
+        """
         return self._columns[field_name].validate(val)
 
     def validate(self):
-        """ Cleans and validates the field values """
+        """Cleans and validates the field values"""
         for name in self._columns.keys():
             func_name = 'validate_{}'.format(name)
             val = getattr(self, name)
@@ -76,7 +117,12 @@ class BaseElement(object):
             setattr(self, name, val)
 
     def as_dict(self):
-        """ Returns a map of column names to cleaned values """
+        """
+        Returns a map of column names to cleaned values
+
+        :rtype: dict
+        
+        """
         values = {}
         for name, col in self._columns.items():
             values[name] = col.to_database(getattr(self, name, None))
@@ -84,12 +130,17 @@ class BaseElement(object):
 
     @classmethod
     def create(cls, *args, **kwargs):
+        """Create a new element with the given information."""
         return cls(*args, **kwargs).save()
         
     def pre_save(self):
+        """Pre-save hook which is run before saving an element"""
         self.validate()
         
     def save(self):
+        """
+        Base class save method. Performs basic validation and error handling.
+        """
         if self.__abstract__:
             raise ThunderdomeException('cant save abstract elements')
         self.pre_save()
@@ -116,9 +167,15 @@ class BaseElement(object):
         return self.save()
 
     def _reload_values(self):
+        """
+        Base method for reloading an element from the database.
+        """
         raise NotImplementedError
 
     def reload(self):
+        """
+        Reload the given element from the database.
+        """
         values = self._reload_values()
         for name, column in self._columns.items():
             value = values.get(name, None)
@@ -126,8 +183,10 @@ class BaseElement(object):
             setattr(self, name, value)
         return self
 
+    
 class ElementMetaClass(type):
-
+    """Metaclass for all graph elements"""
+    
     def __new__(cls, name, bases, attrs):
         """
         """
@@ -240,6 +299,8 @@ class Element(BaseElement):
     
     
 class VertexMetaClass(ElementMetaClass):
+    """Metaclass for vertices."""
+    
     def __new__(cls, name, bases, attrs):
 
         #short circuit element_type inheritance
@@ -257,7 +318,8 @@ class VertexMetaClass(ElementMetaClass):
             klass._create_indices()
 
         return klass
-        
+
+    
 class Vertex(Element):
     """
     The Vertex model base class. All vertexes have a vid defined on them, the element type is autogenerated
@@ -292,10 +354,28 @@ class Vertex(Element):
     
     @classmethod
     def get_element_type(cls):
+        """
+        Returns the element type for this vertex.
+
+        :rtype: str
+        
+        """
         return cls._type_name(cls.element_type)
     
     @classmethod
     def all(cls, vids, as_dict=False):
+        """
+        Load all vertices with the given vids from the graph. By default this
+        will return a list of vertices but if as_dict is True then it will
+        return a dictionary containing vids as keys and vertices found as values.
+
+        :param vids: A list of vids
+        :type vids: list
+        :param as_dict: Toggle whether or not to return a dictionary or list
+        :type as_dict: boolean
+        :rtype: dict or list
+        
+        """
         if not isinstance(vids, (list, tuple)):
             raise ThunderdomeQueryError("vids must be of type list or tuple")
         
@@ -321,6 +401,10 @@ class Vertex(Element):
         return objects
 
     def _reload_values(self):
+        """
+        Method for reloading the current vertex by reading its current values
+        from the database.
+        """
         results = execute_query('g.v(eid)', {'eid':self.eid})[0]
         del results['_id']
         del results['_type']
@@ -328,6 +412,17 @@ class Vertex(Element):
 
     @classmethod
     def get(cls, vid):
+        """
+        Look up vertex by thunderdome assigned UUID. Raises a DoesNotExist
+        exception if a vertex with the given vid was not found. Raises a
+        MultipleObjectsReturned exception if the vid corresponds to more
+        than one vertex in the graph.
+
+        :param vid: The thunderdome assigned UUID
+        :type vid: str
+        :rtype: thunderdome.models.Vertex
+        
+        """
         try:
             results = cls.all([vid])
             if len(results) >1:
@@ -343,13 +438,26 @@ class Vertex(Element):
             raise cls.DoesNotExist
     
     @classmethod
-    def get_by_eid(cls, eid):    
+    def get_by_eid(cls, eid):
+        """
+        Look update a vertex by its Titan-specific id (eid). Raises a DoesNotExist
+        exception if a vertex with the given eid was not found.
+
+        :param eid: The numeric Titan-specific id
+        :type eid: int
+        :rtype: thunderdome.models.Vertex
+        
+        """
         results = execute_query('g.v(eid)', {'eid':eid})
         if not results:
             raise cls.DoesNotExist
         return Element.deserialize(results[0])
     
     def save(self, *args, **kwargs):
+        """
+        Save the current vertex using the configured save strategy, the default
+        save strategy is to re-save all fields every time the object is saved.
+        """
         super(Vertex, self).save(*args, **kwargs)
         params = self.as_dict()
         params['element_type'] = self.get_element_type()
@@ -360,6 +468,9 @@ class Vertex(Element):
         return result
     
     def delete(self):
+        """
+        Delete the current vertex from the graph.
+        """
         if self.__abstract__:
             raise ThunderdomeException('cant delete abstract elements')
         if self.eid is None:
@@ -582,24 +693,37 @@ class Vertex(Element):
 
 
     def delete_outE(self, label=None):
+        """Delete all outgoing edges with the given label."""
         self._simple_deletion('outE', label)
 
     def delete_inE(self, label=None):
+        """Delete all incoming edges with the given label."""
         self._simple_deletion('inE', label)
 
     def delete_outV(self, label=None):
+        """Delete all outgoing vertices connected with edges with the given label."""
         self._simple_deletion('outV', label)
 
     def delete_inV(self, label=None):
+        """Delete all incoming vertices connected with edges with the given label."""
         self._simple_deletion('inV', label)
         
         
 def to_offset(page_num, per_page):
+    """
+    Convert a page_num and per_page to offset.
+
+    :param page_num: The current page number
+    :type page_num: int
+    :param per_page: The maximum number of results per page
+    :type per_page: int
+    :rtype: int
+    
+    """
     if page_num and per_page:
         return (page_num-1) * per_page
     else:
         return None
-    
     
     
 class PaginatedVertex(Vertex):
@@ -651,8 +775,9 @@ class PaginatedVertex(Vertex):
     
     
 class EdgeMetaClass(ElementMetaClass):
+    """Metaclass for edges."""
+    
     def __new__(cls, name, bases, attrs):
-
         #short circuit element_type inheritance
         attrs['label'] = attrs.pop('label', None)
 
@@ -664,8 +789,10 @@ class EdgeMetaClass(ElementMetaClass):
                 raise ElementDefinitionException('{} is already registered as an edge'.format(label))
             edge_types[klass.get_label()] = klass
         return klass
-        
+
+    
 class Edge(Element):
+    """Base class for all edges."""
     
     __metaclass__ = EdgeMetaClass
     __abstract__ = True
@@ -682,12 +809,30 @@ class Edge(Element):
     _get_edges_between = GremlinMethod(classmethod=True)
     
     def __init__(self, outV, inV, **values):
+        """
+        Initialize this edge with the outgoing and incoming vertices as well
+        as edge properties.
+
+        :param outV: The vertex this edge is coming out of
+        :type outV: Vertex
+        :param inV: The vertex this edge is going into
+        :type inV: Vertex
+        :param values: The properties for this edge
+        :type values: dict
+        
+        """
         self._outV = outV
         self._inV = inV
         super(Edge, self).__init__(**values)
         
     @classmethod
     def get_label(cls):
+        """
+        Returns the label for this edge.
+
+        :rtype: str
+        
+        """
         return cls._type_name(cls.label)
     
     @classmethod
@@ -712,6 +857,10 @@ class Edge(Element):
                                       per_page=per_page)
     
     def validate(self):
+        """
+        Perform validation of this edge raising a ValidationError if any problems
+        are encountered.
+        """
         if self.eid is None:
             if self._inV is None:
                 raise ValidationError('in vertex must be set before saving new edges')
@@ -721,7 +870,7 @@ class Edge(Element):
         
     def save(self, *args, **kwargs):
         """
-        :param exclusive: if set to True, will not create multiple edges between 2 vertices with the same label
+        Save this edge to the graph database.
         """
         super(Edge, self).save(*args, **kwargs)
         return self._save_edge(self._outV,
@@ -731,6 +880,9 @@ class Edge(Element):
                                exclusive=self.__exclusive__)[0]
 
     def _reload_values(self):
+        """
+        Re-read the values for this edge from the graph database.
+        """
         results = execute_query('g.e(eid)', {'eid':self.eid})[0]
         del results['_id']
         del results['_type']
@@ -738,6 +890,14 @@ class Edge(Element):
 
     @classmethod
     def get_by_eid(cls, eid):
+        """
+        Return the edge with the given Titan-specific eid. Raises a
+        DoesNotExist exception if no edge is found.
+
+        :param eid: The Titan-specific edge id (eid)
+        :type eid: int
+        
+        """
         results = execute_query('g.e(eid)', {'eid':eid})
         if not results:
             raise cls.DoesNotExist
@@ -745,9 +905,22 @@ class Edge(Element):
 
     @classmethod
     def create(cls, outV, inV, *args, **kwargs):
+        """
+        Create a new edge of the current type coming out of vertex outV and
+        going into vertex inV with the given properties.
+
+        :param outV: The vertex the edge is coming out of
+        :type outV: Vertex
+        :param inV: The vertex the edge is going into
+        :type inV: Vertex
+        
+        """
         return super(Edge, cls).create(outV, inV, *args, **kwargs)
     
     def delete(self):
+        """
+        Delete the current edge from the graph.
+        """
         if self.__abstract__:
             raise ThunderdomeException('cant delete abstract elements')
         if self.eid is None:
@@ -759,10 +932,25 @@ class Edge(Element):
         results = execute_query(query, {'eid':self.eid})
 
     def _simple_traversal(self, operation):
+        """
+        Perform a simple traversal starting from the current edge returning a
+        list of results.
+
+        :param operation: The operation to be performed
+        :type operation: str
+        :rtype: list
+        
+        """
         results = execute_query('g.e(eid).%s()'%operation, {'eid':self.eid})
         return [Element.deserialize(r) for r in results]
         
     def inV(self):
+        """
+        Return the vertex that this edge goes into.
+
+        :rtype: Vertex
+        
+        """
         if self._inV is None:
             self._inV = self._simple_traversal('inV')
         elif isinstance(self._inV, (int, long)):
@@ -770,20 +958,14 @@ class Edge(Element):
         return self._inV
     
     def outV(self):
+        """
+        Return the vertex that this edge is coming out of.
+
+        :rtype: Vertex
+        
+        """
         if self._outV is None:
             self._outV = self._simple_traversal('outV')
         elif isinstance(self._outV, (int, long)):
             self._outV = Vertex.get_by_eid(self._outV)
         return self._outV
-    
-    
-
-
-
-
-
-
-
-
-
-
