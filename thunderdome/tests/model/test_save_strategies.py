@@ -20,6 +20,12 @@ class AlwaysSaveStrategy(Vertex):
     val = columns.Integer(save_strategy=columns.SAVE_ALWAYS)
 
 
+class ModelLevelSaveStrategy(Vertex):
+    __default_save_strategy__ = columns.SAVE_ONCHANGE
+    
+    val = columns.Integer()
+
+    
 class TestOnceSaveStrategy(BaseCassEngTestCase):
 
     def test_should_be_able_to_resave_with_once_strategy(self):
@@ -68,3 +74,14 @@ class TestAlwaysSaveStrategy(BaseCassEngTestCase):
 
         v1 = AlwaysSaveStrategy.get(v.vid)
         assert v1.val == 2
+
+
+class TestModelLevelSaveStrategy(BaseCassEngTestCase):
+
+    def test_should_use_default_model_save_strategy(self):
+        """Should use model-level save strategy if none provided"""
+        v = ModelLevelSaveStrategy.create(val=1)
+        assert 'val' not in v.as_save_params()
+        v.val = 2
+        assert 'val' in v.as_save_params()
+        v.save()

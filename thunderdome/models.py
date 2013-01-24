@@ -25,6 +25,7 @@ class BaseElement(object):
 
     # When true this will prepend the module name to the type name of the class
     __use_module_name__ = False
+    __default_save_strategy__ = columns.SAVE_ALWAYS
     
     class DoesNotExist(DoesNotExist): pass
     class MultipleObjectsReturned(MultipleObjectsReturned): pass
@@ -140,19 +141,23 @@ class BaseElement(object):
         values = {}
         was_saved = self.eid is not None
         for name, col in self._columns.items():
-            # Default to ALWAYS save strategy
+            # Determine the save strategy for this column
             should_save = True
-            
+
+            col_strategy = self.__default_save_strategy__
             if col.has_save_strategy:
-                if col.get_save_strategy() == columns.SAVE_ONCE:
-                    if was_saved:
-                        if self._values[name].changed:
-                            raise SaveStrategyException("Attempt to change column '{}' with save strategy SAVE_ONCE".format(name))
-                        else:
-                            should_save = False
-                elif col.get_save_strategy() == columns.SAVE_ONCHANGE:
-                    if was_saved and not self._values[name].changed:
+                col_strategy = col.get_save_strategy()
+
+            # Enforce the save strategy
+            if col_strategy == columns.SAVE_ONCE:
+                if was_saved:
+                    if self._values[name].changed:
+                        raise SaveStrategyException("Attempt to change column '{}' with save strategy SAVE_ONCE".format(name))
+                    else:
                         should_save = False
+            elif col_strategy == columns.SAVE_ONCHANGE:
+                if was_saved and not self._values[name].changed:
+                    should_save = False
             
             if should_save:
                 values[name] = col.to_database(getattr(self, name, None))
