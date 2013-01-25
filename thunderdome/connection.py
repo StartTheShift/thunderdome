@@ -13,10 +13,13 @@ import textwrap
 from thunderdome.exceptions import ThunderdomeException
 from thunderdome.spec import Spec
 
+
 logger = logging.getLogger(__name__)
+
 
 class ThunderdomeConnectionError(ThunderdomeException): pass
 class ThunderdomeQueryError(ThunderdomeException): pass
+
 
 Host = namedtuple('Host', ['name', 'port'])
 _hosts = []
@@ -26,6 +29,7 @@ _username = None
 _password = None
 _index_all_fields = True
 _existing_indices = None
+
 
 def create_key_index(name):
     """
@@ -39,6 +43,7 @@ def create_key_index(name):
             {'keyname':name}, transaction=False)
         _existing_indices = None
 
+        
 def create_unique_index(name, data_type):
     """
     Creates a key index if it does not already exist
@@ -51,6 +56,7 @@ def create_unique_index(name, data_type):
             "g.makeType().name(name).dataType({}.class).functional().unique().indexed().makePropertyKey(); g.stopTransaction(SUCCESS)".format(data_type),
             {'name':name}, transaction=False)
         _existing_indices = None
+
         
 def setup(hosts, graph_name, username=None, password=None, index_all_fields=True):
     """
@@ -73,7 +79,7 @@ def setup(hosts, graph_name, username=None, password=None, index_all_fields=True
     global _username
     global _password
     global _index_all_fields
-    _graph_name = graph_name
+1    _graph_name = graph_name
     _username = username
     _password = password
     _index_all_fields = index_all_fields
