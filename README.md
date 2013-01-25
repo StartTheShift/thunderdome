@@ -11,14 +11,9 @@ the following is a simple example:
 Installation
 ============
 
-To install thunderdome you will need to clone the repository and add it to your python path.
-
 ```shell
-$ git clone git@github.com:StartTheShift/thunderdome.git path/to/thunderdome
-$ export PYTHONPATH = path/to/thunderdome:$(PYTHONPATH)
+$ pip install git+git://github.com/StartTheShift/thunderdome.git#egg=thunderdome
 ```
-
-To make the PYTHONPATH change permanent you can add it to your .bashrc or .zshrc file.
 
 Quick start
 ===========
