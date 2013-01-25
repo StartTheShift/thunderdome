@@ -109,7 +109,7 @@ To get thunderdome unit tests running you'll need a rexster server configured wi
     <graph-location>/tmp/thunderdome</graph-location>
     <properties>
           <storage.backend>local</storage.backend>
-  <storage.directory>/tmp/thunderdome</storage.directory>
+          <storage.directory>/tmp/thunderdome</storage.directory>
           <buffer-size>100</buffer-size>
     </properties>
 
