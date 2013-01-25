@@ -11,8 +11,6 @@ Install thunderdome:
 $ pip install thunderdome
 ```
 
-Create a new groovy file:
-
 ./enrollments.groovy:
 
 ``` groovy
