@@ -23,7 +23,7 @@ To make the PYTHONPATH change permanent you can add it to your .bashrc or .zshrc
 Getting started
 ===============
 
-Check out the [Quick Start](wiki/Quick-Start) page on wiki.
+Check out the [Quick Start](thunderdome/wiki/Quick-Start) page on wiki.
 
 Unit-tests
 ==========
