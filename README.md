@@ -13,8 +13,8 @@ Install thunderdome:
 To install thunderdome you will need to clone the repository and add it to your python path.
 
 ```shell
-$ git clone git@github.com:StartTheShift/thunderdome.git
-$ export PYTHONPATH = ~/thunderdome:$(PYTHONPATH)
+$ git clone git@github.com:StartTheShift/thunderdome.git path/to/thunderdome
+$ export PYTHONPATH = path/to/thunderdome:$(PYTHONPATH)
 ```
 
 To make the PYTHONPATH change permanent you can add it to your .bashrc or .zshrc file.
