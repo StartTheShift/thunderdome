@@ -14,7 +14,7 @@ Install thunderdome:
 $ pip install thunderdome
 ```
 
-./enrollments.groovy:
+(enrollments.groovy)
 
 ``` groovy
 def all_students(eid) {
@@ -22,7 +22,7 @@ def all_students(eid) {
 }
 ```
 
-./enrollments.py:
+(enrollments.py)
 
 ``` python
 from thunderdome.connection import setup
