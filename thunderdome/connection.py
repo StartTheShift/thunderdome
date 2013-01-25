@@ -23,6 +23,7 @@ import json
 import logging
 import Queue
 import random
+import re
 import textwrap
 
 from thunderdome.exceptions import ThunderdomeException
@@ -32,8 +33,22 @@ from thunderdome.spec import Spec
 logger = logging.getLogger(__name__)
 
 
-class ThunderdomeConnectionError(ThunderdomeException): pass
-class ThunderdomeQueryError(ThunderdomeException): pass
+class ThunderdomeConnectionError(ThunderdomeException):
+    """
+    Problem connecting to Rexster
+    """
+
+
+class ThunderdomeQueryError(ThunderdomeException):
+    """
+    Problem with a Gremlin query to Titan
+    """
+
+
+class ThunderdomeGraphMissingError(ThunderdomeException):
+    """
+    Graph with specified name does not exist
+    """
 
 
 Host = namedtuple('Host', ['name', 'port'])
@@ -155,7 +170,11 @@ def execute_query(query, params={}, transaction=True):
     
     if response.status != 200:
         if 'message' in response_data:
-            raise ThunderdomeQueryError(response_data['message'])
+            graph_missing_re = r"Graph \[(.*)\] could not be found"
+            if re.search(graph_missing_re, response_data['message']):
+                raise ThunderdomeGraphMissingError(response_data['message'])
+            else:
+                raise ThunderdomeQueryError(response_data['message'])
         else:
             raise ThunderdomeQueryError(response_data['error'])
 
