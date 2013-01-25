@@ -151,7 +151,6 @@ class GremlinMethod(BaseGremlinMethod):
         else:
             return obj
 
-
     def __call__(self, instance, *args, **kwargs):
         from thunderdome.models import Element
         results = super(GremlinMethod, self).__call__(instance, *args, **kwargs)
