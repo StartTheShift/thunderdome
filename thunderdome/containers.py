@@ -67,5 +67,3 @@ class Table(object):
     
     def __len__(self):
         return len(self._gremlin_result)
-        
-    

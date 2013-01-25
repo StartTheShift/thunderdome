@@ -424,9 +424,9 @@ class Vertex(Element):
         will return a list of vertices but if as_dict is True then it will
         return a dictionary containing vids as keys and vertices found as values.
 
-        :param vids: A list of vids
+        :param vids: A list of thunderdome UUIDS (vids)
         :type vids: list
-        :param as_dict: Toggle whether or not to return a dictionary or list
+        :param as_dict: Toggle whether to return a dictionary or list
         :type as_dict: boolean
         :rtype: dict or list
         

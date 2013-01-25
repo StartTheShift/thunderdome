@@ -282,7 +282,7 @@ class Spec(object):
         """
         self._results = SpecParser(filename).parse()
 
-    def sync(self, host, graph_name, username=None, password=None):
+    def sync(self, host, graph_name, username=None, password=None, dry_run=False):
         """
         Sync the current internal spec using the given graph on the given host.
 
@@ -294,6 +294,8 @@ class Spec(object):
         :type username: str
         :param password: The password for the rexster server
         :type password: str
+        :param dry_run: If true then the generated Gremlin will just be printed
+        :type dry_run: boolean
 
         """
         from thunderdome.connection import setup, execute_query
@@ -340,7 +342,8 @@ class Spec(object):
 
         print q
 
-        execute_query(q)
+        if not dry_run:
+            execute_query(q)
 
     def _get_first_undefined(self, types):
         """
@@ -367,8 +370,7 @@ class Spec(object):
                 return x.label
             raise RuntimeError("Invalid object type {}".format(type(x)))
         
-        q  = "results = [:]\n"
-        q += "for (x in names) {\n"
+        q  = "for (x in names) {\n"
         q += "  t = g.getType(x)\n"
         q += "  if (t == null) {\n"
         q += "    return x\n"
