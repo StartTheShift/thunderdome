@@ -169,7 +169,7 @@ def execute_query(query, params={}, transaction=True):
     response_data = json.loads(content)
     
     if response.status != 200:
-        if 'message' in response_data:
+        if 'message' in response_data and len(response_data['message']) > 0:
             graph_missing_re = r"Graph \[(.*)\] could not be found"
             if re.search(graph_missing_re, response_data['message']):
                 raise ThunderdomeGraphMissingError(response_data['message'])

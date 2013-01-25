@@ -3,7 +3,7 @@ import os.path
 import time
 import logging
 
-from thunderdome.connection import execute_query
+from thunderdome.connection import execute_query, ThunderdomeQueryError
 from thunderdome.exceptions import ThunderdomeException
 from thunderdome.groovy import parse
 from containers import Table
@@ -65,7 +65,7 @@ class BaseGremlinMethod(object):
                     break
                 
             if gremlin_obj is None:
-                raise ThunderdomeGremlinException("The method'{}' wasnt found in {}".format(self.method_name, path))
+                raise ThunderdomeGremlinException("The method '{}' wasnt found in {}".format(self.method_name, path))
             
             for arg in gremlin_obj.args:
                 if arg in self.arg_list:
@@ -109,7 +109,16 @@ class BaseGremlinMethod(object):
 
         params = self.transform_params_to_database(params)
 
-        tmp = execute_query(self.function_body, params, transaction=self.transaction)
+        try:
+            tmp = execute_query(self.function_body, params, transaction=self.transaction)
+        except ThunderdomeQueryError as tqe:
+            import pprint
+            msg  = "Error while executing Gremlin method\n\n"
+            msg += "[Method]\n{}\n\n".format(self.method_name)
+            msg += "[Params]\n{}\n\n".format(pprint.pformat(params))
+            msg += "[Function Body]\n{}\n".format(self.function_body)
+            msg += "\n[Error]\n{}\n".format(tqe)
+            raise ThunderdomeGremlinException(msg)
         return tmp
     
     def transform_params_to_database(self, params):
@@ -160,6 +169,7 @@ class GremlinMethod(BaseGremlinMethod):
     
 class GremlinValue(GremlinMethod):
     """ Gremlin Method that returns one value """
+    
     def __call__(self, instance, *args, **kwargs):
         results = super(GremlinValue, self).__call__(instance, *args, **kwargs)
 
@@ -171,6 +181,8 @@ class GremlinValue(GremlinMethod):
 
     
 class GremlinTable(GremlinMethod):
+    """Gremlin method that returns a table as its result"""
+    
     def __call__(self, instance, *args, **kwargs):
         results = super(GremlinTable, self).__call__(instance, *args, **kwargs)
         if results is None: return
