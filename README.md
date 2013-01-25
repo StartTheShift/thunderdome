@@ -1,9 +1,18 @@
 thunderdome
 ===========
 
-thunderdome is an object-graph mapper (OGM) designed specifically for use with Titan (https://github.com/thinkaurelius/titan).
-Thunderdome supports easily integrating Gremlin graph-traversals with vertex and edge models. For those already familiar with
-Blueprints (https://github.com/tinkerpop/blueprints/wiki) the following is a simple example:
+thunderdome is an object-graph mapper (OGM) designed specifically for use with
+Titan (https://github.com/thinkaurelius/titan) via Rexster
+(https://github.com/tinkerpop/rexster/wiki). Thunderdome supports easily
+integrating Gremlin graph-traversals with vertex and edge models. For those
+already familiar with Blueprints (https://github.com/tinkerpop/blueprints/wiki)
+the following is a simple example:
+
+Install thunderdome:
+
+```shell
+$ pip install thunderdome
+```
 
 ./enrollments.groovy:
 
@@ -103,7 +112,7 @@ To get thunderdome unit tests running you'll need a rexster server configured wi
     <graph-location>/tmp/thunderdome</graph-location>
     <properties>
           <storage.backend>local</storage.backend>
-  <storage.directory>/tmp/thunderdome</storage.directory>
+          <storage.directory>/tmp/thunderdome</storage.directory>
           <buffer-size>100</buffer-size>
     </properties>
 
