@@ -20,10 +20,27 @@ $ export PYTHONPATH = path/to/thunderdome:$(PYTHONPATH)
 
 To make the PYTHONPATH change permanent you can add it to your .bashrc or .zshrc file.
 
-Getting started
-===============
+Quick start
+===========
 
-Check out the [Quick Start](thunderdome/wiki/Quick-Start) page on wiki.
+A [Vagrant](http://www.vagrantup.com/) virtual environment is provided with the
+thunderdome repository. To get the virtual environment up and running simply do
+the following:
+
+```shell
+$ cd path/to/thunderdome
+$ vagrant up
+...
+$ vagrant ssh
+...
+vagrant@precise64:~$ cd /vagrant
+```
+
+This will put you in the thunderdome directory in the vagrant box. You can now
+run the unit-tests or start playing around within the python shell.
+
+Check out the [Quick Start](thunderdome/wiki/Quick-Start) page for a simple
+introduction to working with thunderdome.
 
 Unit-tests
 ==========
