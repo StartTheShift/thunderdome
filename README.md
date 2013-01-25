@@ -8,7 +8,8 @@ integrating Gremlin graph-traversals with vertex and edge models. For those
 already familiar with Blueprints (https://github.com/tinkerpop/blueprints/wiki)
 the following is a simple example:
 
-Install thunderdome:
+Installation
+============
 
 To install thunderdome you will need to clone the repository and add it to your python path.
 
@@ -18,6 +19,9 @@ $ export PYTHONPATH = path/to/thunderdome:$(PYTHONPATH)
 ```
 
 To make the PYTHONPATH change permanent you can add it to your .bashrc or .zshrc file.
+
+Unit-tests
+==========
 
 To get thunderdome unit tests running you'll need a rexster server configured with a thunderdome graph.  
 
