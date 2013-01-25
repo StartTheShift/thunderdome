@@ -103,6 +103,16 @@ def setup(hosts, graph_name, username=None, password=None, index_all_fields=True
     
     
 def execute_query(query, params={}, transaction=True):
+    """
+    Execute a raw Gremlin query with the given parameters passed in.
+
+    :param query: The Gremlin query to be executed
+    :type query: str
+    :param params: Parameters to the Gremlin query
+    :type params: dict
+    :rtype: dict
+    
+    """
     if transaction:
         query = 'g.stopTransaction(FAILURE)\n' + query
 
