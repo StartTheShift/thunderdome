@@ -154,7 +154,10 @@ def execute_query(query, params={}, transaction=True):
     response_data = json.loads(content)
     
     if response.status != 200:
-        raise ThunderdomeQueryError(response_data['error'])
+        if 'message' in response_data:
+            raise ThunderdomeQueryError(response_data['message'])
+        else:
+            raise ThunderdomeQueryError(response_data['error'])
 
     return response_data['results'] 
 
