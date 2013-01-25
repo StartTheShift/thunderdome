@@ -181,7 +181,7 @@ def execute_query(query, params={}, transaction=True):
     return response_data['results'] 
 
 
-def sync_spec(filename, host, graph_name):
+def sync_spec(filename, host, graph_name, dry_run=False):
     """
     Sync the given spec file to thunderdome.
 
@@ -191,6 +191,8 @@ def sync_spec(filename, host, graph_name):
     :type host: str
     :param graph_name: The name of the graph to be synced
     :type graph_name: str
+    :param dry_run: Only prints generated Gremlin if True
+    :type dry_run: boolean
     
     """
     Spec(filename).sync(host, graph_name)

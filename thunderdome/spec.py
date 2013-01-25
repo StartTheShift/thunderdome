@@ -298,14 +298,16 @@ class Spec(object):
         :type dry_run: boolean
 
         """
-        from thunderdome.connection import setup, execute_query
-        setup(hosts=[host],
-              graph_name=graph_name,
-              username=username,
-              password=password,
-              index_all_fields=False)
+        first_undefined = ['']
+        if not dry_run:
+            from thunderdome.connection import setup, execute_query
+            setup(hosts=[host],
+                  graph_name=graph_name,
+                  username=username,
+                  password=password,
+                  index_all_fields=False)
 
-        first_undefined = self._get_first_undefined(self._results)
+            first_undefined = self._get_first_undefined(self._results)
 
         if first_undefined is None:
             return
