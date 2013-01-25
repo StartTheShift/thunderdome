@@ -7,7 +7,7 @@ Blueprints (https://github.com/tinkerpop/blueprints/wiki) the following is a sim
 
 ./enrollments.groovy:
 
-```
+``` groovy
 def all_students(eid) {
     g.v(eid).out('teaches').in('enrolled_in')
 }
@@ -15,7 +15,7 @@ def all_students(eid) {
 
 ./enrollments.py:
 
-```
+``` python
 from thunderdome.connection import setup
 import thunderdome
 
@@ -95,7 +95,7 @@ for x in all_students:
 
 To get thunderdome unit tests running you'll need a rexster server configured with a thunderdome graph.  
 
-```
+``` xml
 <graph>
     <graph-name>thunderdome</graph-name>
     <graph-type>com.thinkaurelius.titan.tinkerpop.rexster.TitanGraphConfiguration</graph-type>
