@@ -20,6 +20,11 @@ $ export PYTHONPATH = path/to/thunderdome:$(PYTHONPATH)
 
 To make the PYTHONPATH change permanent you can add it to your .bashrc or .zshrc file.
 
+Getting started
+===============
+
+Check out the (Quick Start)[wiki/Quick-Start] page on wiki.
+
 Unit-tests
 ==========
 
