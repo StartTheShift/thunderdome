@@ -94,7 +94,7 @@ def setup(hosts, graph_name, username=None, password=None, index_all_fields=True
     global _username
     global _password
     global _index_all_fields
-1    _graph_name = graph_name
+    _graph_name = graph_name
     _username = username
     _password = password
     _index_all_fields = index_all_fields
