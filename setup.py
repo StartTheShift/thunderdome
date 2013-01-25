@@ -40,11 +40,10 @@ setup(
     ],
     keywords='cassandra,titan,ogm,thunderdome',
     install_requires = ['pyparsing'],
-    author='Blake Eggleston',
-    author_email='bdeggleston@gmail.com',
+    author='StartTheShift',
+    author_email='dev@shift.com',
     url='https://github.com/StartTheShift/thunderdome',
     license='BSD',
     packages=find_packages(),
     include_package_data=True,
 )
-

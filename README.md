@@ -10,97 +10,14 @@ the following is a simple example:
 
 Install thunderdome:
 
+To install thunderdome you will need to clone the repository and add it to your python path.
+
 ```shell
-$ pip install thunderdome
+$ git clone git@github.com:StartTheShift/thunderdome.git
+$ export PYTHONPATH = ~/thunderdome:$(PYTHONPATH)
 ```
 
-(enrollments.groovy)
-
-``` groovy
-def all_students(eid) {
-    g.v(eid).out('teaches').in('enrolled_in')
-}
-```
-
-(enrollments.py)
-
-``` python
-import datetime
-from thunderdome.connection import setup
-import thunderdome
-
-setup(['localhost'], 'thunderdome')
-
-# simple types
-class Person(thunderdome.Vertex):
-    # All gremlin paths are relative to the path of the file where the class
-    # is defined.
-    gremlin_path = 'enrollments.groovy'
-
-    # vid is added automatically
-    name          = thunderdome.Text()
-    age           = thunderdome.Integer()
-    date_of_birth = thunderdome.DateTime()
-
-    # Gremlin methods (automatically parsed and attached from Groovy file)
-    all_students  = thunderdome.GremlinMethod()
-
-
-class Class(thunderdome.Vertex):
-    name          = thunderdome.Text()
-    credits       = thunderdome.Decimal()
-
-# edges
-class EnrolledIn(thunderdome.Edge):
-    date_enrolled = thunderdome.DateTime()
-
-class Teaches(thunderdome.Edge):
-    overall_mood = thunderdome.Text(default='Grumpy')
-
-prof = Person.create(name='Professor Professorson',
-                     age=300,
-                     date_of_birth=datetime.datetime(1982, 1, 1))
-student = Person.create(name='Johnny Boy',
-                        age=56,
-                        date_of_birth=datetime.datetime(1990, 1, 1))
-
-
-# Print UUID for object
-print prof.vid
-# Print Titan-specific id for object
-print prof.eid
-
-physics = Class.create(name='Physics 264', credits=6426.3)
-beekeeping = Class.create(name='Beekeeping', credits=23.3)
-
-# Enroll student in both classes
-EnrolledIn.create(student, physics, date_enrolled=datetime.datetime.now())
-EnrolledIn.create(student, beekeeping, date_enrolled=datetime.datetime.now())
-
-# Set professor as teacher of both classes
-Teaches.create(prof, physics, overall_mood='Pedantic')
-Teaches.create(prof, beekeeping, overall_mood='Itchy')
-
-# Get all teachers of a given class
-physics.inV(Teaches)
-
-# Get all students for a given class
-physics.inV(EnrolledIn)
-
-# Get all classes for a given student
-student.outV(EnrolledIn)
-
-# Get all moods for a list of teachers
-class_moods = [x.overall_mood for x in prof.outE(Teaches)]
-
-# Execute Gremlin method
-# The eid is passed in automatically by thunderdome
-all_students = prof.all_students()
-for x in all_students:
-    print x.name
-
-```
-
+To make the PYTHONPATH change permanent you can add it to your .bashrc or .zshrc file.
 
 To get thunderdome unit tests running you'll need a rexster server configured with a thunderdome graph.  
 
