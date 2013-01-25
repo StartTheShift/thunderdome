@@ -25,22 +25,23 @@ def all_students(eid) {
 (enrollments.py)
 
 ``` python
+import datetime
 from thunderdome.connection import setup
 import thunderdome
 
-setup(['localhost'], 'mygraph')
+setup(['localhost'], 'thunderdome')
 
 # simple types
 class Person(thunderdome.Vertex):
     # All gremlin paths are relative to the path of the file where the class
     # is defined.
     gremlin_path = 'enrollments.groovy'
-    
+
     # vid is added automatically
     name          = thunderdome.Text()
     age           = thunderdome.Integer()
     date_of_birth = thunderdome.DateTime()
-    
+
     # Gremlin methods (automatically parsed and attached from Groovy file)
     all_students  = thunderdome.GremlinMethod()
 
@@ -56,13 +57,12 @@ class EnrolledIn(thunderdome.Edge):
 class Teaches(thunderdome.Edge):
     overall_mood = thunderdome.Text(default='Grumpy')
 
-
 prof = Person.create(name='Professor Professorson',
                      age=300,
-                     date_of_birth=datetime.datetime(1, 1, 1982))
+                     date_of_birth=datetime.datetime(1982, 1, 1))
 student = Person.create(name='Johnny Boy',
                         age=56,
-                        date_of_birth=datetime.datetime(1, 1, 1990))
+                        date_of_birth=datetime.datetime(1990, 1, 1))
 
 
 # Print UUID for object

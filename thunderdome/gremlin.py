@@ -133,7 +133,8 @@ class BaseGremlinMethod(object):
         if isinstance(params, _Decimal):
             return Decimal().to_database(params)
         return params
-            
+
+    
 class GremlinMethod(BaseGremlinMethod):
     """ Gremlin method that returns a graph element """
 
@@ -156,6 +157,7 @@ class GremlinMethod(BaseGremlinMethod):
         results = super(GremlinMethod, self).__call__(instance, *args, **kwargs)
         return GremlinMethod._deserialize(results)
 
+    
 class GremlinValue(GremlinMethod):
     """ Gremlin Method that returns one value """
     def __call__(self, instance, *args, **kwargs):
@@ -167,6 +169,7 @@ class GremlinValue(GremlinMethod):
 
         return results[0]
 
+    
 class GremlinTable(GremlinMethod):
     def __call__(self, instance, *args, **kwargs):
         results = super(GremlinTable, self).__call__(instance, *args, **kwargs)
