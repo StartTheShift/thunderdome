@@ -19,8 +19,9 @@ Quick start
 ===========
 
 A [Vagrant](http://www.vagrantup.com/) virtual environment is provided with the
-thunderdome repository. To get the virtual environment up and running simply do
-the following:
+thunderdome repository. This will setup a Titan/Rexster server in a virtual
+environment and provides an easy way to get up and running with thunderdome.
+To get the virtual environment up and running simply do the following:
 
 ```shell
 $ cd path/to/thunderdome
