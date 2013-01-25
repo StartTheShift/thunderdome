@@ -34,23 +34,23 @@ SAVE_ONCE     = 1
 SAVE_ONCHANGE = 2
 SAVE_ALWAYS   = 3
 
-    
+
 class StringComparableUUID(_UUID):
     """UUID type that can be compared against strings"""
-    
+
     def __eq__(self, other):
         """ Handle string comparisons for UUIDs so people don't have to explicitly cast """
         if isinstance(other, basestring):
             return str(self) == other
         return str(self) == str(other)
 
-    
+
 class BaseValueManager(object):
     """
     Value managers are used to manage values pulled from the database and
     track state changes.
     """
-    
+
     def __init__(self, instance, column, value):
         """
         Initialize the value manager.
@@ -61,7 +61,7 @@ class BaseValueManager(object):
         :type column: thunder.columns.Column
         :param value: The initial value of the column
         :type value: mixed
-        
+
         """
         self.instance = instance
         self.column = column
@@ -74,7 +74,7 @@ class BaseValueManager(object):
         Indicates whether or not this value has been deleted.
 
         :rtype: boolean
-        
+
         """
         return self.value is None and self.previous_value is not None
 
@@ -84,7 +84,7 @@ class BaseValueManager(object):
         Indicates whether or not this value has changed.
 
         :rtype: boolean
-        
+
         """
         return self.value != self.previous_value
 
@@ -98,7 +98,7 @@ class BaseValueManager(object):
 
         :param val: The new value
         :type val: mixed
-        
+
         """
         self.value = val
 
@@ -111,7 +111,7 @@ class BaseValueManager(object):
         Returns a value-managed property attributes
 
         :rtype: property
-        
+
         """
         _get = lambda slf: self.getval()
         _set = lambda slf, val: self.setval(val)
@@ -122,7 +122,7 @@ class BaseValueManager(object):
         else:
             return property(_get, _set)
 
-        
+
 class Column(object):
 
     #the cassandra type this column maps to
@@ -140,7 +140,7 @@ class Column(object):
                  save_strategy=None):
         """
         Initialize this column with the given information.
-        
+
         :param primary_key: bool flag, indicates this column is a primary key. The first primary key defined
         on a model is the partition key, all others are cluster keys
         :param index: bool flag, indicates an index should be created for this column
@@ -149,7 +149,7 @@ class Column(object):
         :param required: boolean, is the field required?
         :param save_strategy: Strategy used when persisting the value of the column
         :type save_strategy: int
-        
+
         """
         self.primary_key = primary_key
         self.index = index
@@ -210,7 +210,7 @@ class Column(object):
         Indicates whether or not this column has a save strategy.
 
         :rtype: boolean
-        
+
         """
         return self.save_strategy is not None
 
@@ -220,7 +220,7 @@ class Column(object):
         Indicates whether or not this column is a primary key.
 
         :rtype: boolean
-        
+
         """
         return self.primary_key
 
@@ -233,10 +233,10 @@ class Column(object):
         Returns the save strategy attached to this column.
 
         :rtype: int or None
-        
+
         """
         return self.save_strategy
-    
+
     def get_default(self):
         if self.has_default:
             if callable(self.default):
@@ -246,7 +246,7 @@ class Column(object):
 
     def get_column_def(self):
         """
-        Returns a column definition for CQL table definition
+        Returns a column definition for thunderdome model definition
         """
         return '{} {}'.format(self.db_field_name, self.db_type)
 
@@ -259,26 +259,26 @@ class Column(object):
 
     @property
     def db_field_name(self):
-        """ Returns the name of the cql name of this column """
+        """ Returns the name of the thunderdome name of this column """
         return self.db_field or self.column_name
 
     @property
     def db_index_name(self):
-        """ Returns the name of the cql index """
+        """ Returns the name of the thunderdome index """
         return 'index_{}'.format(self.db_field_name)
 
-    
+
 class Bytes(Column):
     db_type = 'blob'
 
-    
+
 class Ascii(Column):
     db_type = 'ascii'
 
-    
+
 class Text(Column):
     db_type = 'text'
-    
+
     def __init__(self, *args, **kwargs):
         self.min_length = kwargs.pop('min_length', 1 if kwargs.get('required', True) else None)
         self.max_length = kwargs.pop('max_length', None)
@@ -289,7 +289,7 @@ class Text(Column):
         # we've already done the required check in validate
         if value is None:
             return None
-        
+
         if not isinstance(value, basestring) and value is not None:
             raise ValidationError('{} is not a string'.format(type(value)))
         if self.max_length:
@@ -300,7 +300,7 @@ class Text(Column):
                 raise ValidationError('{} is shorter than {} characters'.format(self.column_name, self.min_length))
         return value
 
-    
+
 class Integer(Column):
     db_type = 'int'
 
@@ -320,7 +320,7 @@ class Integer(Column):
         if value is not None:
             return long(value)
 
-        
+
 class DateTime(Column):
     db_type = 'timestamp'
     def __init__(self, **kwargs):
@@ -338,7 +338,7 @@ class DateTime(Column):
             raise ValidationError("'{}' is not a datetime object".format(value))
         return time.mktime(value.timetuple())
 
-    
+
 class UUID(Column):
     """
     Type 1 or 4 UUID
@@ -353,22 +353,22 @@ class UUID(Column):
 
     def validate(self, value):
         val = super(UUID, self).validate(value)
-        
+
         if val is None: return None # if required = False and not given
         if not self.re_uuid.match(str(val)):
             raise ValidationError("{} is not a valid uuid".format(value))
         return val
-    
+
     def to_python(self, value):
         val = super(UUID, self).to_python(value)
         return str(val)
-    
+
     def to_database(self, value):
         val = super(UUID, self).to_database(value)
         if value is None: return
         return str(val)
 
-    
+
 class Boolean(Column):
     db_type = 'boolean'
 
@@ -378,7 +378,7 @@ class Boolean(Column):
     def to_database(self, value):
         return bool(value)
 
-    
+
 class Float(Column):
     db_type = 'double'
 
@@ -402,10 +402,10 @@ class Float(Column):
         if value is not None:
             return float(value)
 
-        
+
 class Decimal(Column):
     db_type = 'decimal'
-    
+
     def to_python(self, value):
         val = super(Decimal, self).to_python(value)
         if val is not None:
@@ -416,7 +416,7 @@ class Decimal(Column):
         if val is not None:
             return str(val)
 
-        
+
 class Dictionary(Column):
 
     def validate(self, value):
@@ -426,7 +426,7 @@ class Dictionary(Column):
             raise ValidationError('{} is not a valid dict'.format(val))
         return val
 
-    
+
 class List(Column):
 
     def validate(self, value):
