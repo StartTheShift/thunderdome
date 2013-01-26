@@ -33,8 +33,16 @@ vertex_types = {}
 edge_types = {}
 
 
-class ElementDefinitionException(ModelException): pass
-class SaveStrategyException(ModelException): pass
+class ElementDefinitionException(ModelException):
+    """
+    Error in element definition
+    """
+
+    
+class SaveStrategyException(ModelException):
+    """
+    Violation of save strategy
+    """
 
 
 class BaseElement(object):
@@ -46,9 +54,20 @@ class BaseElement(object):
     __use_module_name__ = False
     __default_save_strategy__ = columns.SAVE_ALWAYS
     
-    class DoesNotExist(DoesNotExist): pass
-    class MultipleObjectsReturned(MultipleObjectsReturned): pass
-    class WrongElementType(WrongElementType): pass
+    class DoesNotExist(DoesNotExist):
+        """
+        Object not found in database
+        """
+
+    class MultipleObjectsReturned(MultipleObjectsReturned):
+        """
+        Multiple objects returned on unique key lookup
+        """
+        
+    class WrongElementType(WrongElementType):
+        """
+        Unique lookup with key corresponding to vertex of different type
+        """
 
     def __init__(self, **values):
         """
@@ -62,7 +81,8 @@ class BaseElement(object):
         self._values = {}
         for name, column in self._columns.items():
             value = values.get(name, None)
-            if value is not None: value = column.to_python(value)
+            if value is not None:
+                value = column.to_python(value)
             value_mngr = column.value_manager(self, column, value)
             self._values[name] = value_mngr
 
@@ -92,8 +112,8 @@ class BaseElement(object):
     @classmethod
     def _type_name(cls, manual_name):
         """
-        Returns the column family name if it has been defined, otherwise it
-        creates it from the module and class name.
+        Returns the element name if it has been defined, otherwise it creates
+        it from the module and class name.
 
         :param manual_name: Name to override the default type name
         :type manual_name: str
@@ -207,7 +227,8 @@ class BaseElement(object):
 
     def update(self, **values):
         """
-        performs an update of this element with the given values and returns the saved object
+        performs an update of this element with the given values and returns the
+        saved object
         """
         if self.__abstract__:
             raise ThunderdomeException('cant update abstract elements')
@@ -269,8 +290,8 @@ class ElementMetaClass(type):
         column_definitions = [(k,v) for k,v in attrs.items() if isinstance(v, columns.Column)]
         column_definitions = sorted(column_definitions, lambda x,y: cmp(x[1].position, y[1].position))
         
-        #TODO: check that the defined columns don't conflict with any of the Model API's existing attributes/methods
-        #transform column definitions
+        #TODO: check that the defined columns don't conflict with any of the
+        #Model API's existing attributes/methods transform column definitions
         for k,v in column_definitions:
             _transform_column(k,v)
             
