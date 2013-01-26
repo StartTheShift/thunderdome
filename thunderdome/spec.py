@@ -319,24 +319,27 @@ class Spec(object):
         # Assign any already defined types to variables and search for the
         # first undefined type to be used as the starting point for executing
         # the remaining statements.
-        results = []
-        for i,x in enumerate(self._results):
-            if isinstance(x, Property):
-                if x.name == first_undefined:
-                    results = self._results[i:]
-                    break
-                else:
-                    q += "{} = g.getType('{}')\n".format(x.name, x.name)
-            elif isinstance(x, Edge):
-                if x.label == first_undefined:
-                    results = self._results[i:]
-                    break
-                else:
-                    q += "{} = g.getType('{}')\n".format(x.label, x.label)
-            elif isinstance(x, KeyIndex):
-                if x.name == first_undefined:
-                    results = self._results[i:]
-                    break
+        results = self._results
+        
+        if not dry_run:
+            results = []
+            for i,x in enumerate(self._results):
+                if isinstance(x, Property):
+                    if x.name == first_undefined:
+                        results = self._results[i:]
+                        break
+                    else:
+                        q += "{} = g.getType('{}')\n".format(x.name, x.name)
+                elif isinstance(x, Edge):
+                    if x.label == first_undefined:
+                        results = self._results[i:]
+                        break
+                    else:
+                        q += "{} = g.getType('{}')\n".format(x.label, x.label)
+                elif isinstance(x, KeyIndex):
+                    if x.name == first_undefined:
+                        results = self._results[i:]
+                        break
 
         for stmt in results:
             q += "{}\n".format(stmt.gremlin)

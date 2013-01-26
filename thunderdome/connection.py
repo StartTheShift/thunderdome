@@ -195,4 +195,4 @@ def sync_spec(filename, host, graph_name, dry_run=False):
     :type dry_run: boolean
     
     """
-    Spec(filename).sync(host, graph_name, dry_run)
+    Spec(filename).sync(host, graph_name, dry_run=dry_run)

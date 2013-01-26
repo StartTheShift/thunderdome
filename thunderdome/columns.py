@@ -29,20 +29,15 @@ from thunderdome.exceptions import ValidationError
 """
 Saving strategies for thunderdome. These are used to indicate when a property
 should be saved after the initial vertex/edge creation.
+
+SAVE_ONCE     - Only save this value once. If it changes throw an exception.
+SAVE_ONCHANGE - Only save this value if it has changed.
+SAVE_ALWAYS   - Save this value every time the corresponding model is saved.
+
 """
 SAVE_ONCE     = 1
 SAVE_ONCHANGE = 2
 SAVE_ALWAYS   = 3
-
-
-class StringComparableUUID(_UUID):
-    """UUID type that can be compared against strings"""
-
-    def __eq__(self, other):
-        """ Handle string comparisons for UUIDs so people don't have to explicitly cast """
-        if isinstance(other, basestring):
-            return str(self) == other
-        return str(self) == str(other)
 
 
 class BaseValueManager(object):
@@ -124,9 +119,8 @@ class BaseValueManager(object):
 
 
 class Column(object):
+    """Base class for column types"""
 
-    #the cassandra type this column maps to
-    db_type = None
     value_manager = BaseValueManager
 
     instance_counter = 0
@@ -238,46 +232,41 @@ class Column(object):
         return self.save_strategy
 
     def get_default(self):
+        """
+        Returns the default value for this column if one is available.
+
+        :rtype: mixed or None
+        
+        """
         if self.has_default:
             if callable(self.default):
                 return self.default()
             else:
                 return self.default
 
-    def get_column_def(self):
-        """
-        Returns a column definition for thunderdome model definition
-        """
-        return '{} {}'.format(self.db_field_name, self.db_type)
-
     def set_column_name(self, name):
         """
-        Sets the column name during document class construction
-        This value will be ignored if db_field is set in __init__
+        Sets the column name during document class construction This value will
+        be ignored if db_field is set in __init__
+
+        :param name: The name of this column
+        :type name: str
+        
         """
         self.column_name = name
 
     @property
     def db_field_name(self):
-        """ Returns the name of the thunderdome name of this column """
+        """Returns the name of the thunderdome name of this column"""
         return self.db_field or self.column_name
 
     @property
     def db_index_name(self):
-        """ Returns the name of the thunderdome index """
+        """Returns the name of the thunderdome index"""
         return 'index_{}'.format(self.db_field_name)
-
-
-class Bytes(Column):
-    db_type = 'blob'
-
-
-class Ascii(Column):
-    db_type = 'ascii'
-
+    
 
 class Text(Column):
-    db_type = 'text'
 
     def __init__(self, *args, **kwargs):
         self.min_length = kwargs.pop('min_length', 1 if kwargs.get('required', True) else None)
@@ -286,6 +275,7 @@ class Text(Column):
 
     def validate(self, value):
         value = super(Text, self).validate(value)
+        
         # we've already done the required check in validate
         if value is None:
             return None
@@ -302,7 +292,6 @@ class Text(Column):
 
 
 class Integer(Column):
-    db_type = 'int'
 
     def validate(self, value):
         val = super(Integer, self).validate(value)
@@ -322,7 +311,7 @@ class Integer(Column):
 
 
 class DateTime(Column):
-    db_type = 'timestamp'
+    
     def __init__(self, **kwargs):
         super(DateTime, self).__init__(**kwargs)
 
@@ -340,15 +329,11 @@ class DateTime(Column):
 
 
 class UUID(Column):
-    """
-    Type 1 or 4 UUID
-    """
-
-    db_type = 'uuid'
-
+    """Universally Unique Identifier (UUID) type - UUID4 by default"""
+    
     re_uuid = re.compile(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}')
 
-    def __init__(self, default=lambda:StringComparableUUID(str(uuid4())), **kwargs):
+    def __init__(self, default=lambda:str(uuid4()), **kwargs):
         super(UUID, self).__init__(default=default, **kwargs)
 
     def validate(self, value):
@@ -370,7 +355,6 @@ class UUID(Column):
 
 
 class Boolean(Column):
-    db_type = 'boolean'
 
     def to_python(self, value):
         return bool(value)
@@ -380,7 +364,6 @@ class Boolean(Column):
 
 
 class Float(Column):
-    db_type = 'double'
 
     def __init__(self, double_precision=True, **kwargs):
         self.db_type = 'double' if double_precision else 'float'
@@ -404,7 +387,6 @@ class Float(Column):
 
 
 class Decimal(Column):
-    db_type = 'decimal'
 
     def to_python(self, value):
         val = super(Decimal, self).to_python(value)
@@ -435,4 +417,3 @@ class List(Column):
         if not isinstance(val, (list, tuple)):
             raise ValidationError('{} is not a valid list'.format(val))
         return val
-

@@ -23,8 +23,6 @@ from decimal import Decimal as D
 from thunderdome.tests.base import BaseCassEngTestCase
 
 from thunderdome.columns import Column
-from thunderdome.columns import Bytes
-from thunderdome.columns import Ascii
 from thunderdome.columns import Text
 from thunderdome.columns import Integer
 from thunderdome.columns import DateTime
