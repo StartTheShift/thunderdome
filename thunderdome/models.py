@@ -352,10 +352,6 @@ class ElementMetaClass(type):
 
 
 class Element(BaseElement):
-    """
-    the db name for the column family can be set as the attribute db_name, or
-    it will be generated from the class name
-    """
     __metaclass__ = ElementMetaClass
     
     @classmethod
