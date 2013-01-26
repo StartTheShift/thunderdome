@@ -138,10 +138,13 @@ class Column(object):
         :type primary_key: boolean
         :param index: Indicates whether or not this field should be indexed
         :type index: boolean
-        :param db_field: the fieldname this field will map to in the database
-        :param default: the default value, can be a value or a callable (no args)
-        :param required: boolean, is the field required?
-        :param save_strategy: Strategy used when persisting the value of the column
+        :param db_field: The fieldname this field will map to in the database
+        :type db_field: str
+        :param default: Value or callable with no args to set default value
+        :type default: mixed or callable
+        :param required: Whether or not this field is required
+        :type required: boolean
+        :param save_strategy: Strategy used when saving the value of the column
         :type save_strategy: int
 
         """
@@ -226,7 +229,7 @@ class Column(object):
         Returns the default value for this column if one is available.
 
         :rtype: mixed or None
-        
+
         """
         if self.has_default:
             if callable(self.default):
@@ -241,7 +244,7 @@ class Column(object):
 
         :param name: The name of this column
         :type name: str
-        
+
         """
         self.column_name = name
 
@@ -249,19 +252,19 @@ class Column(object):
     def db_field_name(self):
         """Returns the name of the thunderdome name of this column"""
         return self.db_field or self.column_name
-    
+
 
 class Text(Column):
 
     def __init__(self, *args, **kwargs):
-        self.min_length = kwargs.pop('min_length', 1 if kwargs.get('required', True) else None)
+        required = kwargs.get('required', True)
+        self.min_length = kwargs.pop('min_length', 1 if required else None)
         self.max_length = kwargs.pop('max_length', None)
         super(Text, self).__init__(*args, **kwargs)
 
     def validate(self, value):
         value = super(Text, self).validate(value)
-        
-        # we've already done the required check in validate
+
         if value is None:
             return None
 
@@ -280,7 +283,10 @@ class Integer(Column):
 
     def validate(self, value):
         val = super(Integer, self).validate(value)
-        if val is None: return
+
+        if val is None:
+            return
+
         try:
             return long(val)
         except (TypeError, ValueError):
@@ -296,7 +302,7 @@ class Integer(Column):
 
 
 class DateTime(Column):
-    
+
     def __init__(self, **kwargs):
         super(DateTime, self).__init__(**kwargs)
 
@@ -307,7 +313,8 @@ class DateTime(Column):
 
     def to_database(self, value):
         value = super(DateTime, self).to_database(value)
-        if value is None: return
+        if value is None:
+            return
         if not isinstance(value, datetime):
             raise ValidationError("'{}' is not a datetime object".format(value))
         return time.mktime(value.timetuple())
@@ -318,13 +325,14 @@ class UUID(Column):
     
     re_uuid = re.compile(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}')
 
-    def __init__(self, default=lambda:str(uuid4()), **kwargs):
+    def __init__(self, default=lambda: str(uuid4()), **kwargs):
         super(UUID, self).__init__(default=default, **kwargs)
 
     def validate(self, value):
         val = super(UUID, self).validate(value)
 
-        if val is None: return None # if required = False and not given
+        if val is None:
+            return None  # if required = False and not given
         if not self.re_uuid.match(str(val)):
             raise ValidationError("{} is not a valid uuid".format(value))
         return val
@@ -335,7 +343,8 @@ class UUID(Column):
 
     def to_database(self, value):
         val = super(UUID, self).to_database(value)
-        if value is None: return
+        if value is None:
+            return
         return str(val)
 
 
@@ -356,7 +365,8 @@ class Float(Column):
 
     def validate(self, value):
         val = super(Float, self).validate(value)
-        if val is None: return None # required = False
+        if val is None:
+            return None  # required = False
         try:
             return float(value)
         except (TypeError, ValueError):
@@ -388,7 +398,8 @@ class Dictionary(Column):
 
     def validate(self, value):
         val = super(Dictionary, self).validate(value)
-        if val is None: return None # required = False
+        if val is None:
+            return None  # required = False
         if not isinstance(val, dict):
             raise ValidationError('{} is not a valid dict'.format(val))
         return val
@@ -398,7 +409,8 @@ class List(Column):
 
     def validate(self, value):
         val = super(List, self).validate(value)
-        if val is None: return None # required = False
+        if val is None:
+            return None  # required = False
         if not isinstance(val, (list, tuple)):
             raise ValidationError('{} is not a valid list'.format(val))
         return val
