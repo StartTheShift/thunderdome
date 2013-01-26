@@ -1,11 +1,10 @@
 from setuptools import setup, find_packages
-from thunderdome import __version__
 
 #next time:
 #python setup.py register
 #python setup.py sdist upload
 
-version = __version__
+version = "0.2.4"
 
 long_desc = """
 thunderdome is an Object-Graph Mapper (OGM) for Python
@@ -25,9 +24,9 @@ setup(
     name='thunderdome',
     version=version,
     description='Titan Object-Graph Mapper (OGM)',
-    dependency_links = ['https://github.com/StartTheShift/thunderdome/archive/{0}.tar.gz#egg=thunderdome-{0}'.format(version)],
+    dependency_links=['https://github.com/StartTheShift/thunderdome/archive/{0}.tar.gz#egg=thunderdome-{0}'.format(version)],
     long_description=long_desc,
-    classifiers = [
+    classifiers=[
         "Development Status :: 3 - Alpha",
         "Environment :: Web Environment",
         "Environment :: Plugins",
@@ -39,7 +38,7 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
     keywords='cassandra,titan,ogm,thunderdome',
-    install_requires = ['pyparsing'],
+    install_requires=['pyparsing'],
     author='StartTheShift',
     author_email='dev@shift.com',
     url='https://github.com/StartTheShift/thunderdome',
