@@ -35,9 +35,9 @@ SAVE_ONCHANGE - Only save this value if it has changed.
 SAVE_ALWAYS   - Save this value every time the corresponding model is saved.
 
 """
-SAVE_ONCE     = 1
+SAVE_ONCE = 1
 SAVE_ONCHANGE = 2
-SAVE_ALWAYS   = 3
+SAVE_ALWAYS = 3
 
 
 class BaseValueManager(object):
@@ -122,7 +122,6 @@ class Column(object):
     """Base class for column types"""
 
     value_manager = BaseValueManager
-
     instance_counter = 0
 
     def __init__(self,
@@ -135,9 +134,10 @@ class Column(object):
         """
         Initialize this column with the given information.
 
-        :param primary_key: bool flag, indicates this column is a primary key. The first primary key defined
-        on a model is the partition key, all others are cluster keys
-        :param index: bool flag, indicates an index should be created for this column
+        :param primary_key: Indicates whether or not this is primary key
+        :type primary_key: boolean
+        :param index: Indicates whether or not this field should be indexed
+        :type index: boolean
         :param db_field: the fieldname this field will map to in the database
         :param default: the default value, can be a value or a callable (no args)
         :param required: boolean, is the field required?
@@ -209,16 +209,6 @@ class Column(object):
         return self.save_strategy is not None
 
     @property
-    def is_primary_key(self):
-        """
-        Indicates whether or not this column is a primary key.
-
-        :rtype: boolean
-
-        """
-        return self.primary_key
-
-    @property
     def can_delete(self):
         return not self.primary_key
 
@@ -259,11 +249,6 @@ class Column(object):
     def db_field_name(self):
         """Returns the name of the thunderdome name of this column"""
         return self.db_field or self.column_name
-
-    @property
-    def db_index_name(self):
-        """Returns the name of the thunderdome index"""
-        return 'index_{}'.format(self.db_field_name)
     
 
 class Text(Column):
