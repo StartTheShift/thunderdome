@@ -12,8 +12,15 @@ Installation
 ============
 
 ```shell
-$ pip install git+git://github.com/StartTheShift/thunderdome.git#egg=thunderdome
+$ pip install thunderdome
 ```
+
+Mailing List
+============
+
+If you have questions, comments, or feature requests please visit the Google
+Group
+[Thunderdome Users](https://groups.google.com/forum/#!forum/thunderdome-users)
 
 Quick start
 ===========
