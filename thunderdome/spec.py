@@ -135,7 +135,8 @@ class SpecParser(object):
             "name":"updated_at",
             "data_type":"Integer",
             "functional":true,
-            "locking": true
+            "locking": true,
+            "indexed": true
         },
         {
             "type":"edge",
@@ -153,7 +154,7 @@ class SpecParser(object):
 
     def __init__(self, filename=None):
         """
-        Pass in the
+        Pass in the filename of the spec to be parsed
 
         :param filename: The path to the file to be parsed
         :type filename: str
@@ -325,7 +326,6 @@ class Spec(object):
                   username=username,
                   password=password,
                   index_all_fields=False)
-
             first_undefined = self._get_first_undefined(self._results)
 
         if first_undefined is None:
