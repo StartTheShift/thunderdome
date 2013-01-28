@@ -1,3 +1,22 @@
+# Copyright (c) 2012-2013 SHIFT.com
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of
+# this software and associated documentation files (the "Software"), to deal in
+# the Software without restriction, including without limitation the rights to
+# use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+# the Software, and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+# FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+# IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 from collections import OrderedDict
 import inspect
 import re
@@ -14,22 +33,42 @@ vertex_types = {}
 edge_types = {}
 
 
-class ElementDefinitionException(ModelException): pass
-class SaveStrategyException(ModelException): pass
+class ElementDefinitionException(ModelException):
+    """
+    Error in element definition
+    """
+
+    
+class SaveStrategyException(ModelException):
+    """
+    Violation of save strategy
+    """
 
 
 class BaseElement(object):
     """
-    The base model class, don't inherit from this, inherit from Model, defined below
+    The base model class, don't inherit from this, inherit from Model, defined
+    below
     """
 
     # When true this will prepend the module name to the type name of the class
     __use_module_name__ = False
     __default_save_strategy__ = columns.SAVE_ALWAYS
     
-    class DoesNotExist(DoesNotExist): pass
-    class MultipleObjectsReturned(MultipleObjectsReturned): pass
-    class WrongElementType(WrongElementType): pass
+    class DoesNotExist(DoesNotExist):
+        """
+        Object not found in database
+        """
+
+    class MultipleObjectsReturned(MultipleObjectsReturned):
+        """
+        Multiple objects returned on unique key lookup
+        """
+        
+    class WrongElementType(WrongElementType):
+        """
+        Unique lookup with key corresponding to vertex of different type
+        """
 
     def __init__(self, **values):
         """
@@ -43,7 +82,8 @@ class BaseElement(object):
         self._values = {}
         for name, column in self._columns.items():
             value = values.get(name, None)
-            if value is not None: value = column.to_python(value)
+            if value is not None:
+                value = column.to_python(value)
             value_mngr = column.value_manager(self, column, value)
             self._values[name] = value_mngr
 
@@ -73,8 +113,8 @@ class BaseElement(object):
     @classmethod
     def _type_name(cls, manual_name):
         """
-        Returns the column family name if it has been defined, otherwise it
-        creates it from the module and class name.
+        Returns the element name if it has been defined, otherwise it creates
+        it from the module and class name.
 
         :param manual_name: Name to override the default type name
         :type manual_name: str
@@ -188,7 +228,8 @@ class BaseElement(object):
 
     def update(self, **values):
         """
-        performs an update of this element with the given values and returns the saved object
+        performs an update of this element with the given values and returns the
+        saved object
         """
         if self.__abstract__:
             raise ThunderdomeException('cant update abstract elements')
@@ -250,8 +291,8 @@ class ElementMetaClass(type):
         column_definitions = [(k,v) for k,v in attrs.items() if isinstance(v, columns.Column)]
         column_definitions = sorted(column_definitions, lambda x,y: cmp(x[1].position, y[1].position))
         
-        #TODO: check that the defined columns don't conflict with any of the Model API's existing attributes/methods
-        #transform column definitions
+        #TODO: check that the defined columns don't conflict with any of the
+        #Model API's existing attributes/methods transform column definitions
         for k,v in column_definitions:
             _transform_column(k,v)
             
@@ -312,10 +353,6 @@ class ElementMetaClass(type):
 
 
 class Element(BaseElement):
-    """
-    the db name for the column family can be set as the attribute db_name, or
-    it will be generated from the class name
-    """
     __metaclass__ = ElementMetaClass
     
     @classmethod
@@ -358,8 +395,9 @@ class VertexMetaClass(ElementMetaClass):
     
 class Vertex(Element):
     """
-    The Vertex model base class. All vertexes have a vid defined on them, the element type is autogenerated
-    from the subclass name, but can optionally be set manually
+    The Vertex model base class. All vertexes have a vid defined on them, the
+    element type is autogenerated from the subclass name, but can optionally be
+    set manually
     """
     __metaclass__ = VertexMetaClass
     __abstract__ = True
@@ -378,8 +416,9 @@ class Vertex(Element):
     @classmethod
     def _create_indices(cls):
         """
-        Creates this model's indices. This will be skipped if connection.setup hasn't been
-        called, but connection.setup calls this method on existing vertices
+        Creates this model's indices. This will be skipped if connection.setup
+        hasn't been called, but connection.setup calls this method on existing
+        vertices
         """
         from thunderdome.connection import _hosts, _index_all_fields, create_key_index
         
@@ -403,11 +442,12 @@ class Vertex(Element):
         """
         Load all vertices with the given vids from the graph. By default this
         will return a list of vertices but if as_dict is True then it will
-        return a dictionary containing vids as keys and vertices found as values.
+        return a dictionary containing vids as keys and vertices found as
+        values.
 
-        :param vids: A list of vids
+        :param vids: A list of thunderdome UUIDS (vids)
         :type vids: list
-        :param as_dict: Toggle whether or not to return a dictionary or list
+        :param as_dict: Toggle whether to return a dictionary or list
         :type as_dict: boolean
         :rtype: dict or list
         
@@ -451,8 +491,8 @@ class Vertex(Element):
         """
         Look up vertex by thunderdome assigned UUID. Raises a DoesNotExist
         exception if a vertex with the given vid was not found. Raises a
-        MultipleObjectsReturned exception if the vid corresponds to more
-        than one vertex in the graph.
+        MultipleObjectsReturned exception if the vid corresponds to more than
+        one vertex in the graph.
 
         :param vid: The thunderdome assigned UUID
         :type vid: str
@@ -476,8 +516,8 @@ class Vertex(Element):
     @classmethod
     def get_by_eid(cls, eid):
         """
-        Look update a vertex by its Titan-specific id (eid). Raises a DoesNotExist
-        exception if a vertex with the given eid was not found.
+        Look update a vertex by its Titan-specific id (eid). Raises a
+        DoesNotExist exception if a vertex with the given eid was not found.
 
         :param eid: The numeric Titan-specific id
         :type eid: int
@@ -587,8 +627,8 @@ class Vertex(Element):
              offset=None,
              allowed_elements=None):
         """
-        Return a list of vertices reached by traversing the outgoing edge
-        with the given label.
+        Return a list of vertices reached by traversing the outgoing edge with
+        the given label.
         
         :param label: The edge label to be traversed
         :type label: str or BaseEdge
@@ -612,8 +652,8 @@ class Vertex(Element):
             offset=None,
             allowed_elements=None):
         """
-        Return a list of vertices reached by traversing the incoming edge
-        with the given label.
+        Return a list of vertices reached by traversing the incoming edge with
+        the given label.
         
         :param label: The edge label to be traversed
         :type label: str or BaseEdge
@@ -846,8 +886,8 @@ class Edge(Element):
     
     def __init__(self, outV, inV, **values):
         """
-        Initialize this edge with the outgoing and incoming vertices as well
-        as edge properties.
+        Initialize this edge with the outgoing and incoming vertices as well as
+        edge properties.
 
         :param outV: The vertex this edge is coming out of
         :type outV: Vertex
@@ -894,8 +934,8 @@ class Edge(Element):
     
     def validate(self):
         """
-        Perform validation of this edge raising a ValidationError if any problems
-        are encountered.
+        Perform validation of this edge raising a ValidationError if any
+        problems are encountered.
         """
         if self.eid is None:
             if self._inV is None:

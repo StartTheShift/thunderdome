@@ -1,3 +1,22 @@
+# Copyright (c) 2012-2013 SHIFT.com
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of
+# this software and associated documentation files (the "Software"), to deal in
+# the Software without restriction, including without limitation the rights to
+# use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+# the Software, and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+# FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+# IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 import json
 
 
@@ -116,7 +135,8 @@ class SpecParser(object):
             "name":"updated_at",
             "data_type":"Integer",
             "functional":true,
-            "locking": true
+            "locking": true,
+            "indexed": true
         },
         {
             "type":"edge",
@@ -134,7 +154,7 @@ class SpecParser(object):
 
     def __init__(self, filename=None):
         """
-        Pass in the
+        Pass in the filename of the spec to be parsed
 
         :param filename: The path to the file to be parsed
         :type filename: str
@@ -282,7 +302,7 @@ class Spec(object):
         """
         self._results = SpecParser(filename).parse()
 
-    def sync(self, host, graph_name, username=None, password=None):
+    def sync(self, host, graph_name, username=None, password=None, dry_run=False):
         """
         Sync the current internal spec using the given graph on the given host.
 
@@ -294,16 +314,19 @@ class Spec(object):
         :type username: str
         :param password: The password for the rexster server
         :type password: str
+        :param dry_run: If true then the generated Gremlin will just be printed
+        :type dry_run: boolean
 
         """
-        from thunderdome.connection import setup, execute_query
-        setup(hosts=[host],
-              graph_name=graph_name,
-              username=username,
-              password=password,
-              index_all_fields=False)
-
-        first_undefined = self._get_first_undefined(self._results)
+        first_undefined = ['']
+        if not dry_run:
+            from thunderdome.connection import setup, execute_query
+            setup(hosts=[host],
+                  graph_name=graph_name,
+                  username=username,
+                  password=password,
+                  index_all_fields=False)
+            first_undefined = self._get_first_undefined(self._results)
 
         if first_undefined is None:
             return
@@ -315,24 +338,27 @@ class Spec(object):
         # Assign any already defined types to variables and search for the
         # first undefined type to be used as the starting point for executing
         # the remaining statements.
-        results = []
-        for i,x in enumerate(self._results):
-            if isinstance(x, Property):
-                if x.name == first_undefined:
-                    results = self._results[i:]
-                    break
-                else:
-                    q += "{} = g.getType('{}')\n".format(x.name, x.name)
-            elif isinstance(x, Edge):
-                if x.label == first_undefined:
-                    results = self._results[i:]
-                    break
-                else:
-                    q += "{} = g.getType('{}')\n".format(x.label, x.label)
-            elif isinstance(x, KeyIndex):
-                if x.name == first_undefined:
-                    results = self._results[i:]
-                    break
+        results = self._results
+        
+        if not dry_run:
+            results = []
+            for i,x in enumerate(self._results):
+                if isinstance(x, Property):
+                    if x.name == first_undefined:
+                        results = self._results[i:]
+                        break
+                    else:
+                        q += "{} = g.getType('{}')\n".format(x.name, x.name)
+                elif isinstance(x, Edge):
+                    if x.label == first_undefined:
+                        results = self._results[i:]
+                        break
+                    else:
+                        q += "{} = g.getType('{}')\n".format(x.label, x.label)
+                elif isinstance(x, KeyIndex):
+                    if x.name == first_undefined:
+                        results = self._results[i:]
+                        break
 
         for stmt in results:
             q += "{}\n".format(stmt.gremlin)
@@ -340,7 +366,8 @@ class Spec(object):
 
         print q
 
-        execute_query(q)
+        if not dry_run:
+            execute_query(q)
 
     def _get_first_undefined(self, types):
         """
@@ -367,8 +394,7 @@ class Spec(object):
                 return x.label
             raise RuntimeError("Invalid object type {}".format(type(x)))
         
-        q  = "results = [:]\n"
-        q += "for (x in names) {\n"
+        q  = "for (x in names) {\n"
         q += "  t = g.getType(x)\n"
         q += "  if (t == null) {\n"
         q += "    return x\n"

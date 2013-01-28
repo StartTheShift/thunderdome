@@ -1,6 +1,21 @@
-#http://pypi.python.org/pypi/cql/1.0.4
-#http://code.google.com/a/apache-extras.org/p/cassandra-dbapi2 /
-#http://cassandra.apache.org/doc/cql/CQL.html
+# Copyright (c) 2012-2013 SHIFT.com
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of
+# this software and associated documentation files (the "Software"), to deal in
+# the Software without restriction, including without limitation the rights to
+# use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+# the Software, and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+# FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+# IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 from collections import namedtuple
 import httplib
@@ -8,15 +23,33 @@ import json
 import logging
 import Queue
 import random
+import re
 import textwrap
 
 from thunderdome.exceptions import ThunderdomeException
 from thunderdome.spec import Spec
 
+
 logger = logging.getLogger(__name__)
 
-class ThunderdomeConnectionError(ThunderdomeException): pass
-class ThunderdomeQueryError(ThunderdomeException): pass
+
+class ThunderdomeConnectionError(ThunderdomeException):
+    """
+    Problem connecting to Rexster
+    """
+
+
+class ThunderdomeQueryError(ThunderdomeException):
+    """
+    Problem with a Gremlin query to Titan
+    """
+
+
+class ThunderdomeGraphMissingError(ThunderdomeException):
+    """
+    Graph with specified name does not exist
+    """
+
 
 Host = namedtuple('Host', ['name', 'port'])
 _hosts = []
@@ -26,6 +59,7 @@ _username = None
 _password = None
 _index_all_fields = True
 _existing_indices = None
+
 
 def create_key_index(name):
     """
@@ -39,6 +73,7 @@ def create_key_index(name):
             {'keyname':name}, transaction=False)
         _existing_indices = None
 
+        
 def create_unique_index(name, data_type):
     """
     Creates a key index if it does not already exist
@@ -51,6 +86,7 @@ def create_unique_index(name, data_type):
             "g.makeType().name(name).dataType({}.class).functional().unique().indexed().makePropertyKey(); g.stopTransaction(SUCCESS)".format(data_type),
             {'name':name}, transaction=False)
         _existing_indices = None
+
         
 def setup(hosts, graph_name, username=None, password=None, index_all_fields=True):
     """
@@ -103,6 +139,16 @@ def setup(hosts, graph_name, username=None, password=None, index_all_fields=True
     
     
 def execute_query(query, params={}, transaction=True):
+    """
+    Execute a raw Gremlin query with the given parameters passed in.
+
+    :param query: The Gremlin query to be executed
+    :type query: str
+    :param params: Parameters to the Gremlin query
+    :type params: dict
+    :rtype: dict
+    
+    """
     if transaction:
         query = 'g.stopTransaction(FAILURE)\n' + query
 
@@ -123,12 +169,19 @@ def execute_query(query, params={}, transaction=True):
     response_data = json.loads(content)
     
     if response.status != 200:
-        raise ThunderdomeQueryError(response_data['error'])
+        if 'message' in response_data and len(response_data['message']) > 0:
+            graph_missing_re = r"Graph \[(.*)\] could not be found"
+            if re.search(graph_missing_re, response_data['message']):
+                raise ThunderdomeGraphMissingError(response_data['message'])
+            else:
+                raise ThunderdomeQueryError(response_data['message'])
+        else:
+            raise ThunderdomeQueryError(response_data['error'])
 
     return response_data['results'] 
 
 
-def sync_spec(filename, host, graph_name):
+def sync_spec(filename, host, graph_name, dry_run=False):
     """
     Sync the given spec file to thunderdome.
 
@@ -138,6 +191,8 @@ def sync_spec(filename, host, graph_name):
     :type host: str
     :param graph_name: The name of the graph to be synced
     :type graph_name: str
+    :param dry_run: Only prints generated Gremlin if True
+    :type dry_run: boolean
     
     """
-    Spec(filename).sync(host, graph_name)
+    Spec(filename).sync(host, graph_name, dry_run=dry_run)
