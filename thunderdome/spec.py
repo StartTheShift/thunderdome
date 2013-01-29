@@ -122,6 +122,52 @@ class KeyIndex(object):
         return initial.format(self.name, self.data_type)
 
 
+class Default(object):
+    """Abstracts defaults parsed from the spec file."""
+
+    def __init__(self, spec_type, values):
+        """
+        Defines defaults for the given type.
+
+        :param spec_type: The spec type these defaults are for
+        (eg. property, edge)
+        :type spec_type: str
+        :param values: The default values
+        :type values: dict
+        
+        """
+        self._values = values
+        self._spec_type = spec_type
+
+    def get_spec_type(self):
+        """
+        Return the spec type this default is for.
+
+        :rtype: str
+        
+        """
+        return self._spec_type
+
+    def get_default(self, stmt, key):
+        """
+        Return the default value for the given key on the given statement.
+        Basically this will see if the stmt defines a value for the given
+        key and if not use a default if possible.
+
+        :param stmt: Single spec file statement
+        :type stmt: dict
+        :param key: The key to be searched for
+        :type key: str
+
+        :rtype: mixed
+        
+        """
+        default = None
+        if key in self._values:
+            default = self._values[key]
+        return stmt.get(key, default)
+
+
 class SpecParser(object):
     """
     Parser for a spec file describing properties and primary keys for edges.
@@ -130,6 +176,13 @@ class SpecParser(object):
     File format:
 
     [
+        {
+            "type":"defaults",
+            "for": "property",
+            "functional": false,
+            "indexed": false,
+            "locking": false
+        },
         {
             "type":"property",
             "name":"updated_at",
@@ -163,6 +216,7 @@ class SpecParser(object):
         self._specs = self._load_spec(filename)
         self._properties = {}
         self._names = []
+        self._defaults = {}
 
     def _load_spec(self, filename=None):
         """
@@ -190,7 +244,11 @@ class SpecParser(object):
         self._properties = {}
         self._names = []
 
-        self._results = [self.parse_statement(x) for x in self._specs]
+        self._results = []
+        for x in self._specs:
+            result = self.parse_statement(x)
+            if result:
+                self._results.append(result)
         self.validate(self._results)
         return self._results
 
@@ -223,6 +281,12 @@ class SpecParser(object):
             raise ValueError('There is already a property called {}'.format(stmt['name']))
         if stmt['name'] in self._names:
             raise ValueError('There is already a value with name {}'.format(stmt['name']))
+        # Right now only support defaults for properties
+        if 'property' in self._defaults:
+            defaults = self._defaults['property']
+            stmt['functional'] = defaults.get_default(stmt, 'functional')
+            stmt['locking'] = defaults.get_default(stmt, 'locking')
+            stmt['indexed'] = defaults.get_default(stmt, 'indexed')
         prop = Property(name=stmt['name'],
                         data_type=stmt['data_type'],
                         functional=stmt.get('functional', False),
@@ -265,6 +329,22 @@ class SpecParser(object):
                              data_type=stmt.get('data_type', 'Vertex'))
         return key_index
 
+    def parse_defaults(self, stmt):
+        """
+        Parses out statement containing default
+
+        :param stmt: The statement
+        :type stmt: dict
+
+        :rtype: None
+        
+        """
+        spec_type = stmt['spec_type']
+        if spec_type in self._defaults:
+            raise ValueError('More than one default for {}'.format(stmt['spec_type']))
+        self._defaults[spec_type] = Default(spec_type, stmt)
+        return None
+
     def parse_statement(self, stmt):
         """
         Takes the given spec statement and converts it into an object.
@@ -284,6 +364,8 @@ class SpecParser(object):
             return self.parse_edge(stmt)
         elif stmt['type'] == 'key_index':
             return self.parse_key_index(stmt)
+        elif stmt['type'] == 'defaults':
+            return self.parse_defaults(stmt)
         else:
             raise ValueError('Invalid `type` value {}'.format(stmt['type']))     
 

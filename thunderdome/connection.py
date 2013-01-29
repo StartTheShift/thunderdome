@@ -149,8 +149,8 @@ def execute_query(query, params={}, transaction=True):
     
     """
     if transaction:
-        query = 'g.stopTransaction(FAILURE)\n' + query
-
+        query = "g.stopTransaction(FAILURE)\n" + query
+        
     host = _hosts[0]
     #url = 'http://{}/graphs/{}/tp/gremlin'.format(host.name, _graph_name)
     data = json.dumps({'script':query, 'params': params})
