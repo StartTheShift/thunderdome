@@ -129,7 +129,6 @@ def setup(hosts, graph_name, username=None, password=None, index_all_fields=True
 
     random.shuffle(_hosts)
     
-    create_key_index('element_type')
     create_unique_index('vid', 'String')
 
     #index any models that have already been defined
