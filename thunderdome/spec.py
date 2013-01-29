@@ -131,6 +131,13 @@ class SpecParser(object):
 
     [
         {
+            "type":"defaults",
+            "for": "property",
+            "functional": false,
+            "indexed": false,
+            "locking": false
+        },
+        {
             "type":"property",
             "name":"updated_at",
             "data_type":"Integer",
@@ -163,6 +170,7 @@ class SpecParser(object):
         self._specs = self._load_spec(filename)
         self._properties = {}
         self._names = []
+        self._defaults = {}
 
     def _load_spec(self, filename=None):
         """
@@ -190,7 +198,11 @@ class SpecParser(object):
         self._properties = {}
         self._names = []
 
-        self._results = [self.parse_statement(x) for x in self._specs]
+        self._results = []
+        for x in self._specs:
+            result = self.parse_statement(x)
+            if result:
+                self._results.append(result)
         self.validate(self._results)
         return self._results
 
@@ -223,6 +235,13 @@ class SpecParser(object):
             raise ValueError('There is already a property called {}'.format(stmt['name']))
         if stmt['name'] in self._names:
             raise ValueError('There is already a value with name {}'.format(stmt['name']))
+        if 'property' in self._defaults:
+            if 'functional' in self._defaults['property']:
+                stmt['functional'] = stmt.get('functional', self._defaults['property']['functional'])
+            if 'locking' in self._defaults['property']:
+                stmt['locking'] = stmt.get('locking', self._defaults['property']['locking'])
+            if 'indexed' in self._defaults['property']:
+                stmt['indexed'] = stmt.get('indexed', self._defaults['property']['indexed'])
         prop = Property(name=stmt['name'],
                         data_type=stmt['data_type'],
                         functional=stmt.get('functional', False),
@@ -265,6 +284,21 @@ class SpecParser(object):
                              data_type=stmt.get('data_type', 'Vertex'))
         return key_index
 
+    def parse_defaults(self, stmt):
+        """
+        Parses out statement containing default
+
+        :param stmt: The statement
+        :type stmt: dict
+
+        :rtype: None
+        
+        """
+        if stmt['for'] in self._defaults:
+            raise ValueError('There is more than one default for name {}'.format(stmt['name']))
+        self._defaults[stmt['for']] = stmt
+        return None
+
     def parse_statement(self, stmt):
         """
         Takes the given spec statement and converts it into an object.
@@ -284,6 +318,8 @@ class SpecParser(object):
             return self.parse_edge(stmt)
         elif stmt['type'] == 'key_index':
             return self.parse_key_index(stmt)
+        elif stmt['type'] == 'defaults':
+            return self.parse_defaults(stmt)
         else:
             raise ValueError('Invalid `type` value {}'.format(stmt['type']))     
 
