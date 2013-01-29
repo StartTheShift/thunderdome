@@ -235,6 +235,7 @@ class SpecParser(object):
             raise ValueError('There is already a property called {}'.format(stmt['name']))
         if stmt['name'] in self._names:
             raise ValueError('There is already a value with name {}'.format(stmt['name']))
+        # Right now only support defaults for properties
         if 'property' in self._defaults:
             if 'functional' in self._defaults['property']:
                 stmt['functional'] = stmt.get('functional', self._defaults['property']['functional'])
