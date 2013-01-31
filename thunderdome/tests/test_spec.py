@@ -105,4 +105,17 @@ class SpecParserTest(BaseCassEngTestCase):
         results = [self.spec_parser.parse_statement(edge_spec)]
         results += [self.spec_parser.parse_statement(self.property_spec)]
         with self.assertRaises(ValueError):
-            self.spec_parser.validate(results)        
+            self.spec_parser.validate(results)
+
+    def test_should_return_none_for_defaults(self):
+        """Should return none for defaults"""
+        default_spec = {
+            'type': 'defaults',
+            'spec_type': 'property',
+            'functional': True
+        }
+
+        assert 'property' not in self.spec_parser._defaults
+        assert self.spec_parser.parse_statement(default_spec) is None
+        assert 'property' in self.spec_parser._defaults
+        assert 'functional' in self.spec_parser._defaults['property']._values

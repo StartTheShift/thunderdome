@@ -129,7 +129,6 @@ def setup(hosts, graph_name, username=None, password=None, index_all_fields=True
 
     random.shuffle(_hosts)
     
-    create_key_index('element_type')
     create_unique_index('vid', 'String')
 
     #index any models that have already been defined
@@ -150,8 +149,8 @@ def execute_query(query, params={}, transaction=True):
     
     """
     if transaction:
-        query = 'g.stopTransaction(FAILURE)\n' + query
-
+        query = "g.stopTransaction(FAILURE)\n" + query
+        
     host = _hosts[0]
     #url = 'http://{}/graphs/{}/tp/gremlin'.format(host.name, _graph_name)
     data = json.dumps({'script':query, 'params': params})

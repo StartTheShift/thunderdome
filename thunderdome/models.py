@@ -927,7 +927,8 @@ class Edge(Element):
         :rtype: list
         
         """
-        return cls._get_edges_between(outV=outV, inV=inV,
+        return cls._get_edges_between(out_v=outV,
+                                      in_v=inV,
                                       label=cls.get_label(),
                                       page_num=page_num,
                                       per_page=per_page)
