@@ -48,6 +48,7 @@ class BaseGremlinMethod(object):
 
         """
         self.is_configured = False
+        self.is_setup = False
         self.path = path
         self.method_name = method_name
         self.classmethod = classmethod
@@ -60,9 +61,13 @@ class BaseGremlinMethod(object):
         self.function_body = None
         self.function_def = None
 
+        #configuring attributes
+        self.parent_class = None
+
+
     def configure_method(self, klass, attr_name, gremlin_path):
         """
-        Configures the methods internals
+        sets up the methods internals
 
         :param klass: The class object this function is being added to
         :type klass: object
@@ -72,19 +77,30 @@ class BaseGremlinMethod(object):
         :type gremlin_path: str
 
         """
-        self.attr_name = attr_name
-        self.method_name = self.method_name or self.attr_name
         if not self.is_configured:
+            self.parent_class = klass
+            self.attr_name = attr_name
+            self.method_name = self.method_name or self.attr_name
+            self.path = gremlin_path
+
+            self.is_configured = True
+
+    def _setup(self):
+        """
+        Does the actual method configuration, this is here because the
+        method configuration must happen after the class is defined
+        """
+        if not self.is_setup:
 
             #construct the default name
-            name_func = getattr(klass, 'get_element_type', None) or getattr(klass, 'get_label')
+            name_func = getattr(self.parent_class, 'get_element_type', None) or getattr(self.parent_class, 'get_label', None)
             default_path = (name_func() if name_func else 'gremlin') + '.groovy'
 
-            self.path = self.path or gremlin_path or default_path
+            self.path = self.path or default_path
             if self.path.startswith('/'):
                 path = self.path
             else:
-                path = inspect.getfile(klass)
+                path = inspect.getfile(self.parent_class)
                 path = os.path.split(path)[0]
                 path += '/' + self.path
 
@@ -105,7 +121,7 @@ class BaseGremlinMethod(object):
 
             self.function_body = gremlin_obj.body
             self.function_def = gremlin_obj.defn
-            self.is_configured = True
+            self.is_setup = True
 
     def __call__(self, instance, *args, **kwargs):
         """
@@ -116,6 +132,8 @@ class BaseGremlinMethod(object):
         :type instance: object
 
         """
+        self._setup()
+
         args = list(args)
         if not self.classmethod:
             args = [instance.eid] + args
