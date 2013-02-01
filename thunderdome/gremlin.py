@@ -75,7 +75,12 @@ class BaseGremlinMethod(object):
         self.attr_name = attr_name
         self.method_name = self.method_name or self.attr_name
         if not self.is_configured:
-            self.path = self.path or gremlin_path or 'gremlin.groovy'
+
+            #construct the default name
+            name_func = getattr(klass, 'get_element_type', None) or getattr(klass, 'get_label')
+            default_path = (name_func() if name_func else 'gremlin') + '.groovy'
+
+            self.path = self.path or gremlin_path or default_path
             if self.path.startswith('/'):
                 path = self.path
             else:

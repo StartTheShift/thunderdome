@@ -28,7 +28,7 @@ class GroovyScannerTest(TestCase):
     """
     
     def test_parsing_complicated_function(self):
-        groovy_file = os.path.join(os.path.dirname(__file__), 'test.groovy')
+        groovy_file = os.path.join(os.path.dirname(__file__), 'groovy_test_model.groovy')
         result = parse(groovy_file)
         assert len(result[6].body.split('\n')) == 8
 

@@ -29,8 +29,6 @@ from thunderdome import columns
 from thunderdome import gremlin
 
 class GroovyTestModel(Vertex):
-    gremlin_path = 'test.groovy'
-    
     text    = columns.Text()
     get_self = gremlin.GremlinMethod()
     cm_get_self = gremlin.GremlinMethod(method_name='get_self', classmethod=True)
