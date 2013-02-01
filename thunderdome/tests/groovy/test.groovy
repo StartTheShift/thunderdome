@@ -33,3 +33,11 @@ def long_func(eid) {
 	  throw e
 	}
 }
+
+def arg_test1(self) {
+    g.v(self)
+}
+
+def arg_test2(my_id) {
+    g.v(my_id)
+}

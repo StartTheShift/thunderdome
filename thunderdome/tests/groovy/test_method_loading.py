@@ -39,6 +39,9 @@ class GroovyTestModel(Vertex):
     return_list = gremlin.GremlinValue(property=1)
     return_value = gremlin.GremlinValue()
 
+    arg_test1 = gremlin.GremlinValue()
+    arg_test2 = gremlin.GremlinValue()
+
 class TestMethodLoading(BaseCassEngTestCase):
     
     def test_method_loads_and_works(self):
@@ -77,3 +80,10 @@ class TestMethodArgumentHandling(BaseCassEngTestCase):
 
         uu = uuid4()
         assert v1.return_value(uu) == columns.UUID().to_database(uu)
+
+    def test_initial_arg_name_isnt_set(self):
+        """ Tests that the name of the first argument in a instance method """
+        v = GroovyTestModel.create(text='cross fingers')
+
+        assert v == v.arg_test1()
+        assert v == v.arg_test2()
