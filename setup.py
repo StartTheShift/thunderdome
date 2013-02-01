@@ -4,11 +4,7 @@ from setuptools import setup, find_packages
 #python setup.py register
 #python setup.py sdist upload
 
-<<<<<<< HEAD
-version = "0.2.5"
-=======
-version = "0.2.6"
->>>>>>> 0d2530190b5ff2d99ff8a4a28e184c11bd6eebb9
+version = "0.2.8"
 
 long_desc = """
 thunderdome is an Object-Graph Mapper (OGM) for Python
