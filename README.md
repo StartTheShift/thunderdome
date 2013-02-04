@@ -1,6 +1,8 @@
 thunderdome
 ===========
 
+<img align="center" src="https://raw.github.com/StartTheShift/thunderdome/master/docs/logo.png" alt="Thunderdome Logo" />
+
 thunderdome is an object-graph mapper (OGM) designed specifically for use with
 Titan (http://thinkaurelius.github.com/titan/) via Rexster
 (https://github.com/tinkerpop/rexster/wiki). Thunderdome supports easily
