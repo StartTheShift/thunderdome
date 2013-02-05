@@ -44,7 +44,7 @@ vagrant@precise64:~$ cd /vagrant
 This will put you in the thunderdome directory in the vagrant box. You can now
 run the unit-tests or start playing around within the python shell.
 
-Check out the [Quick Start](/StartTheShift/thunderdome/wiki/Quick-Start) page for a simple
+Check out the [Quick Start](thunderdome/wiki/Quick-Start) page for a simple
 introduction to working with thunderdome.
 
 Unit-tests
