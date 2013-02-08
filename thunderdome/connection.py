@@ -154,7 +154,7 @@ def execute_query(query, params={}, transaction=True):
     host = _hosts[0]
     #url = 'http://{}/graphs/{}/tp/gremlin'.format(host.name, _graph_name)
     data = json.dumps({'script':query, 'params': params})
-    headers = {'Content-Type':'application/json', 'Accept':'application/json'}
+    headers = {'Content-Type':'application/json', 'Accept':'application/json', 'Accept-Charset':'utf-8'}
 
     conn = httplib.HTTPConnection(host.name, host.port)
     conn.request("POST", '/graphs/{}/tp/gremlin'.format(_graph_name), data, headers)
