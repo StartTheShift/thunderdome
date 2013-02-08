@@ -178,7 +178,7 @@ class SpecParser(object):
     [
         {
             "type":"defaults",
-            "for": "property",
+            "spec_type": "property",
             "functional": false,
             "indexed": false,
             "locking": false

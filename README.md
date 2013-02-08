@@ -1,12 +1,14 @@
 thunderdome
 ===========
 
+<img align="center" src="https://raw.github.com/StartTheShift/thunderdome/master/docs/logo.png" alt="Thunderdome Logo" />
+
 thunderdome is an object-graph mapper (OGM) designed specifically for use with
 Titan (http://thinkaurelius.github.com/titan/) via Rexster
 (https://github.com/tinkerpop/rexster/wiki). Thunderdome supports easily
 integrating Gremlin graph-traversals with vertex and edge models. For those
 already familiar with Blueprints (https://github.com/tinkerpop/blueprints/wiki)
-the following is a simple example:
+there is a [simple example](https://github.com/StartTheShift/thunderdome/wiki/Quick-Start).
 
 Installation
 ============
@@ -42,7 +44,7 @@ vagrant@precise64:~$ cd /vagrant
 This will put you in the thunderdome directory in the vagrant box. You can now
 run the unit-tests or start playing around within the python shell.
 
-Check out the [Quick Start](thunderdome/wiki/Quick-Start) page for a simple
+Check out the [Quick Start](https://github.com/StartTheShift/thunderdome/wiki/Quick-Start) page for a simple
 introduction to working with thunderdome.
 
 Unit-tests
