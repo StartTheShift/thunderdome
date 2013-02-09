@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from unittest import skip
 from thunderdome import connection 
 from thunderdome.tests.base import BaseCassEngTestCase
@@ -19,6 +20,13 @@ class OtherTestEdge(Edge):
 
 
 class TestVertexIO(BaseCassEngTestCase):
+
+    def test_unicode_io(self):
+        """
+        Tests that unicode is saved and retrieved properly
+        """
+        tm1 = TestModel.create(count=9, text=u'4567ë9989')
+        tm2 = TestModel.get(tm1.vid)
 
     def test_model_save_and_load(self):
         """
