@@ -257,7 +257,7 @@ class Column(object):
 class Text(Column):
 
     def __init__(self, *args, **kwargs):
-        required = kwargs.get('required', True)
+        required = kwargs.get('required', False)
         self.min_length = kwargs.pop('min_length', 1 if required else None)
         self.max_length = kwargs.pop('max_length', None)
         super(Text, self).__init__(*args, **kwargs)
