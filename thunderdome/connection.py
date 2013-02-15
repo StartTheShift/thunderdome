@@ -150,7 +150,11 @@ def execute_query(query, params={}, transaction=True):
     """
     if transaction:
         query = "g.stopTransaction(FAILURE)\n" + query
-        
+
+    # If we have no hosts available raise an exception
+    if len(_hosts) <= 0:
+        raise ThunderdomeConnectionError('Attempt to execute query before calling thunderdome.connection.setup')
+    
     host = _hosts[0]
     #url = 'http://{}/graphs/{}/tp/gremlin'.format(host.name, _graph_name)
     data = json.dumps({'script':query, 'params': params})
