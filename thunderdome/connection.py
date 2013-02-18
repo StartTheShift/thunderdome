@@ -168,8 +168,8 @@ def execute_query(query, params={}, transaction=True):
         content = response.read()
     except socket.error as sock_err:
         raise ThunderdomeQueryError('Socket error during query - {}'.format(sock_err))
-    except Exception as ex:
-        raise ex
+    except:
+        raise
     
     logger.info(json.dumps(data))
     logger.info(content)
