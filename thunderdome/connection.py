@@ -24,6 +24,7 @@ import logging
 import Queue
 import random
 import re
+import socket
 import textwrap
 
 from thunderdome.exceptions import ThunderdomeException
@@ -160,10 +161,15 @@ def execute_query(query, params={}, transaction=True):
     data = json.dumps({'script':query, 'params': params})
     headers = {'Content-Type':'application/json', 'Accept':'application/json', 'Accept-Charset':'utf-8'}
 
-    conn = httplib.HTTPConnection(host.name, host.port)
-    conn.request("POST", '/graphs/{}/tp/gremlin'.format(_graph_name), data, headers)
-    response = conn.getresponse()
-    content = response.read()
+    try:
+        conn = httplib.HTTPConnection(host.name, host.port)
+        conn.request("POST", '/graphs/{}/tp/gremlin'.format(_graph_name), data, headers)
+        response = conn.getresponse()
+        content = response.read()
+    except socket.error as sock_err:
+        raise ThunderdomeQueryError('Socket error during query - {}'.format(sock_err))
+    except ex:
+        raise ex
 
     
     logger.info(json.dumps(data))
