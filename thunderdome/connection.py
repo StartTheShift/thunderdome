@@ -170,7 +170,6 @@ def execute_query(query, params={}, transaction=True):
         raise ThunderdomeQueryError('Socket error during query - {}'.format(sock_err))
     except ex:
         raise ex
-
     
     logger.info(json.dumps(data))
     logger.info(content)
