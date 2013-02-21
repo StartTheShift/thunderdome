@@ -71,6 +71,15 @@ class SpecParserTest(BaseCassEngTestCase):
         prop = self.spec_parser.parse_property(self.property_spec)
         assert prop.gremlin == expected
 
+        expected = 'updated_at = g.makeType().name("updated_at").dataType(Integer.class).unique().makePropertyKey()'
+        self.property_spec['functional'] = False
+        self.property_spec['indexed'] = False
+        self.property_spec['unique'] = True
+        self.spec_parser._properties = {} # Reset saved properties
+        self.spec_parser._names = []
+        prop = self.spec_parser.parse_property(self.property_spec)
+        assert prop.gremlin == expected, prop.gremlin
+
     def test_should_return_correct_gremlin_for_edge(self):
         """Should return correct gremlin for an edge"""
         expected = 'subscribed_to = g.makeType().name("subscribed_to").primaryKey(updated_at).makeEdgeLabel()'

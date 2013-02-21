@@ -23,7 +23,7 @@ import json
 class Property(object):
     """Abstracts a property parsed from a spec file."""
 
-    def __init__(self, name, data_type, functional=False, locking=True, indexed=False):
+    def __init__(self, name, data_type, functional=False, locking=True, indexed=False, unique=False):
         """
         Defines a property parsed from a spec file.
 
@@ -44,6 +44,7 @@ class Property(object):
         self.functional = functional
         self.locking = locking
         self.indexed = indexed
+        self.unique = unique
 
     @property
     def gremlin(self):
@@ -53,14 +54,17 @@ class Property(object):
         :rtype: str
 
         """
-        initial = '{} = g.makeType().name("{}").dataType({}.class).{}{}makePropertyKey()'
+        initial = '{} = g.makeType().name("{}").dataType({}.class).{}{}{}makePropertyKey()'
         func = ''
         idx = ''
         if self.functional:
             func = 'functional({}).'.format("true" if self.locking else "false")
         if self.indexed:
             idx = 'indexed().'
-        return initial.format(self.name, self.name, self.data_type, func, idx)
+
+        unique = "unique()." if self.unique else ""
+
+        return initial.format(self.name, self.name, self.data_type, func, idx, unique)
 
 
 class Edge(object):
@@ -287,11 +291,15 @@ class SpecParser(object):
             stmt['functional'] = defaults.get_default(stmt, 'functional')
             stmt['locking'] = defaults.get_default(stmt, 'locking')
             stmt['indexed'] = defaults.get_default(stmt, 'indexed')
+            stmt['unique'] = defaults.get_default(stmt, 'unique')
+
         prop = Property(name=stmt['name'],
                         data_type=stmt['data_type'],
                         functional=stmt.get('functional', False),
                         locking=stmt.get('locking', True),
-                        indexed=stmt.get('indexed', False))
+                        indexed=stmt.get('indexed', False),
+                        unique=stmt.get('unique', False))
+
         self._properties[prop.name] = prop
         self._names += [prop.name]
         return prop
