@@ -363,9 +363,13 @@ class Element(BaseElement):
         dtype = data.get('_type')
         if dtype == 'vertex':
             vertex_type = data['element_type']
+            if vertex_type not in vertex_types:
+                raise ElementDefinitionException('Vertex "{}" not defined'.format(vertex_type))
             return vertex_types[vertex_type](**data)
         elif dtype == 'edge':
             edge_type = data['_label']
+            if edge_type not in edge_types:
+                raise ElementDefinitionException('Edge "{}" not defined'.format(edge_type))
             return edge_types[edge_type](data['_outV'], data['_inV'], **data)
         else:
             raise TypeError("Can't deserialize '{}'".format(dtype))
