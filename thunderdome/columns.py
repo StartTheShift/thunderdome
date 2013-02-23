@@ -382,7 +382,7 @@ class Float(Column):
             return float(value)
 
 
-class Double(Column):
+class Decimal(Column):
 
     def to_python(self, value):
         val = super(Decimal, self).to_python(value)
@@ -394,7 +394,6 @@ class Double(Column):
         if val is not None:
             return str(val)
 
-Decimal = Double
 
 class Dictionary(Column):
 
