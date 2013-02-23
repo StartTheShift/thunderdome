@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rexster>
+    <http>
+        <io-strategy>leader-follower</io-strategy>
+    </http>
     <rexster-server-port>8182</rexster-server-port>
     <rexster-server-host>0.0.0.0</rexster-server-host>
     <rexster-shutdown-port>8183</rexster-shutdown-port>
