@@ -254,7 +254,7 @@ class Column(object):
         return self.db_field or self.column_name
 
 
-class Text(Column):
+class String(Column):
 
     def __init__(self, *args, **kwargs):
         required = kwargs.get('required', False)
@@ -278,6 +278,7 @@ class Text(Column):
                 raise ValidationError('{} is shorter than {} characters'.format(self.column_name, self.min_length))
         return value
 
+Text = String
 
 class Integer(Column):
 
@@ -381,7 +382,7 @@ class Float(Column):
             return float(value)
 
 
-class Decimal(Column):
+class Double(Column):
 
     def to_python(self, value):
         val = super(Decimal, self).to_python(value)
@@ -393,6 +394,7 @@ class Decimal(Column):
         if val is not None:
             return str(val)
 
+Decimal = Double
 
 class Dictionary(Column):
 
