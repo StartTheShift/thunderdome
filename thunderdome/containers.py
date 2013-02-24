@@ -45,7 +45,7 @@ class Table(object):
     def __init__(self, gremlin_result):
         if gremlin_result == [[]]:
             gremlin_result = []
-            
+
         self._gremlin_result = gremlin_result
         self._position = 0
         
@@ -54,7 +54,7 @@ class Table(object):
         """
         returns an enhanced dictionary
         """
-        if key > len(self._gremlin_result):
+        if key >= len(self._gremlin_result):
             raise IndexError()
 
         return Row(self._gremlin_result[key])
