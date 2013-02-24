@@ -60,5 +60,9 @@ class EmptyTableTest(TestCase):
         t = Table([])
         with self.assertRaises(IndexError):
             t[0]
-        
-            
+
+    def test_empty2(self):
+        t = Table([[]])
+        with self.assertRaises(IndexError):
+            t[0]
+

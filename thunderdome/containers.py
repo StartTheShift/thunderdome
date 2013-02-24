@@ -43,6 +43,9 @@ class Table(object):
     """
     
     def __init__(self, gremlin_result):
+        if gremlin_result == [[]]:
+            gremlin_result = []
+            
         self._gremlin_result = gremlin_result
         self._position = 0
         
