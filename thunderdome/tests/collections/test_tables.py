@@ -53,6 +53,12 @@ class TableTest(TestCase):
         
         assert self.t[1].v.name == 'eric', self.t[1].v.name
         assert self.t[2].e.nickname == 'bmoney'
-        
+
+
+class EmptyTableTest(TestCase):
+    def test_empty(self):
+        t = Table([])
+        with self.assertRaises(IndexError):
+            t[0]
         
             

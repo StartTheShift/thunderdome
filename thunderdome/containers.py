@@ -51,6 +51,9 @@ class Table(object):
         """
         returns an enhanced dictionary
         """
+        if key > len(self._gremlin_result):
+            raise IndexError()
+
         return Row(self._gremlin_result[key])
         
     def __iter__(self):
