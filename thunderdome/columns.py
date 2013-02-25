@@ -319,7 +319,10 @@ class DateTime(Column):
         if not isinstance(value, datetime):
             raise ValidationError("'{}' is not a datetime object".format(value))
 
-        return float(value.strftime('%s.%f'))
+        tmp = time.mktime(value.timetuple()) # gives us a float with .0
+        # microtime is a 6 digit int, so we bring it down to .xxx and add it to the float TS
+        tmp = tmp + float(value.microsecond) / 1000000
+        return tmp
 
 
 class UUID(Column):
