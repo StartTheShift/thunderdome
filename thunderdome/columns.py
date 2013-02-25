@@ -318,7 +318,8 @@ class DateTime(Column):
             return
         if not isinstance(value, datetime):
             raise ValidationError("'{}' is not a datetime object".format(value))
-        return time.mktime(value.timetuple())
+
+        return float(value.strftime('%s.%f'))
 
 
 class UUID(Column):
