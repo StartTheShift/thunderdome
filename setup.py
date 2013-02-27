@@ -37,7 +37,7 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
     keywords='cassandra,titan,ogm,thunderdome',
-    install_requires=['pyparsing'],
+    install_requires=['pyparsing==1.5.7'],
     author='StartTheShift',
     author_email='dev@shift.com',
     url='https://github.com/StartTheShift/thunderdome',
