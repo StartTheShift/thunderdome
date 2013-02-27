@@ -21,6 +21,7 @@ from datetime import datetime
 from decimal import Decimal as D
 import re
 import time
+import warnings
 from uuid import uuid1, uuid4
 from uuid import UUID as _UUID
 
@@ -365,6 +366,8 @@ class Boolean(Column):
 class Float(Column):
 
     def __init__(self, double_precision=True, **kwargs):
+        warnings.warn("Float type has been deprecated in favor of Double",
+                      category=DeprecationWarning)
         self.db_type = 'double' if double_precision else 'float'
         super(Float, self).__init__(**kwargs)
 
@@ -385,6 +388,30 @@ class Float(Column):
         if value is not None:
             return float(value)
 
+
+class Double(Column):
+
+    def __init__(self, **kwargs):
+        self.db_type = 'double'
+        super(Double, self).__init__(**kwargs)
+
+    def validate(self, value):
+        val = super(Double, self).validate(value)
+        if val is None:
+            return None  # required = False
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            raise ValidationError("{} is not a valid double".format(value))
+
+    def to_python(self, value):
+        if value is not None:
+            return float(value)
+
+    def to_database(self, value):
+        if value is not None:
+            return float(value)
+    
 
 class Decimal(Column):
 
