@@ -13,7 +13,7 @@ def _save_edge(eid, outV, inV, label, attrs, exclusive) {
 		try {
 			e = g.e(eid)
 		} catch (err) {
-			existing = g.v(outV).outE(label).as('edge').inV().filter{it.id == inV}.back('edge').toList()
+			existing = g.v(outV).outE(label).as('edge').inV().retain([g.v(inV)]).back('edge').toList()
 			if(existing.size() > 0 && exclusive) {
 				e = existing.first()
 			} else {
@@ -38,7 +38,7 @@ def _save_edge(eid, outV, inV, label, attrs, exclusive) {
 
 def _get_edges_between(out_v, in_v, label, page_num, per_page) {
   try {
-    results = g.v(out_v).outE(label).as('e').inV().filter{it.id == in_v}.back('e')
+    results = g.v(out_v).outE(label).as('e').inV().retain([g.v(in_v)]).back('e')
     if (page_num != null && per_page != null) {
         start = (page_num - 1) * per_page
         end = start + per_page
