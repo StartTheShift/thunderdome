@@ -69,7 +69,13 @@ class TestDatetime(BaseCassEngTestCase):
             dt.save()
 
         dt2 = DatetimeCoercionTest.create(test_id=2)
-        dt2.created_at = 123098123.123
+        dt2.created_at = 1362470400
+        dt2.save()
+        dt2.created_at = 1098234098.2098
+        dt2.save()
+        dt2.created_at = '120398231'
+        dt2.save()
+        dt2.created_at = '12039823.198'
         dt2.save()
         dt2.reload()
         assert isinstance(dt2.created_at, datetime)
