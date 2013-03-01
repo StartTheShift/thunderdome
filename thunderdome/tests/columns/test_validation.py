@@ -41,6 +41,12 @@ class DatetimeTest(Vertex):
     test_id = Integer(primary_key=True)
     created_at = DateTime(required=False)
     
+
+class DatetimeCoercionTest(Vertex):
+    test_id = Integer(primary_key=True)
+    created_at = DateTime(required=False, strict=False)
+
+    
 class TestDatetime(BaseCassEngTestCase):
 
     def test_datetime_io(self):
@@ -56,6 +62,17 @@ class TestDatetime(BaseCassEngTestCase):
         """
         dt = DatetimeTest.create(test_id=0, created_at=None)
 
+    def test_coercion_of_floats(self):
+        with self.assertRaises(ValidationError):
+            dt = DatetimeTest.create(test_id=1)
+            dt.created_at = 12309834.234
+            dt.save()
+
+        dt2 = DatetimeCoercionTest.create(test_id=2)
+        dt2.created_at = 123098123.123
+        dt2.save()
+        dt2.reload()
+        assert isinstance(dt2.created_at, datetime)
 
 
 class DecimalTest(Vertex):

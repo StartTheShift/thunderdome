@@ -305,7 +305,15 @@ class Integer(Column):
 
 class DateTime(Column):
 
-    def __init__(self, **kwargs):
+    def __init__(self, strict=True, **kwargs):
+        """
+        Initialize date-time column with the given settings.
+
+        :param strict: Whether or not to attempt to automatically coerce types
+        :type strict: boolean
+        
+        """
+        self.strict = strict
         super(DateTime, self).__init__(**kwargs)
 
     def to_python(self, value):
@@ -318,7 +326,10 @@ class DateTime(Column):
         if value is None:
             return
         if not isinstance(value, datetime):
-            raise ValidationError("'{}' is not a datetime object".format(value))
+            if not self.strict and isinstance(value, (basestring, int, float)):
+                value = datetime.fromtimestamp(float(value))
+            else:
+                raise ValidationError("'{}' is not a datetime object".format(value))
 
         tmp = time.mktime(value.timetuple()) # gives us a float with .0
         # microtime is a 6 digit int, so we bring it down to .xxx and add it to the float TS
