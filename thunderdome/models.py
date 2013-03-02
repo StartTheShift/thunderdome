@@ -1114,8 +1114,8 @@ class Query(object):
 
     def has(self, key, value, compare=EQUAL):
         """
-        :param key: Column or str, column preferred
-        :param value:
+        :param key: str
+        :param value: str, float, int
         :param compare:
         :rtype: Query
         """
