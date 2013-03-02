@@ -261,9 +261,16 @@ class String(Column):
         required = kwargs.get('required', False)
         self.min_length = kwargs.pop('min_length', 1 if required else None)
         self.max_length = kwargs.pop('max_length', None)
+        self.encoding = kwargs.pop('encoding', 'utf-8')
+        if 'default' in kwargs and isinstance(kwargs['default'], basestring):
+            kwargs['default'] = kwargs['default'].encode(self.encoding)
         super(Text, self).__init__(*args, **kwargs)
 
     def validate(self, value):
+        # Make sure that shit gets encoded properly
+        if isinstance(value, basestring):
+            value = value.encode(self.encoding)
+
         value = super(Text, self).validate(value)
 
         if value is None:
