@@ -22,7 +22,7 @@ from datetime import datetime
 from thunderdome import connection 
 from thunderdome.tests.base import BaseCassEngTestCase
 
-from thunderdome.models import Vertex, Edge
+from thunderdome.models import Vertex, Edge, IN, OUT, BOTH, GREATER_THAN, LESS_THAN
 from thunderdome import columns
 
 
@@ -39,8 +39,8 @@ class Course(Vertex):
 # Edges
 class EnrolledIn(Edge):
     date_enrolled = columns.DateTime()
+    enthusiasm = columns.Integer(default=5) # medium, 1-10, 5 by default
 
-    
 class TaughtBy(Edge):
     overall_mood = columns.Text(default='Grumpy')
     
@@ -49,6 +49,13 @@ class TestVertexTraversals(BaseCassEngTestCase):
 
     @classmethod
     def setUpClass(cls):
+        """
+        person -enrolled_in-> course
+        course -taught_by-> person
+
+        :param cls:
+        :return:
+        """
         cls.jon = Person.create(name='Jon', age=143)
         cls.eric = Person.create(name='Eric', age=25)
         cls.blake = Person.create(name='Blake', age=14)
@@ -57,9 +64,13 @@ class TestVertexTraversals(BaseCassEngTestCase):
         cls.beekeeping = Course.create(name='Beekeeping', credits=15.0)
         cls.theoretics = Course.create(name='Theoretical Theoretics', credits=-3.5)
 
-        cls.eric_in_physics = EnrolledIn.create(cls.eric, cls.physics, date_enrolled=datetime.now())
-        cls.jon_in_beekeeping = EnrolledIn.create(cls.jon, cls.beekeeping, date_enrolled=datetime.now())
-        cls.blake_in_theoretics = EnrolledIn.create(cls.blake, cls.theoretics, date_enrolled=datetime.now())
+        cls.eric_in_physics = EnrolledIn.create(cls.eric, cls.physics, date_enrolled=datetime.now(),
+                                                enthusiasm=10) # eric loves physics
+        cls.jon_in_beekeeping = EnrolledIn.create(cls.jon, cls.beekeeping, date_enrolled=datetime.now(),
+                                                  enthusiasm=1) # jon hates beekeeping
+
+        cls.blake_in_theoretics = EnrolledIn.create(cls.blake, cls.theoretics, date_enrolled=datetime.now(),
+                                                    enthusiasm=8)
 
         cls.blake_beekeeping = TaughtBy.create(cls.beekeeping, cls.blake, overall_mood='Pedantic')
         cls.jon_physics = TaughtBy.create(cls.physics, cls.jon, overall_mood='Creepy')
@@ -121,3 +132,36 @@ class TestVertexTraversals(BaseCassEngTestCase):
         results = self.blake.bothV()
         assert len(results) == 2
         assert self.beekeeping in results
+
+    def test_query_vertices(self):
+        classes = self.jon.query().labels(EnrolledIn).direction(OUT).vertices()
+
+    def test_query_in(self):
+        people = self.physics.query().labels(EnrolledIn).direction(IN).vertices()
+        for x in people:
+            assert isinstance(x, Person)
+
+    def test_query_out_edges(self):
+        classes = self.jon.query().labels(EnrolledIn).direction(OUT).edges()
+        for x in classes:
+            assert isinstance(x, EnrolledIn), type(x)
+
+    def test_two_labels(self):
+        edges = self.jon.query().labels(EnrolledIn, TaughtBy).direction(BOTH).edges()
+        for e in edges:
+            assert isinstance(e, (EnrolledIn, TaughtBy))
+
+    def test_has(self):
+        assert 0 == len(self.jon.query().labels(EnrolledIn).has('enthusiasm', 5, GREATER_THAN).vertices())
+        num = self.jon.query().labels(EnrolledIn).has('enthusiasm', 5, GREATER_THAN).count()
+        assert 0 == num, num
+
+        assert 1 == len(self.jon.query().labels(EnrolledIn).has('enthusiasm', 5, LESS_THAN).vertices())
+        num = self.jon.query().labels(EnrolledIn).has('enthusiasm', 5, LESS_THAN).count()
+        assert 1 == num, num
+
+    def test_interval(self):
+        assert 1 == len(self.blake.query().labels(EnrolledIn).interval('enthusiasm', 2, 9).vertices())
+        assert 1 == len(self.blake.query().labels(EnrolledIn).interval('enthusiasm', 9, 2).vertices())
+        assert 0 == len(self.blake.query().labels(EnrolledIn).interval('enthusiasm', 2, 8).vertices())
+

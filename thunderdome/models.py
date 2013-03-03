@@ -32,6 +32,20 @@ from thunderdome.gremlin import BaseGremlinMethod, GremlinMethod
 vertex_types = {}
 edge_types = {}
 
+# in blueprints this is part of the Query.compare
+# see http://www.tinkerpop.com/docs/javadocs/blueprints/2.2.0/
+EQUAL = "EQUAL"
+GREATER_THAN = "GREATER_THAN"
+GREATER_THAN_EQUAL = "GREATER_THAN_EQUAL"
+LESS_THAN = "LESS_THAN"
+LESS_THAN_EQUAL = "LESS_THAN_EQUAL"
+NOT_EQUAL = "NOT_EQUAL"
+
+# direction
+OUT = "OUT"
+IN = "IN"
+BOTH = "BOTH"
+
 
 class ElementDefinitionException(ModelException):
     """
@@ -787,6 +801,10 @@ class Vertex(Element):
     def delete_inV(self, label=None):
         """Delete all incoming vertices connected with edges with the given label."""
         self._simple_deletion('inV', label)
+
+    def query(self):
+        return Query(self)
+
         
         
 def to_offset(page_num, per_page):
@@ -1050,3 +1068,165 @@ class Edge(Element):
         elif isinstance(self._outV, (int, long)):
             self._outV = Vertex.get_by_eid(self._outV)
         return self._outV
+
+
+
+import copy
+
+class Query(object):
+    """
+    All query operations return a new query object, which currently deviates from blueprints.
+    The blueprints query object modifies and returns the same object
+    This method seems more flexible, and consistent w/ the rest of Gremlin.
+    """
+    _limit = None
+
+    def __init__(self, vertex):
+        self._vertex = vertex
+        self._has = []
+        self._interval = []
+        self._labels = []
+        self._direction = []
+        self._vars = {}
+
+    def count(self):
+        """
+        :return: number of matching vertices
+        :rtype int
+        """
+        return self._execute('count', deserialize=False)[0]
+
+    def direction(self, direction):
+        """
+        :param direction:
+        :rtype: Query
+        """
+        q = copy.copy(self)
+        if self._direction:
+            raise ThunderdomeQueryError("Direction already set")
+        q._direction = direction
+        return q
+
+    def edges(self):
+        """
+        :return list of matching edges
+        """
+        return self._execute('edges')
+
+    def has(self, key, value, compare=EQUAL):
+        """
+        :param key: str
+        :param value: str, float, int
+        :param compare:
+        :rtype: Query
+        """
+        compare = "Query.Compare.{}".format(compare)
+
+        q = copy.copy(self)
+        q._has.append((key,value,compare))
+        return q
+
+    def interval(self, key, start, end):
+        """
+        :rtype : Query
+        """
+        if start > end:
+            start, end = end, start
+
+        q = copy.copy(self)
+        q._interval.append((key, start, end))
+        return q
+
+
+    def labels(self, *args):
+        """
+        :param args: list of Edges
+        :return: Query
+        """
+        tmp = []
+        for x in args:
+            try:
+                tmp.append(x.get_label())
+            except:
+                tmp.append(x)
+
+        q = copy.copy(self)
+        q._labels = tmp
+        return q
+
+    def limit(self, limit):
+        q = copy.copy(self)
+        q._limit = limit
+        return q
+
+    def vertexIds(self):
+        return self._execute('vertexIds', deserialize=False)
+
+    def vertices(self):
+        return self._execute('vertices')
+
+    def _get_partial(self):
+        limit = ".limit(limit)" if self._limit else ""
+        dir = ".direction({})".format(self._direction) if self._direction else ""
+
+        # do labels
+        labels = ""
+        if self._labels:
+            labels = ["'{}'".format(x) for x in self._labels]
+            labels = ", ".join(labels)
+            labels = ".labels({})".format(labels)
+
+        ### construct has clauses
+        has = []
+
+        for x in self._has:
+            c = "v{}".format(len(self._vars))
+            self._vars[c] = x[1]
+
+            val = "{} as double".format(c) if isinstance(x[1], float) else c
+            key = x[0]
+            has.append("has('{}', {}, {})".format(key, val, x[2]))
+
+        if has:
+            tmp = ".".join(has)
+            has = '.{}'.format(tmp)
+        else:
+            has = ""
+        ### end construct has clauses
+
+        intervals = []
+        for x in self._interval:
+            c = "v{}".format(len(self._vars))
+            self._vars[c] = x[1]
+            c2 = "v{}".format(len(self._vars))
+            self._vars[c2] = x[2]
+
+
+            val1 = "{} as double".format(c) if isinstance(x[1], float) else c
+            val2 = "{} as double".format(c2) if isinstance(x[2], float) else c2
+
+            tmp = "interval('{}', {}, {})".format(x[0], val1, val2)
+            intervals.append(tmp)
+
+        if intervals:
+            intervals = ".{}".format(".".join(intervals))
+        else:
+            intervals = ""
+
+        return "g.v(eid).query(){}{}{}{}{}".format(labels, limit, dir, has, intervals)
+
+    def _execute(self, func, deserialize=True):
+        tmp = "{}.{}()".format(self._get_partial(), func)
+        self._vars.update({"eid":self._vertex.eid, "limit":self._limit})
+        results = execute_query(tmp, self._vars)
+
+        if deserialize:
+            return  [Element.deserialize(r) for r in results]
+        else:
+            return results
+
+
+
+
+
+
