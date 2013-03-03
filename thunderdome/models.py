@@ -1087,6 +1087,7 @@ class Query(object):
         self._interval = []
         self._labels = []
         self._direction = []
+        self._vars = {}
 
     def count(self):
         """
@@ -1207,7 +1208,8 @@ class Query(object):
 
     def _execute(self, func, deserialize=True):
         tmp = "{}.{}()".format(self._get_partial(), func)
-        results = execute_query(tmp, {"eid":self._vertex.eid, "limit":self._limit})
+        self._vars.update({"eid":self._vertex.eid, "limit":self._limit})
+        results = execute_query(tmp, self._vars)
 
         if deserialize:
             return  [Element.deserialize(r) for r in results]
