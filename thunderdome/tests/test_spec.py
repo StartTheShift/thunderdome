@@ -92,6 +92,13 @@ class SpecParserTest(BaseCassEngTestCase):
         edge = self.spec_parser.parse_edge(self.edge_spec)
         assert edge.gremlin == expected
 
+    def test_functional_edge(self):
+        expected = 'subscribed_to = g.makeType().name("subscribed_to").functional().makeEdgeLabel()'
+        del self.edge_spec['primary_key']
+        self.edge_spec['functional'] = True
+        edge = self.spec_parser.parse_edge(self.edge_spec)
+        assert edge.gremlin == expected
+
     def test_should_return_correct_gremlin_for_key_index_creation(self):
         """Should return correct gremlin for key index"""
         expected = 'g.createKeyIndex("email", Vertex.class)'

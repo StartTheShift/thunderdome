@@ -70,7 +70,7 @@ class Property(object):
 class Edge(object):
     """Abstracts an edge parsed from a spec file."""
 
-    def __init__(self, label, primary_key=None):
+    def __init__(self, label, primary_key=None, functional=False):
         """
         Defines an edge parsed from a spec file.
 
@@ -82,6 +82,7 @@ class Edge(object):
         """
         self.label = label
         self.primary_key = primary_key
+        self.functional = functional
 
     @property
     def gremlin(self):
@@ -91,11 +92,14 @@ class Edge(object):
         :rtype: str
 
         """
-        initial = '{} = g.makeType().name("{}").{}makeEdgeLabel()'
+        initial = '{} = g.makeType().name("{}").{}{}makeEdgeLabel()'
         primary_key = ''
         if self.primary_key:
             primary_key = "primaryKey({}).".format(self.primary_key)
-        return initial.format(self.label, self.label, primary_key)
+
+        functional = "functional()." if self.functional else ""
+
+        return initial.format(self.label, self.label, primary_key, functional)
 
 
 class KeyIndex(object):
@@ -317,7 +321,8 @@ class SpecParser(object):
         if stmt['label'] in self._names:
             raise ValueError('There is already a value with name {}'.format(stmt['label']))
         edge = Edge(label=stmt['label'],
-                    primary_key=stmt.get('primary_key', None))
+                    primary_key=stmt.get('primary_key', None),
+                    functional=stmt.get('functional', False))
         self._names += [edge.label]
         return edge
 
