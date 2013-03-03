@@ -408,67 +408,6 @@ class Spec(object):
         :type dry_run: boolean
 
         """
-        first_undefined = ['']
-        if not dry_run:
-            from thunderdome.connection import setup, execute_query
-            setup(hosts=[host],
-                  graph_name=graph_name,
-                  username=username,
-                  password=password,
-                  index_all_fields=False)
-            first_undefined = self._get_first_undefined(self._results)
-
-        if first_undefined is None:
-            return
-
-        first_undefined = first_undefined[0]
-
-        q = ""
-
-        # Assign any already defined types to variables and search for the
-        # first undefined type to be used as the starting point for executing
-        # the remaining statements.
-        results = self._results
-        
-        if not dry_run:
-            results = []
-            for i,x in enumerate(self._results):
-                if isinstance(x, Property):
-                    if x.name == first_undefined:
-                        results = self._results[i:]
-                        break
-                    else:
-                        q += "{} = g.getType('{}')\n".format(x.name, x.name)
-                elif isinstance(x, Edge):
-                    if x.label == first_undefined:
-                        results = self._results[i:]
-                        break
-                    else:
-                        q += "{} = g.getType('{}')\n".format(x.label, x.label)
-                elif isinstance(x, KeyIndex):
-                    if x.name == first_undefined:
-                        results = self._results[i:]
-                        break
-
-        for stmt in results:
-            q += "{}\n".format(stmt.gremlin)
-        q += "g.stopTransaction(SUCCESS)"
-
-        print q
-
-        if not dry_run:
-            execute_query(q)
-
-    def _get_first_undefined(self, types):
-        """
-        Returns the name of the first undefined type in the graph.
-
-        :param types: All types defined in the current spec
-        :type types: list
-
-        :rtype: str
-
-        """
         def _get_name(x):
             """
             Return the name for the given object.
@@ -484,15 +423,27 @@ class Spec(object):
                 return x.label
             raise RuntimeError("Invalid object type {}".format(type(x)))
         
-        q  = "for (x in names) {\n"
-        q += "  t = g.getType(x)\n"
-        q += "  if (t == null) {\n"
-        q += "    return x\n"
-        q += "  }\n"
-        q += "}\n"
+        if not dry_run:
+            from thunderdome.connection import setup, execute_query
+            setup(hosts=[host],
+                  graph_name=graph_name,
+                  username=username,
+                  password=password,
+                  index_all_fields=False)
+        
+        q = "def t = null"
+        for x in self._results:
+            name = _get_name(x)
+            q += "t = g.getType('{}')\n".format(name)
+            q += "if (t == null) {\n"
+            q += "  {}\n".format(x.gremlin)
+            q += "} else {\n"
+            q += "  {} = g.getType('{}')\n".format(name, name)
+            q += "}\n"
         q += "null"
 
+        print q
         
-        names = [_get_name(x) for x in types]
         from thunderdome.connection import execute_query
-        return execute_query(q, {'names': names})
+        if not dry_run:
+            return execute_query(q)
