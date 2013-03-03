@@ -1180,7 +1180,10 @@ class Query(object):
         has = []
 
         for x in self._has:
-            val = "{} as double".format(x[1]) if isinstance(x[1], float) else x[1]
+            c = "v{}".format(len(self._vars))
+            self._vars[c] = x[1]
+
+            val = "{} as double".format(c) if isinstance(x[1], float) else c
             key = x[0]
             has.append("has('{}', {}, {})".format(key, val, x[2]))
 
@@ -1193,8 +1196,14 @@ class Query(object):
 
         intervals = []
         for x in self._interval:
-            val1 = "{} as double".format(x[1]) if isinstance(x[1], float) else x[1]
-            val2 = "{} as double".format(x[2]) if isinstance(x[2], float) else x[2]
+            c = "v{}".format(len(self._vars))
+            self._vars[c] = x[1]
+            c2 = "v{}".format(len(self._vars))
+            self._vars[c2] = x[2]
+
+
+            val1 = "{} as double".format(c) if isinstance(x[1], float) else c
+            val2 = "{} as double".format(c2) if isinstance(x[2], float) else c2
 
             tmp = "interval('{}', {}, {})".format(x[0], val1, val2)
             intervals.append(tmp)
