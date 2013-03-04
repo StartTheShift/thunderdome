@@ -1025,9 +1025,12 @@ class Edge(Element):
         if self.eid is None:
             return self
         query = """
-        g.removeEdge(g.e(eid))
-        g.stopTransaction(SUCCESS)
-        """
+        e = g.e(eid)
+        if (e != null) {
+          g.removeEdge(e)
+          g.stopTransaction(SUCCESS)
+        }
+        """        
         results = execute_query(query, {'eid':self.eid})
 
     def _simple_traversal(self, operation):
