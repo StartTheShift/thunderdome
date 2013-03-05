@@ -214,9 +214,28 @@ class BaseElement(object):
                     should_save = False
             
             if should_save:
-                values[name] = col.to_database(getattr(self, name, None))
+                values[col.db_field or name] = col.to_database(getattr(self, name, None))
                 
         return values
+
+    @classmethod
+    def translate_db_fields(cls, data):
+        """
+        Translates field names from the database into field names used in our model
+
+        this is for cases where we're saving a field under a different name than it's model property
+
+        :param cls:
+        :param data:
+        :return:
+        """
+        dst_data = data.copy()
+        for name, col in cls._columns.items():
+            key = col.db_field or name
+            if key in dst_data:
+                dst_data[name] = dst_data.pop(key)
+
+        return dst_data
 
     @classmethod
     def create(cls, *args, **kwargs):
@@ -379,12 +398,14 @@ class Element(BaseElement):
             vertex_type = data['element_type']
             if vertex_type not in vertex_types:
                 raise ElementDefinitionException('Vertex "{}" not defined'.format(vertex_type))
-            return vertex_types[vertex_type](**data)
+            translated_data = vertex_types[vertex_type].translate_db_fields(data)
+            return vertex_types[vertex_type](**translated_data)
         elif dtype == 'edge':
             edge_type = data['_label']
             if edge_type not in edge_types:
                 raise ElementDefinitionException('Edge "{}" not defined'.format(edge_type))
-            return edge_types[edge_type](data['_outV'], data['_inV'], **data)
+            translated_data = edge_types[edge_type].translate_db_fields(data)
+            return edge_types[edge_type](data['_outV'], data['_inV'], **translated_data)
         else:
             raise TypeError("Can't deserialize '{}'".format(dtype))
     
