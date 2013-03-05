@@ -24,4 +24,4 @@ from thunderdome.gremlin import BaseGremlinMethod, GremlinMethod, GremlinValue, 
 from thunderdome.containers import Table
 
 
-__version__ = '0.3.0'
+__version__ = '0.3.1'
