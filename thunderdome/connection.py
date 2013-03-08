@@ -174,7 +174,10 @@ def execute_query(query, params={}, transaction=True):
     logger.info(json.dumps(data))
     logger.info(content)
 
-    response_data = json.loads(content)
+    try:
+        response_data = json.loads(content)
+    except ValueError as ve:
+        raise ThunderdomeQueryError('Loading Rexster results failed: "{}"'.format(ve))
     
     if response.status != 200:
         if 'message' in response_data and len(response_data['message']) > 0:
