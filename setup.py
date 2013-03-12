@@ -14,9 +14,6 @@ thunderdome is an Object-Graph Mapper (OGM) for Python
 [Report a Bug](https://github.com/StartTheShift/thunderdome/issues)
 
 [Users Mailing List](https://groups.google.com/forum/#!forum/thunderdome-users)
-
-**NOTE: thunderdome is in alpha and under development, some features may change.
-  Make sure to check the changelog and test your app before upgrading**
 """
 
 setup(
