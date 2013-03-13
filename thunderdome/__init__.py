@@ -16,6 +16,7 @@
 # COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+import os
 
 from thunderdome.columns import *
 from thunderdome.exceptions import *
@@ -23,5 +24,5 @@ from thunderdome.models import PaginatedVertex, Vertex, Edge, IN, OUT
 from thunderdome.gremlin import BaseGremlinMethod, GremlinMethod, GremlinValue, GremlinTable
 from thunderdome.containers import Table
 
-
-__version__ = '0.4.1'
+__thunderdome_version_path__ = os.path.realpath(__file__ + '/../VERSION')
+__version__ = open(__thunderdome_version_path__, 'r').readline().strip()
