@@ -171,7 +171,12 @@ class TestVertexTraversal(BaseCassEngTestCase):
         assert self.v2 in results
         assert self.v3 in results
 
-        results = self.v1.outV(TestEdge, allowed_elements=[OtherTestModel])
+        results = self.v1.outV(TestEdge, types=[OtherTestModel])
+        assert len(results) == 1
+        assert self.v3 in results
+
+        #test deprecated allowed_elements still works
+        results = self.v1.outV(TestEdge, types=[OtherTestModel])
         assert len(results) == 1
         assert self.v3 in results
 
@@ -186,7 +191,7 @@ class TestVertexTraversal(BaseCassEngTestCase):
         assert len(results) == 1
         assert self.v1 in results
 
-        results = self.v2.inV(TestEdge, allowed_elements=[OtherTestModel])
+        results = self.v2.inV(TestEdge, types=[OtherTestModel])
         assert len(results) == 0
 
     def test_outgoing_edge_traversals(self):
@@ -199,7 +204,7 @@ class TestVertexTraversal(BaseCassEngTestCase):
         assert len(results) == 1
         assert e3 in results
 
-        results = self.v2.outE(allowed_elements=[TestEdge])
+        results = self.v2.outE(types=[TestEdge])
         assert len(results) == 0
 
     def test_incoming_edge_traversals(self):
@@ -212,7 +217,7 @@ class TestVertexTraversal(BaseCassEngTestCase):
         assert len(results) == 1
         assert e1 in results
 
-        results = self.v2.inE(allowed_elements=[OtherTestEdge])
+        results = self.v2.inE(types=[OtherTestEdge])
         assert len(results) == 0
 
 class TestIndexCreation(BaseCassEngTestCase):
