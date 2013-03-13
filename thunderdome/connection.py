@@ -60,6 +60,7 @@ _username = None
 _password = None
 _index_all_fields = True
 _existing_indices = None
+_statsd = None
 
 
 def create_key_index(name):
@@ -89,7 +90,7 @@ def create_unique_index(name, data_type):
         _existing_indices = None
 
         
-def setup(hosts, graph_name, username=None, password=None, index_all_fields=True):
+def setup(hosts, graph_name, username=None, password=None, index_all_fields=True, statsd=None):
     """
     Records the hosts and connects to one of them.
 
@@ -103,18 +104,36 @@ def setup(hosts, graph_name, username=None, password=None, index_all_fields=True
     :type password: str
     :param index_all_fields: Toggle automatic indexing of all vertex fields
     :type index_all_fields: boolean
-
+    :param statsd: host:port or just host of statsd server to report metrics to
+    :type statsd string
+    :rtype None
     """
     global _hosts
     global _graph_name
     global _username
     global _password
     global _index_all_fields
+    global _statsd
+
     _graph_name = graph_name
     _username = username
     _password = password
     _index_all_fields = index_all_fields
-    
+
+
+    if statsd:
+        try:
+            sd = statsd
+            import statsd
+            tmp = sd.split(':')
+            if len(tmp) == 1:
+                tmp.append('8125')
+            _statsd = statsd.StatsClient(tmp[0], int(tmp[1]), prefix='thunderdome')
+        except ImportError:
+            logging.warning("Statsd configured but not installed.  Please install the statsd package.")
+        except:
+            raise
+
     for host in hosts:
         host = host.strip()
         host = host.split(':')
@@ -138,7 +157,7 @@ def setup(hosts, graph_name, username=None, password=None, index_all_fields=True
         klass._create_indices()
     
     
-def execute_query(query, params={}, transaction=True):
+def execute_query(query, params={}, transaction=True, context=""):
     """
     Execute a raw Gremlin query with the given parameters passed in.
 
@@ -146,6 +165,7 @@ def execute_query(query, params={}, transaction=True):
     :type query: str
     :param params: Parameters to the Gremlin query
     :type params: dict
+    :param context: String context data to include with the query for stats logging
     :rtype: dict
     
     """
@@ -160,13 +180,24 @@ def execute_query(query, params={}, transaction=True):
     #url = 'http://{}/graphs/{}/tp/gremlin'.format(host.name, _graph_name)
     data = json.dumps({'script':query, 'params': params})
     headers = {'Content-Type':'application/json', 'Accept':'application/json', 'Accept-Charset':'utf-8'}
-
+    import time
     try:
+        start_time = time.time()
         conn = httplib.HTTPConnection(host.name, host.port)
         conn.request("POST", '/graphs/{}/tp/gremlin'.format(_graph_name), data, headers)
         response = conn.getresponse()
         content = response.read()
+
+        total_time = int((time.time() - start_time) * 1000)
+
+        if context and _statsd:
+            _statsd.timing("{}.timer".format(context), total_time)
+            _statsd.incr("{}.counter".format(context))
+
+
     except socket.error as sock_err:
+        if _statsd:
+            _statsd.incr("thunderdome.socket_error".format(context), total_time)
         raise ThunderdomeQueryError('Socket error during query - {}'.format(sock_err))
     except:
         raise
@@ -187,6 +218,8 @@ def execute_query(query, params={}, transaction=True):
             else:
                 raise ThunderdomeQueryError(response_data['message'])
         else:
+            if _statsd:
+                _statsd.incr("{}.error".format(context))
             raise ThunderdomeQueryError(response_data['error'])
 
     return response_data['results'] 

@@ -166,7 +166,19 @@ class BaseGremlinMethod(object):
         params = self.transform_params_to_database(params)
 
         try:
-            tmp = execute_query(self.function_body, params, transaction=self.transaction)
+            from thunderdome import Vertex
+            from thunderdome import Edge
+            
+            if hasattr(instance, 'get_element_type'):
+                context = "vertices.{}".format(instance.get_element_type())
+            elif hasattr(instance, 'get_label'):
+                context = "edges.{}".format(instance.get_label())
+            else:
+                context = "other"
+
+            context = "{}.{}".format(context, self.method_name)
+
+            tmp = execute_query(self.function_body, params, transaction=self.transaction, context=context)
         except ThunderdomeQueryError as tqe:
             import pprint
             msg  = "Error while executing Gremlin method\n\n"
