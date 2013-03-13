@@ -168,9 +168,10 @@ class BaseGremlinMethod(object):
         try:
             from thunderdome import Vertex
             from thunderdome import Edge
-            if isinstance(instance, Vertex):
+            
+            if hasattr(instance, 'get_element_type'):
                 context = "vertices.{}".format(instance.get_element_type())
-            elif isinstance(instance, Edge):
+            elif hasattr(instance, 'get_label'):
                 context = "edges.{}".format(instance.get_label())
             else:
                 context = "other"
