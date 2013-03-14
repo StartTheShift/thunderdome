@@ -268,7 +268,7 @@ class String(Column):
 
     def validate(self, value):
         # Make sure that shit gets encoded properly
-        if isinstance(value, basestring):
+        if isinstance(value, unicode):
             value = value.encode(self.encoding)
 
         value = super(Text, self).validate(value)
