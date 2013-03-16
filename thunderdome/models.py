@@ -21,6 +21,7 @@ from collections import OrderedDict
 import inspect
 import re
 from uuid import UUID
+import warnings
 
 from thunderdome import columns
 from thunderdome.connection import execute_query, create_key_index, ThunderdomeQueryError
@@ -601,7 +602,7 @@ class Vertex(Element):
                           label,
                           limit=None,
                           offset=None,
-                          allowed_elements=None):
+                          types=None):
         """
         Perform simple graph database traversals with ubiquitous pagination.
 
@@ -613,8 +614,8 @@ class Vertex(Element):
         :type start: int
         :param max_results: The maximum number of results to return
         :type max_results: int
-        :param allowed_elements: The list of allowed result elements
-        :type allowed_elements: list
+        :param types: The list of allowed result elements
+        :type types: list
         
         """
         if inspect.isclass(label) and issubclass(label, Edge):
@@ -623,9 +624,9 @@ class Vertex(Element):
             label = label.get_label()
 
         allowed_elts = None
-        if allowed_elements is not None:
+        if types is not None:
             allowed_elts = []
-            for e in allowed_elements:
+            for e in types:
                 if issubclass(e, Vertex):
                     allowed_elts += [e.get_element_type()]
                 elif issubclass(e, Edge):
@@ -664,6 +665,7 @@ class Vertex(Element):
              label=None,
              limit=None,
              offset=None,
+             types=None,
              allowed_elements=None):
         """
         Return a list of vertices reached by traversing the outgoing edge with
@@ -675,20 +677,23 @@ class Vertex(Element):
         :type limit: int or None
         :param offset: The maximum number of results to return
         :type offset: int or None
-        :param allowed_elements: A list of allowed element types
-        :type allowed_elements: list
+        :param types: A list of allowed element types
+        :type types: list
         
         """
+        if types:
+            warnings.warn("allowed_elements type is deprecated. Please use types.", category=DeprecationWarning)
         return self._simple_traversal('outV',
                                       label,
                                       limit,
                                       offset,
-                                      allowed_elements)
+                                      types or allowed_elements)
 
     def inV(self,
             label=None,
             limit=None,
             offset=None,
+            types=None,
             allowed_elements=None):
         """
         Return a list of vertices reached by traversing the incoming edge with
@@ -700,20 +705,23 @@ class Vertex(Element):
         :type limit: int or None
         :param offset: The maximum number of results to return
         :type offset: int or None
-        :param allowed_elements: A list of allowed element types
-        :type allowed_elements: list
-        
+        :param types: A list of allowed element types
+        :type types: list
+
         """
+        if types:
+            warnings.warn("allowed_elements type is deprecated. Please use types.", category=DeprecationWarning)
         return self._simple_traversal('inV',
                                       label,
                                       limit,
                                       offset,
-                                      allowed_elements)
+                                      types or allowed_elements)
 
     def outE(self,
              label=None,
              limit=None,
              offset=None,
+             types=None,
              allowed_elements=None):
         """
         Return a list of edges with the given label going out of this vertex.
@@ -724,20 +732,23 @@ class Vertex(Element):
         :type limit: int or None
         :param offset: The maximum number of results to return
         :type offset: int or None
-        :param allowed_elements: A list of allowed element types
-        :type allowed_elements: list
+        :param types: A list of allowed element types
+        :type types: list
         
         """
+        if types:
+            warnings.warn("allowed_elements type is deprecated. Please use types.", category=DeprecationWarning)
         return self._simple_traversal('outE',
                                       label,
                                       limit,
                                       offset,
-                                      allowed_elements)
+                                      types or allowed_elements)
 
     def inE(self,
             label=None,
             limit=None,
             offset=None,
+            types=None,
             allowed_elements=None):
         """
         Return a list of edges with the given label coming into this vertex.
@@ -748,20 +759,23 @@ class Vertex(Element):
         :type limit: int or None
         :param offset: The maximum number of results to return
         :type offset: int or None
-        :param allowed_elements: A list of allowed element types
-        :type allowed_elements: list
+        :param types: A list of allowed element types
+        :type types: list
         
         """
+        if types:
+            warnings.warn("allowed_elements type is deprecated. Please use types.", category=DeprecationWarning)
         return self._simple_traversal('inE',
                                       label,
                                       limit,
                                       offset,
-                                      allowed_elements)
+                                      types or allowed_elements)
 
     def bothE(self,
               label=None,
               limit=None,
               offset=None,
+              types=None,
               allowed_elements=None):
         """
         Return a list of edges both incoming and outgoing from this vertex.
@@ -772,20 +786,23 @@ class Vertex(Element):
         :type limit: int or None
         :param offset: The maximum number of results to return
         :type offset: int or None
-        :param allowed_elements: A list of allowed element types
-        :type allowed_elements: list
+        :param types: A list of allowed element types
+        :type types: list
         
         """
+        if types:
+            warnings.warn("allowed_elements type is deprecated. Please use types.", category=DeprecationWarning)
         return self._simple_traversal('bothE',
                                       label,
                                       limit,
                                       offset,
-                                      allowed_elements)
+                                      types or allowed_elements)
     
     def bothV(self,
               label=None,
               limit=None,
               offset=None,
+              types=None,
               allowed_elements=None):
         """
         Return a list of vertices both incoming and outgoing from this vertex.
@@ -796,15 +813,17 @@ class Vertex(Element):
         :type limit: int or None
         :param offset: The maximum number of results to return
         :type offset: int or None
-        :param allowed_elements: A list of allowed element types
-        :type allowed_elements: list
+        :param types: A list of allowed element types
+        :type types: list
         
         """
+        if types:
+            warnings.warn("allowed_elements type is deprecated. Please use types.", category=DeprecationWarning)
         return self._simple_traversal('bothV',
                                       label,
                                       limit,
                                       offset,
-                                      allowed_elements)
+                                      types or allowed_elements)
 
 
     def delete_outE(self, label=None):
@@ -854,6 +873,7 @@ class PaginatedVertex(Vertex):
          label=None,
          page_num=None,
          per_page=None,
+         types=None,
          allowed_elements=None):
         return super(PaginatedVertex, self).outV(label, per_page, to_offset(page_num, per_page), allowed_elements)
     
@@ -861,36 +881,41 @@ class PaginatedVertex(Vertex):
          label=None,
          page_num=None,
          per_page=None,
+         types=None,
          allowed_elements=None):
-        return super(PaginatedVertex, self).outE(label, per_page, to_offset(page_num, per_page), allowed_elements)
+        return super(PaginatedVertex, self).outE(label, per_page, to_offset(page_num, per_page), types or allowed_elements)
             
     def inV(self,
          label=None,
          page_num=None,
          per_page=None,
+         types=None,
          allowed_elements=None):
-        return super(PaginatedVertex, self).inV(label, per_page, to_offset(page_num, per_page), allowed_elements)
+        return super(PaginatedVertex, self).inV(label, per_page, to_offset(page_num, per_page), types or allowed_elements)
     
     def inE(self,
          label=None,
          page_num=None,
          per_page=None,
+         types=None,
          allowed_elements=None):
-        return super(PaginatedVertex, self).inE(label, per_page, to_offset(page_num, per_page), allowed_elements)
+        return super(PaginatedVertex, self).inE(label, per_page, to_offset(page_num, per_page), types or allowed_elements)
     
     def bothV(self,
          label=None,
          page_num=None,
          per_page=None,
+         types=None,
          allowed_elements=None):
-        return super(PaginatedVertex, self).bothV(label, per_page, to_offset(page_num, per_page), allowed_elements)
+        return super(PaginatedVertex, self).bothV(label, per_page, to_offset(page_num, per_page), types or allowed_elements)
     
     def bothE(self,
          label=None,
          page_num=None,
          per_page=None,
+         types=None,
          allowed_elements=None):
-        return super(PaginatedVertex, self).bothE(label, per_page, to_offset(page_num, per_page), allowed_elements)
+        return super(PaginatedVertex, self).bothE(label, per_page, to_offset(page_num, per_page), types or allowed_elements)
     
     
 class EdgeMetaClass(ElementMetaClass):
