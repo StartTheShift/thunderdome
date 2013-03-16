@@ -90,7 +90,7 @@ def create_unique_index(name, data_type):
         _existing_indices = None
 
         
-def setup(hosts, graph_name, username=None, password=None, index_all_fields=True, statsd=None):
+def setup(hosts, graph_name, username=None, password=None, index_all_fields=False, statsd=None):
     """
     Records the hosts and connects to one of them.
 
