@@ -84,8 +84,9 @@ def create_unique_index(name, data_type):
     _existing_indices = _existing_indices or execute_query('g.getIndexedKeys(Vertex.class)')
     
     if name not in _existing_indices:
+        create_key_index(name)
         execute_query(
-            "g.makeType().name(name).dataType({}.class).functional().unique().indexed().makePropertyKey(); g.stopTransaction(SUCCESS)".format(data_type),
+            "g.makeType().name(name).dataType({0}.class).unique(IN).indexed(name, Vertex.class).makePropertyKey(); g.stopTransaction(SUCCESS)".format(data_type),
             {'name':name}, transaction=False)
         _existing_indices = None
 
