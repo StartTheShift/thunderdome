@@ -197,6 +197,7 @@ def execute_query(query, params={}, transaction=True, context=""):
 
     except socket.error as sock_err:
         if _statsd:
+            total_time = int((time.time() - start_time) * 1000)
             _statsd.incr("thunderdome.socket_error".format(context), total_time)
         raise ThunderdomeQueryError('Socket error during query - {}'.format(sock_err))
     except:
