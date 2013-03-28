@@ -179,11 +179,6 @@ class TestVertexTraversal(BaseCassEngTestCase):
         assert len(results) == 1
         assert self.v3 in results
 
-        #test deprecated allowed_elements still works
-        results = self.v1.outV(TestEdge, types=[OtherTestModel])
-        assert len(results) == 1
-        assert self.v3 in results
-
     
     def test_incoming_vertex_traversal(self):
         """Test that incoming vertex traversals work."""
@@ -245,6 +240,34 @@ class TestVertexTraversal(BaseCassEngTestCase):
         assert len(out) == 2
         assert self.v3.vid in [v.vid for v in out]
         assert self.v4.vid in [v.vid for v in out]
+
+    def test_multiple_edge_traversal_with_type_filtering(self):
+        """ Tests that using multiple edges for traversals works """
+        v = TestModel.create(count=1, text='Test1')
+
+        v1 = TestModel.create()
+        TestEdge.create(v, v1)
+
+        v2 = TestModel.create()
+        OtherTestEdge.create(v, v2)
+
+        v3 = TestModel.create()
+        YetAnotherTestEdge.create(v, v3)
+
+        v4 = OtherTestModel.create()
+        TestEdge.create(v, v4)
+
+        v5 = OtherTestModel.create()
+        OtherTestEdge.create(v, v5)
+
+        v6 = OtherTestModel.create()
+        YetAnotherTestEdge.create(v, v6)
+
+        assert len(v.outV()) == 6
+
+        assert len(v.outV(TestEdge, OtherTestEdge)) == 4
+        assert len(v.outV(TestEdge, OtherTestEdge, types=[TestModel])) == 2
+
 
 class TestIndexCreation(BaseCassEngTestCase):
     """
