@@ -599,7 +599,7 @@ class Vertex(Element):
         
     def _simple_traversal(self,
                           operation,
-                          label,
+                          labels,
                           limit=None,
                           offset=None,
                           types=None):
@@ -608,8 +608,8 @@ class Vertex(Element):
 
         :param operation: The operation to be performed
         :type operation: str
-        :param label: The edge label to be used
-        :type label: str or Edge
+        :param labels: The edge labels to be used
+        :type labels: list of Edges or strings
         :param start: The starting offset
         :type start: int
         :param max_results: The maximum number of results to return
@@ -618,10 +618,13 @@ class Vertex(Element):
         :type types: list
         
         """
-        if inspect.isclass(label) and issubclass(label, Edge):
-            label = label.get_label()
-        elif isinstance(label, Edge):
-            label = label.get_label()
+        label_strings = []
+        for label in labels:
+            if inspect.isclass(label) and issubclass(label, Edge):
+                label_string = label.get_label()
+            elif isinstance(label, Edge):
+                label_string = label.get_label()
+            label_strings.append(label_string)
 
         allowed_elts = None
         if types is not None:
@@ -639,12 +642,12 @@ class Vertex(Element):
             start = end = None
         
         return self._traversal(operation,
-                               label,
+                               label_strings,
                                start,
                                end,
                                allowed_elts)
 
-    def _simple_deletion(self, operation, label):
+    def _simple_deletion(self, operation, labels):
         """
         Perform simple bulk graph deletion operation.
 
@@ -654,25 +657,23 @@ class Vertex(Element):
         :type label: str or Edge
         
         """
-        if inspect.isclass(label) and issubclass(label, Edge):
-            label = label.get_label()
-        elif isinstance(label, Edge):
-            label = label.get_label()
+        label_strings = []
+        for label in labels:
+            if inspect.isclass(label) and issubclass(label, Edge):
+                label_string = label.get_label()
+            elif isinstance(label, Edge):
+                label_string = label.get_label()
+            label_strings.append(label_string)
 
-        return self._delete_related(operation, label)
+        return self._delete_related(operation, label_strings)
 
-    def outV(self,
-             label=None,
-             limit=None,
-             offset=None,
-             types=None,
-             allowed_elements=None):
+    def outV(self, *labels, **kwargs):
         """
         Return a list of vertices reached by traversing the outgoing edge with
         the given label.
         
-        :param label: The edge label to be traversed
-        :type label: str or BaseEdge
+        :param labels: pass in the labels to follow in as positional arguments
+        :type labels: str or BaseEdge
         :param limit: The number of the page to start returning results at
         :type limit: int or None
         :param offset: The maximum number of results to return
@@ -681,20 +682,9 @@ class Vertex(Element):
         :type types: list
         
         """
-        if types:
-            warnings.warn("allowed_elements type is deprecated. Please use types.", category=DeprecationWarning)
-        return self._simple_traversal('outV',
-                                      label,
-                                      limit,
-                                      offset,
-                                      types or allowed_elements)
+        return self._simple_traversal('outV', labels, **kwargs)
 
-    def inV(self,
-            label=None,
-            limit=None,
-            offset=None,
-            types=None,
-            allowed_elements=None):
+    def inV(self, *labels, **kwargs):
         """
         Return a list of vertices reached by traversing the incoming edge with
         the given label.
@@ -709,20 +699,9 @@ class Vertex(Element):
         :type types: list
 
         """
-        if types:
-            warnings.warn("allowed_elements type is deprecated. Please use types.", category=DeprecationWarning)
-        return self._simple_traversal('inV',
-                                      label,
-                                      limit,
-                                      offset,
-                                      types or allowed_elements)
+        return self._simple_traversal('inV', labels, **kwargs)
 
-    def outE(self,
-             label=None,
-             limit=None,
-             offset=None,
-             types=None,
-             allowed_elements=None):
+    def outE(self, *labels, **kwargs):
         """
         Return a list of edges with the given label going out of this vertex.
         
@@ -736,20 +715,9 @@ class Vertex(Element):
         :type types: list
         
         """
-        if types:
-            warnings.warn("allowed_elements type is deprecated. Please use types.", category=DeprecationWarning)
-        return self._simple_traversal('outE',
-                                      label,
-                                      limit,
-                                      offset,
-                                      types or allowed_elements)
+        return self._simple_traversal('outE', labels, **kwargs)
 
-    def inE(self,
-            label=None,
-            limit=None,
-            offset=None,
-            types=None,
-            allowed_elements=None):
+    def inE(self, *labels, **kwargs):
         """
         Return a list of edges with the given label coming into this vertex.
         
@@ -763,20 +731,9 @@ class Vertex(Element):
         :type types: list
         
         """
-        if types:
-            warnings.warn("allowed_elements type is deprecated. Please use types.", category=DeprecationWarning)
-        return self._simple_traversal('inE',
-                                      label,
-                                      limit,
-                                      offset,
-                                      types or allowed_elements)
+        return self._simple_traversal('inE', labels, **kwargs)
 
-    def bothE(self,
-              label=None,
-              limit=None,
-              offset=None,
-              types=None,
-              allowed_elements=None):
+    def bothE(self, *labels, **kwargs):
         """
         Return a list of edges both incoming and outgoing from this vertex.
 
@@ -790,20 +747,9 @@ class Vertex(Element):
         :type types: list
         
         """
-        if types:
-            warnings.warn("allowed_elements type is deprecated. Please use types.", category=DeprecationWarning)
-        return self._simple_traversal('bothE',
-                                      label,
-                                      limit,
-                                      offset,
-                                      types or allowed_elements)
-    
-    def bothV(self,
-              label=None,
-              limit=None,
-              offset=None,
-              types=None,
-              allowed_elements=None):
+        return self._simple_traversal('bothE', labels, **kwargs)
+
+    def bothV(self, *labels, **kwargs):
         """
         Return a list of vertices both incoming and outgoing from this vertex.
 
@@ -817,30 +763,24 @@ class Vertex(Element):
         :type types: list
         
         """
-        if types:
-            warnings.warn("allowed_elements type is deprecated. Please use types.", category=DeprecationWarning)
-        return self._simple_traversal('bothV',
-                                      label,
-                                      limit,
-                                      offset,
-                                      types or allowed_elements)
+        return self._simple_traversal('bothV', labels, **kwargs)
 
 
-    def delete_outE(self, label=None):
+    def delete_outE(self, *labels):
         """Delete all outgoing edges with the given label."""
-        self._simple_deletion('outE', label)
+        self._simple_deletion('outE', labels)
 
-    def delete_inE(self, label=None):
+    def delete_inE(self, *labels):
         """Delete all incoming edges with the given label."""
-        self._simple_deletion('inE', label)
+        self._simple_deletion('inE', labels)
 
-    def delete_outV(self, label=None):
+    def delete_outV(self, *labels):
         """Delete all outgoing vertices connected with edges with the given label."""
-        self._simple_deletion('outV', label)
+        self._simple_deletion('outV', labels)
 
-    def delete_inV(self, label=None):
+    def delete_inV(self, *labels):
         """Delete all incoming vertices connected with edges with the given label."""
-        self._simple_deletion('inV', label)
+        self._simple_deletion('inV', labels)
 
     def query(self):
         return Query(self)
@@ -868,54 +808,81 @@ class PaginatedVertex(Vertex):
     """
     Convenience class to easily handle pagination for traversals
     """
+
+    @staticmethod
+    def _transform_kwargs(kwargs):
+        """
+        Transforms paginated kwargs into limit/offset kwargs
+        :param kwargs:
+        :return:
+        """
+        values = kwargs.copy()
+        return {
+            'limit': kwargs.get('per_page'),
+            'offset': to_offset(kwargs.get('page_num'), kwargs.get('per_page')),
+            'types': kwargs.get('types'),
+        }
+
     __abstract__ = True
-    def outV(self,
-         label=None,
-         page_num=None,
-         per_page=None,
-         types=None,
-         allowed_elements=None):
-        return super(PaginatedVertex, self).outV(label, per_page, to_offset(page_num, per_page), allowed_elements)
+    def outV(self, *labels, **kwargs):
+        """
+        :param labels: pass in the labels to follow in as positional arguments
+        :param page_num: the page number to return
+        :param per_page: the number of objects to return per page
+        :param types: the element types this method is allowed to return
+        :return:
+        """
+        return super(PaginatedVertex, self).outV(*labels, **self._transform_kwargs(kwargs))
     
-    def outE(self,
-         label=None,
-         page_num=None,
-         per_page=None,
-         types=None,
-         allowed_elements=None):
-        return super(PaginatedVertex, self).outE(label, per_page, to_offset(page_num, per_page), types or allowed_elements)
+    def outE(self, *labels, **kwargs):
+        """
+        :param labels: pass in the labels to follow in as positional arguments
+        :param page_num: the page number to return
+        :param per_page: the number of objects to return per page
+        :param types: the element types this method is allowed to return
+        :return:
+        """
+        return super(PaginatedVertex, self).outE(*labels, **self._transform_kwargs(kwargs))
             
-    def inV(self,
-         label=None,
-         page_num=None,
-         per_page=None,
-         types=None,
-         allowed_elements=None):
-        return super(PaginatedVertex, self).inV(label, per_page, to_offset(page_num, per_page), types or allowed_elements)
+    def inV(self, *labels, **kwargs):
+        """
+        :param labels: pass in the labels to follow in as positional arguments
+        :param page_num: the page number to return
+        :param per_page: the number of objects to return per page
+        :param types: the element types this method is allowed to return
+        :return:
+        """
+        return super(PaginatedVertex, self).inV(*labels, **self._transform_kwargs(kwargs))
     
-    def inE(self,
-         label=None,
-         page_num=None,
-         per_page=None,
-         types=None,
-         allowed_elements=None):
-        return super(PaginatedVertex, self).inE(label, per_page, to_offset(page_num, per_page), types or allowed_elements)
+    def inE(self, *labels, **kwargs):
+        """
+        :param labels: pass in the labels to follow in as positional arguments
+        :param page_num: the page number to return
+        :param per_page: the number of objects to return per page
+        :param types: the element types this method is allowed to return
+        :return:
+        """
+        return super(PaginatedVertex, self).inE(*labels, **self._transform_kwargs(kwargs))
     
-    def bothV(self,
-         label=None,
-         page_num=None,
-         per_page=None,
-         types=None,
-         allowed_elements=None):
-        return super(PaginatedVertex, self).bothV(label, per_page, to_offset(page_num, per_page), types or allowed_elements)
+    def bothV(self, *labels, **kwargs):
+        """
+        :param labels: pass in the labels to follow in as positional arguments
+        :param page_num: the page number to return
+        :param per_page: the number of objects to return per page
+        :param types: the element types this method is allowed to return
+        :return:
+        """
+        return super(PaginatedVertex, self).bothV(*labels, **self._transform_kwargs(kwargs))
     
-    def bothE(self,
-         label=None,
-         page_num=None,
-         per_page=None,
-         types=None,
-         allowed_elements=None):
-        return super(PaginatedVertex, self).bothE(label, per_page, to_offset(page_num, per_page), types or allowed_elements)
+    def bothE(self, *labels, **kwargs):
+        """
+        :param labels: pass in the labels to follow in as positional arguments
+        :param page_num: the page number to return
+        :param per_page: the number of objects to return per page
+        :param types: the element types this method is allowed to return
+        :return:
+        """
+        return super(PaginatedVertex, self).bothE(*labels, **self._transform_kwargs(kwargs))
     
     
 class EdgeMetaClass(ElementMetaClass):

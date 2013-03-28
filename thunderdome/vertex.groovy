@@ -24,7 +24,7 @@ def _save_vertex(eid, attrs) {
     }
 }
 
-def _traversal(eid, operation, label, start, end, element_types) {
+def _traversal(eid, operation, labels, start, end, element_types) {
     /**
      * performs vertex/edge traversals with optional edge labels and pagination
      * :param eid: vertex eid to start from
@@ -35,7 +35,7 @@ def _traversal(eid, operation, label, start, end, element_types) {
      * :param element_types: list of allowed element types for results
      */
     results = g.v(eid)
-    label_args = label == null ? [] : [label]
+    label_args = labels == null ? [] : labels
     switch (operation) {
         case "inV":
             results = results.in(*label_args)
@@ -67,13 +67,13 @@ def _traversal(eid, operation, label, start, end, element_types) {
     return results
 }
 
-def _delete_related(eid, operation, label) {
+def _delete_related(eid, operation, labels) {
   try{
     /**
      * deletes connected vertices / edges
      */
     results = g.v(eid)
-    label_args = label == null ? [] : [label]
+    label_args = labels == null ? [] : labels
     vertices = true
     switch (operation) {
     case "inV":

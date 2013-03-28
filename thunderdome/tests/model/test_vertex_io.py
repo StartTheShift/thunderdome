@@ -18,6 +18,9 @@ class OtherTestModel(Vertex):
 class OtherTestEdge(Edge):
     numbers = columns.Integer()
 
+class YetAnotherTestEdge(Edge):
+    numbers = columns.Integer()
+
 
 class TestVertexIO(BaseCassEngTestCase):
 
@@ -159,7 +162,8 @@ class TestVertexTraversal(BaseCassEngTestCase):
         self.v1 = TestModel.create(count=1, text='Test1')
         self.v2 = TestModel.create(count=2, text='Test2')
         self.v3 = OtherTestModel.create(count=3, text='Test3')
-        
+        self.v4 = OtherTestModel.create(count=3, text='Test3')
+
     def test_outgoing_vertex_traversal(self):
         """Test that outgoing vertex traversals work."""
         e1 = TestEdge.create(self.v1, self.v2, numbers=12)
@@ -219,6 +223,28 @@ class TestVertexTraversal(BaseCassEngTestCase):
 
         results = self.v2.inE(types=[OtherTestEdge])
         assert len(results) == 0
+
+    def test_multiple_label_traversals(self):
+        """ Tests that using multiple edges for traversals works """
+        TestEdge.create(self.v1, self.v2)
+        OtherTestEdge.create(self.v1, self.v3)
+        YetAnotherTestEdge.create(self.v1, self.v4)
+
+        assert len(self.v1.outV()) == 3
+
+        assert len(self.v1.outV(TestEdge)) == 1
+        assert len(self.v1.outV(OtherTestEdge)) == 1
+        assert len(self.v1.outV(YetAnotherTestEdge)) == 1
+
+        out = self.v1.outV(TestEdge, OtherTestEdge)
+        assert len(out) == 2
+        assert self.v2.vid in [v.vid for v in out]
+        assert self.v3.vid in [v.vid for v in out]
+
+        out = self.v1.outV(OtherTestEdge, YetAnotherTestEdge)
+        assert len(out) == 2
+        assert self.v3.vid in [v.vid for v in out]
+        assert self.v4.vid in [v.vid for v in out]
 
 class TestIndexCreation(BaseCassEngTestCase):
     """
