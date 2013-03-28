@@ -25,11 +25,11 @@ from thunderdome.gremlin import ThunderdomeGremlinException
 from thunderdome.tests.base import BaseCassEngTestCase
 
 from thunderdome.models import Vertex
-from thunderdome import columns
+from thunderdome import properties
 from thunderdome import gremlin
 
 class GroovyTestModel(Vertex):
-    text    = columns.Text()
+    text    = properties.Text()
     get_self = gremlin.GremlinMethod()
     cm_get_self = gremlin.GremlinMethod(method_name='get_self', classmethod=True)
 
@@ -74,10 +74,10 @@ class TestMethodArgumentHandling(BaseCassEngTestCase):
         v1 = GroovyTestModel.create(text='cross fingers')
 
         now = datetime.now()
-        assert v1.return_value(now) == columns.DateTime().to_database(now)
+        assert v1.return_value(now) == properties.DateTime().to_database(now)
 
         uu = uuid4()
-        assert v1.return_value(uu) == columns.UUID().to_database(uu)
+        assert v1.return_value(uu) == properties.UUID().to_database(uu)
 
     def test_initial_arg_name_isnt_set(self):
         """ Tests that the name of the first argument in a instance method """

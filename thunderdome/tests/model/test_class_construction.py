@@ -21,17 +21,17 @@ from thunderdome.tests.base import BaseCassEngTestCase
 
 from thunderdome.exceptions import ModelException, ThunderdomeException
 from thunderdome.models import Vertex, Edge
-from thunderdome import columns, ValidationError
+from thunderdome import properties, ValidationError
 import thunderdome
 
 from thunderdome.tests.models import TestModel
 
 class WildDBNames(Vertex):
-    content = columns.Text(db_field='words_and_whatnot')
-    numbers = columns.Integer(db_field='integers_etc')
+    content = properties.Text(db_field='words_and_whatnot')
+    numbers = properties.Integer(db_field='integers_etc')
             
 class Stuff(Vertex):
-    num = columns.Integer()
+    num = properties.Integer()
 
 class TestModelClassFunction(BaseCassEngTestCase):
     """
@@ -74,8 +74,8 @@ class TestModelClassFunction(BaseCassEngTestCase):
 
         with self.assertRaises(ModelException):
             class BadNames(Vertex):
-                words = columns.Text()
-                content = columns.Text(db_field='words')
+                words = properties.Text()
+                content = properties.Text(db_field='words')
 
     def test_value_managers_are_keeping_model_instances_isolated(self):
         """

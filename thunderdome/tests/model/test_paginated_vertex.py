@@ -25,18 +25,18 @@ from thunderdome.tests.base import BaseCassEngTestCase
 from thunderdome import gremlin
 from thunderdome import models
 from thunderdome.models import Edge, PaginatedVertex
-from thunderdome import columns
+from thunderdome import properties
 import unittest
 
 
 
 class TestPModel(PaginatedVertex):
-    count   = columns.Integer()
-    text    = columns.Text(required=False)
+    count   = properties.Integer()
+    text    = properties.Text(required=False)
 
     
 class TestPEdge(Edge):
-    numbers = columns.Integer()
+    numbers = properties.Integer()
 
 
 

@@ -18,7 +18,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import os
 
-from thunderdome.columns import *
+from thunderdome.properties import *
 from thunderdome.exceptions import *
 from thunderdome.models import PaginatedVertex, Vertex, Edge, IN, OUT
 from thunderdome.gremlin import BaseGremlinMethod, GremlinMethod, GremlinValue, GremlinTable

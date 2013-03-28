@@ -203,7 +203,7 @@ class BaseGremlinMethod(object):
         from decimal import Decimal as _Decimal
         from uuid import UUID as _UUID
         from thunderdome.models import BaseElement, Edge, Vertex
-        from thunderdome.columns import DateTime, Decimal, UUID
+        from thunderdome.properties import DateTime, Decimal, UUID
 
         if isinstance(params, dict):
             return {k:self.transform_params_to_database(v) for k,v in params.iteritems()}

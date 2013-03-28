@@ -8,18 +8,18 @@ from thunderdome.tests.models import TestModel, TestEdge
 from thunderdome import gremlin
 from thunderdome import models
 from thunderdome.models import Edge, Vertex
-from thunderdome import columns
+from thunderdome import properties
 
 
 class OtherTestModel(Vertex):
-    count = columns.Integer()
-    text  = columns.Text()
+    count = properties.Integer()
+    text  = properties.Text()
 
 class OtherTestEdge(Edge):
-    numbers = columns.Integer()
+    numbers = properties.Integer()
 
 class YetAnotherTestEdge(Edge):
-    numbers = columns.Integer()
+    numbers = properties.Integer()
 
 
 class TestVertexIO(BaseCassEngTestCase):
@@ -93,8 +93,8 @@ class TestVertexIO(BaseCassEngTestCase):
         assert tm0.count == 7
 
 class DeserializationTestModel(Vertex):
-    count = columns.Integer()
-    text  = columns.Text()
+    count = properties.Integer()
+    text  = properties.Text()
 
     gremlin_path = 'deserialize.groovy'
 
@@ -280,9 +280,9 @@ class TestIndexCreation(BaseCassEngTestCase):
         connection._index_all_fields = False
         
         class TestIndexCreationCallTestVertex(Vertex):
-            col1 = columns.Text(index=True)
-            col2 = columns.Text(index=True, db_field='____column')
-            col3 = columns.Text(db_field='____column3')
+            col1 = properties.Text(index=True)
+            col2 = properties.Text(index=True, db_field='____column')
+            col3 = properties.Text(db_field='____column3')
 
         assert len(self.index_calls) == 2
         assert 'vid' not in self.index_calls
@@ -294,8 +294,8 @@ class TestIndexCreation(BaseCassEngTestCase):
         self.index_calls = []
 
         class TestIndexCreationCallTestVertex2(Vertex):
-            col1 = columns.Text()
-            col2 = columns.Text(db_field='____column')
+            col1 = properties.Text()
+            col2 = properties.Text(db_field='____column')
 
         assert len(self.index_calls) == 3
         assert 'vid' in self.index_calls

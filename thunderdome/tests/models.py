@@ -18,13 +18,13 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 from thunderdome.models import Vertex, Edge
-from thunderdome import columns
+from thunderdome import properties
 
 
 class TestModel(Vertex):
-    count   = columns.Integer()
-    text    = columns.Text(required=False)
+    count   = properties.Integer()
+    text    = properties.Text(required=False)
 
     
 class TestEdge(Edge):
-    numbers = columns.Integer()
+    numbers = properties.Integer()

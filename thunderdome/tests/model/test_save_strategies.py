@@ -22,7 +22,7 @@ from thunderdome import connection
 from thunderdome.tests.base import BaseCassEngTestCase
 
 from thunderdome.models import Edge, Vertex, SaveStrategyException
-from thunderdome import columns
+from thunderdome import properties
 
 
 class OnceSaveStrategy(Vertex):
@@ -32,21 +32,21 @@ class OnceSaveStrategy(Vertex):
 
 
 class OnChangeSaveStrategy(Vertex):
-    val = columns.Integer(save_strategy=columns.SAVE_ONCHANGE)
+    val = properties.Integer(save_strategy=properties.SAVE_ONCHANGE)
 
 
 class AlwaysSaveStrategy(Vertex):
-    val = columns.Integer(save_strategy=columns.SAVE_ALWAYS)
+    val = properties.Integer(save_strategy=properties.SAVE_ALWAYS)
 
 
 class ModelLevelSaveStrategy(Vertex):
-    __default_save_strategy__ = columns.SAVE_ONCHANGE
+    __default_save_strategy__ = properties.SAVE_ONCHANGE
     
-    val = columns.Integer()
+    val = properties.Integer()
 
 
 class DefaultModelLevelSaveStrategy(Vertex):
-    val = columns.Integer()
+    val = properties.Integer()
 
     
 class TestOnceSaveStrategy(BaseCassEngTestCase):

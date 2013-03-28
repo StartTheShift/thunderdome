@@ -22,16 +22,16 @@ from decimal import Decimal as D
 
 from thunderdome.tests.base import BaseCassEngTestCase
 
-from thunderdome.columns import Column
-from thunderdome.columns import Text
-from thunderdome.columns import Integer
-from thunderdome.columns import DateTime
-from thunderdome.columns import Dictionary
-from thunderdome.columns import UUID
-from thunderdome.columns import Boolean
-from thunderdome.columns import Float
-from thunderdome.columns import List
-from thunderdome.columns import Decimal
+from thunderdome.properties import Column
+from thunderdome.properties import Text
+from thunderdome.properties import Integer
+from thunderdome.properties import DateTime
+from thunderdome.properties import Dictionary
+from thunderdome.properties import UUID
+from thunderdome.properties import Boolean
+from thunderdome.properties import Float
+from thunderdome.properties import List
+from thunderdome.properties import Decimal
 
 from thunderdome.models import Vertex
 

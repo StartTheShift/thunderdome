@@ -23,7 +23,7 @@ import re
 from uuid import UUID
 import warnings
 
-from thunderdome import columns
+from thunderdome import properties
 from thunderdome.connection import execute_query, create_key_index, ThunderdomeQueryError
 from thunderdome.exceptions import ModelException, ValidationError, DoesNotExist, MultipleObjectsReturned, ThunderdomeException, WrongElementType
 from thunderdome.gremlin import BaseGremlinMethod, GremlinMethod
@@ -68,7 +68,7 @@ class BaseElement(object):
 
     # When true this will prepend the module name to the type name of the class
     __use_module_name__ = False
-    __default_save_strategy__ = columns.SAVE_ALWAYS
+    __default_save_strategy__ = properties.SAVE_ALWAYS
     
     class DoesNotExist(DoesNotExist):
         """
@@ -204,13 +204,13 @@ class BaseElement(object):
                 col_strategy = col.get_save_strategy()
 
             # Enforce the save strategy
-            if col_strategy == columns.SAVE_ONCE:
+            if col_strategy == properties.SAVE_ONCE:
                 if was_saved:
                     if self._values[name].changed:
                         raise SaveStrategyException("Attempt to change column '{}' with save strategy SAVE_ONCE".format(name))
                     else:
                         should_save = False
-            elif col_strategy == columns.SAVE_ONCHANGE:
+            elif col_strategy == properties.SAVE_ONCHANGE:
                 if was_saved and not self._values[name].changed:
                     should_save = False
             
@@ -322,7 +322,7 @@ class ElementMetaClass(type):
             else:
                 attrs[col_name] = property(_get, _set)
 
-        column_definitions = [(k,v) for k,v in attrs.items() if isinstance(v, columns.Column)]
+        column_definitions = [(k,v) for k,v in attrs.items() if isinstance(v, properties.Column)]
         column_definitions = sorted(column_definitions, lambda x,y: cmp(x[1].position, y[1].position))
         
         #TODO: check that the defined columns don't conflict with any of the
@@ -449,7 +449,7 @@ class Vertex(Element):
     _delete_related = GremlinMethod()
 
     #vertex id
-    vid = columns.UUID(save_strategy=columns.SAVE_ONCE)
+    vid = properties.UUID(save_strategy=properties.SAVE_ONCE)
     
     element_type = None
 

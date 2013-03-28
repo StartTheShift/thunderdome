@@ -23,26 +23,26 @@ from thunderdome import connection
 from thunderdome.tests.base import BaseCassEngTestCase
 
 from thunderdome.models import Vertex, Edge, IN, OUT, BOTH, GREATER_THAN, LESS_THAN
-from thunderdome import columns
+from thunderdome import properties
 
 
 # Vertices
 class Person(Vertex):
-    name = columns.Text()
-    age  = columns.Integer()
+    name = properties.Text()
+    age  = properties.Integer()
 
 
 class Course(Vertex):
-    name = columns.Text()
-    credits = columns.Decimal()
+    name = properties.Text()
+    credits = properties.Decimal()
 
 # Edges
 class EnrolledIn(Edge):
-    date_enrolled = columns.DateTime()
-    enthusiasm = columns.Integer(default=5) # medium, 1-10, 5 by default
+    date_enrolled = properties.DateTime()
+    enthusiasm = properties.Integer(default=5) # medium, 1-10, 5 by default
 
 class TaughtBy(Edge):
-    overall_mood = columns.Text(default='Grumpy')
+    overall_mood = properties.Text(default='Grumpy')
     
 
 class TestVertexTraversals(BaseCassEngTestCase):

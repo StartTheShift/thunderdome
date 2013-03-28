@@ -8,13 +8,13 @@ from thunderdome.tests.models import TestModel, TestEdge
 from thunderdome import gremlin
 from thunderdome import models
 from thunderdome.models import Edge, Vertex
-from thunderdome import columns
+from thunderdome import properties
 
 class DBFieldVertex(Vertex):
-    text    = columns.Text(db_field='vertex_text')
+    text    = properties.Text(db_field='vertex_text')
 
 class DBFieldEdge(Edge):
-    text    = columns.Text(db_field='edge_text')
+    text    = properties.Text(db_field='edge_text')
 
 class TestDbField(BaseCassEngTestCase):
 
