@@ -186,6 +186,7 @@ class BaseGremlinMethod(object):
             msg += "[Params]\n{}\n\n".format(pprint.pformat(params))
             msg += "[Function Body]\n{}\n".format(self.function_body)
             msg += "\n[Error]\n{}\n".format(tqe)
+            msg += "\n[Raw Response]\n{}\n".format(tqe.raw_response)
             raise ThunderdomeGremlinException(msg)
         return tmp
 

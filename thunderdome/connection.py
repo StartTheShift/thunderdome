@@ -45,6 +45,29 @@ class ThunderdomeQueryError(ThunderdomeException):
     Problem with a Gremlin query to Titan
     """
 
+    def __init__(self, message, full_response={}):
+        """
+        Initialize the thunderdome query error message.
+
+        :param message: The message text itself
+        :type message: str
+        :param full_response: The full query response
+        :type full_response: dict
+        
+        """
+        super(ThunderdomeQueryError, self).__init__(message)
+        self._full_response = full_response
+
+    @property
+    def raw_response(self):
+        """
+        Return the raw query response.
+
+        :rtype: dict
+        
+        """
+        return self._full_response
+
 
 class ThunderdomeGraphMissingError(ThunderdomeException):
     """
@@ -217,11 +240,17 @@ def execute_query(query, params={}, transaction=True, context=""):
             if re.search(graph_missing_re, response_data['message']):
                 raise ThunderdomeGraphMissingError(response_data['message'])
             else:
-                raise ThunderdomeQueryError(response_data['message'])
+                raise ThunderdomeQueryError(
+                    response_data['message'],
+                    response_data
+                )
         else:
             if _statsd:
                 _statsd.incr("{}.error".format(context))
-            raise ThunderdomeQueryError(response_data['error'])
+            raise ThunderdomeQueryError(
+                response_data['error'],
+                response_data
+            )
 
     return response_data['results'] 
 
