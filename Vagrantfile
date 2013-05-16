@@ -10,7 +10,9 @@ Vagrant::Config.run do |config|
   config.vm.box = "precise"
 
   # The url from where the 'config.vm.box' box will be fetched if it
-  # doesn't already exist on the user's system.
+  # doesn't already exist on the user's system. Added both boxes for virtualbox 
+  # and vmware fusion providers
+  config.vm.box_url = "http://files.vagrantup.com/precise64_vmware_fusion.box"
   config.vm.box_url = "http://files.vagrantup.com/precise64.box"
 
   # Boot with a GUI so you can see the screen. (Default is headless)
@@ -22,7 +24,9 @@ Vagrant::Config.run do |config|
   # network interface) by any external networks.
   config.vm.network :hostonly, "192.168.33.10"
 
-  config.vm.customize ["modifyvm", :id, "--memory", "2048"]
+  Vagrant::Config.run do |config|
+    config.vm.customize ["modifyvm", :id, "--memory", 1024]
+  end
 
   # Forward a port from the guest to the host, which allows for outside
   # computers to access the VM, whereas host only networking does not.
