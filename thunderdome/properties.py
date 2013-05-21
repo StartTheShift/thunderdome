@@ -318,6 +318,7 @@ class Integer(Column):
             return long(value)
 
     def to_database(self, value):
+        value = super(Integer, self).to_database(value)
         if value is not None:
             return long(value)
 
@@ -379,7 +380,7 @@ class UUID(Column):
 
     def to_database(self, value):
         val = super(UUID, self).to_database(value)
-        if value is None:
+        if val is None:
             return
         return str(val)
 
@@ -390,7 +391,8 @@ class Boolean(Column):
         return bool(value)
 
     def to_database(self, value):
-        return bool(value)
+        val = super(Boolean, self).to_database(value)
+        return bool(val)
 
 
 class Double(Column):
@@ -413,6 +415,7 @@ class Double(Column):
             return float(value)
 
     def to_database(self, value):
+        value = super(Double, self).to_database(value)
         if value is not None:
             return float(value)
 
