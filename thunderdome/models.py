@@ -624,6 +624,10 @@ class Vertex(Element):
                 label_string = label.get_label()
             elif isinstance(label, Edge):
                 label_string = label.get_label()
+            elif isinstance(label, basestring):
+                label_string = label
+            else:
+                raise ThunderdomeException('traversal labels must be edge classes, instances, or strings')
             label_strings.append(label_string)
 
         allowed_elts = None

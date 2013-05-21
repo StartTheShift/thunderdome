@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from unittest import skip
-from thunderdome import connection 
+from thunderdome import connection
+from thunderdome.exceptions import ThunderdomeException
 from thunderdome.tests.base import BaseCassEngTestCase
 
 from thunderdome.tests.models import TestModel, TestEdge
@@ -267,6 +268,53 @@ class TestVertexTraversal(BaseCassEngTestCase):
 
         assert len(v.outV(TestEdge, OtherTestEdge)) == 4
         assert len(v.outV(TestEdge, OtherTestEdge, types=[TestModel])) == 2
+
+    def test_edge_instance_traversal_types(self):
+        """ Test traversals with edge instances work properly """
+        te = TestEdge.create(self.v1, self.v2)
+        ote = OtherTestEdge.create(self.v1, self.v3)
+        yate = YetAnotherTestEdge.create(self.v1, self.v4)
+
+        out = self.v1.outV(te, ote)
+        assert len(out) == 2
+        assert self.v2.vid in [v.vid for v in out]
+        assert self.v3.vid in [v.vid for v in out]
+
+        out = self.v1.outV(ote, yate)
+        assert len(out) == 2
+        assert self.v3.vid in [v.vid for v in out]
+        assert self.v4.vid in [v.vid for v in out]
+
+    def test_edge_label_string_traversal_types(self):
+        """ Test traversals with edge instances work properly """
+        TestEdge.create(self.v1, self.v2)
+        OtherTestEdge.create(self.v1, self.v3)
+        YetAnotherTestEdge.create(self.v1, self.v4)
+
+        out = self.v1.outV(TestEdge.get_label(), OtherTestEdge.get_label())
+        assert len(out) == 2
+        assert self.v2.vid in [v.vid for v in out]
+        assert self.v3.vid in [v.vid for v in out]
+
+        out = self.v1.outV(OtherTestEdge.get_label(), YetAnotherTestEdge.get_label())
+        assert len(out) == 2
+        assert self.v3.vid in [v.vid for v in out]
+        assert self.v4.vid in [v.vid for v in out]
+
+    def test_unknown_edge_traversal_filter_type_fails(self):
+        """
+        Tests an exception is raised if a traversal filter is
+        used that's not an edge class, instance or label string fails
+        """
+        TestEdge.create(self.v1, self.v2)
+        OtherTestEdge.create(self.v1, self.v3)
+        YetAnotherTestEdge.create(self.v1, self.v4)
+
+        with self.assertRaises(ThunderdomeException):
+            out = self.v1.outV(5)
+
+        with self.assertRaises(ThunderdomeException):
+            out = self.v1.outV(True)
 
 
 class TestIndexCreation(BaseCassEngTestCase):
