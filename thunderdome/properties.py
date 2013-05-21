@@ -27,15 +27,13 @@ from uuid import UUID as _UUID
 
 from thunderdome.exceptions import ValidationError
 
-"""
-Saving strategies for thunderdome. These are used to indicate when a property
-should be saved after the initial vertex/edge creation.
+# Saving strategies for thunderdome. These are used to indicate when a property
+# should be saved after the initial vertex/edge creation.
+#
+# SAVE_ONCE     - Only save this value once. If it changes throw an exception.
+# SAVE_ONCHANGE - Only save this value if it has changed.
+# SAVE_ALWAYS   - Save this value every time the corresponding model is saved.
 
-SAVE_ONCE     - Only save this value once. If it changes throw an exception.
-SAVE_ONCHANGE - Only save this value if it has changed.
-SAVE_ALWAYS   - Save this value every time the corresponding model is saved.
-
-"""
 SAVE_ONCE = 1
 SAVE_ONCHANGE = 2
 SAVE_ALWAYS = 3
