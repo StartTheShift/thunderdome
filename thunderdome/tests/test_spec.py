@@ -1,8 +1,8 @@
-from thunderdome.tests.base import BaseCassEngTestCase
+from thunderdome.tests.base import BaseThunderdomeTestCase
 from thunderdome.spec import SpecParser, Property, Edge
 
 
-class SpecParserTest(BaseCassEngTestCase):
+class SpecParserTest(BaseThunderdomeTestCase):
     """Test spec parsing from dictionary objects"""
 
     def setUp(self):

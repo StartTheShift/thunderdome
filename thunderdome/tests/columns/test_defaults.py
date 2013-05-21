@@ -22,9 +22,9 @@ from decimal import Decimal as D
 import uuid
 
 from thunderdome.properties import *
-from thunderdome.tests.base import BaseCassEngTestCase
+from thunderdome.tests.base import BaseThunderdomeTestCase
 
-class TestDefaultValue(BaseCassEngTestCase):
+class TestDefaultValue(BaseThunderdomeTestCase):
     """ Tests that setting default values works on all column types """
 
     def test_string_default(self):

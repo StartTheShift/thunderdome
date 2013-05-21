@@ -1,5 +1,5 @@
 from thunderdome.connection import ThunderdomeQueryError
-from thunderdome.tests.base import BaseCassEngTestCase
+from thunderdome.tests.base import BaseThunderdomeTestCase
 from thunderdome.models import Query, IN, OUT, Edge, Vertex, GREATER_THAN
 from thunderdome import Integer, Double
 
@@ -15,7 +15,7 @@ class MockEdge(Edge):
     fierceness = Double()
 
 
-class SimpleQueryTest(BaseCassEngTestCase):
+class SimpleQueryTest(BaseThunderdomeTestCase):
     def setUp(self):
         self.q = Query(MockVertex())
 

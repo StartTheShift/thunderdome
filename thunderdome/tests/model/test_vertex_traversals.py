@@ -20,7 +20,7 @@
 from datetime import datetime
 
 from thunderdome import connection 
-from thunderdome.tests.base import BaseCassEngTestCase
+from thunderdome.tests.base import BaseThunderdomeTestCase
 
 from thunderdome.models import Vertex, Edge, IN, OUT, BOTH, GREATER_THAN, LESS_THAN
 from thunderdome import properties
@@ -44,7 +44,7 @@ class EnrolledIn(Edge):
 class TaughtBy(Edge):
     overall_mood = properties.Text(default='Grumpy')
 
-class BaseTraversalTestCase(BaseCassEngTestCase):
+class BaseTraversalTestCase(BaseThunderdomeTestCase):
 
     @classmethod
     def setUpClass(cls):

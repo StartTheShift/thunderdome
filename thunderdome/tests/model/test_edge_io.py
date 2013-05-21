@@ -19,11 +19,11 @@
 
 from unittest import skip
 
-from thunderdome.tests.base import BaseCassEngTestCase
+from thunderdome.tests.base import BaseThunderdomeTestCase
 from thunderdome.tests.models import TestModel, TestEdge
 
 
-class TestEdgeIO(BaseCassEngTestCase):
+class TestEdgeIO(BaseThunderdomeTestCase):
 
     def setUp(self):
         super(TestEdgeIO, self).setUp()

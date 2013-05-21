@@ -21,11 +21,11 @@ from unittest import TestCase
 from thunderdome import connection
 
     
-class BaseCassEngTestCase(TestCase):
+class BaseThunderdomeTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super(BaseCassEngTestCase, cls).setUpClass()
+        super(BaseThunderdomeTestCase, cls).setUpClass()
         if not connection._hosts:
             connection.setup(['localhost'], 'thunderdome')
 

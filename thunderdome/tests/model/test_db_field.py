@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from unittest import skip
 from thunderdome import connection
-from thunderdome.tests.base import BaseCassEngTestCase
+from thunderdome.tests.base import BaseThunderdomeTestCase
 
 from thunderdome.tests.models import TestModel, TestEdge
 
@@ -16,7 +16,7 @@ class DBFieldVertex(Vertex):
 class DBFieldEdge(Edge):
     text    = properties.Text(db_field='edge_text')
 
-class TestDbField(BaseCassEngTestCase):
+class TestDbField(BaseThunderdomeTestCase):
 
     def test_db_field_io(self):
         v1 = DBFieldVertex.create(text='vertex1')

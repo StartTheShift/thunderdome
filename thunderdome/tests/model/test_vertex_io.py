@@ -2,7 +2,7 @@
 from unittest import skip
 from thunderdome import connection
 from thunderdome.exceptions import ThunderdomeException
-from thunderdome.tests.base import BaseCassEngTestCase
+from thunderdome.tests.base import BaseThunderdomeTestCase
 
 from thunderdome.tests.models import TestModel, TestEdge
 
@@ -23,7 +23,7 @@ class YetAnotherTestEdge(Edge):
     numbers = properties.Integer()
 
 
-class TestVertexIO(BaseCassEngTestCase):
+class TestVertexIO(BaseThunderdomeTestCase):
 
     def test_unicode_io(self):
         """
@@ -102,7 +102,7 @@ class DeserializationTestModel(Vertex):
     get_map = gremlin.GremlinValue()
     get_list = gremlin.GremlinMethod()
 
-class TestNestedDeserialization(BaseCassEngTestCase):
+class TestNestedDeserialization(BaseThunderdomeTestCase):
     """
     Tests that vertices are properly deserialized when nested in map and list data structures
     """
@@ -139,7 +139,7 @@ class TestNestedDeserialization(BaseCassEngTestCase):
 
         assert nested[4] == 5
 
-class TestUpdateMethod(BaseCassEngTestCase):
+class TestUpdateMethod(BaseThunderdomeTestCase):
     def test_success_case(self):
         """ Tests that the update method works as expected """
         tm = TestModel.create(count=8, text='123456789')
@@ -156,7 +156,7 @@ class TestUpdateMethod(BaseCassEngTestCase):
             tm.update(jon='beard')
 
 
-class TestVertexTraversal(BaseCassEngTestCase):
+class TestVertexTraversal(BaseThunderdomeTestCase):
 
     def setUp(self):
         super(TestVertexTraversal, self).setUp()
@@ -317,7 +317,7 @@ class TestVertexTraversal(BaseCassEngTestCase):
             out = self.v1.outV(True)
 
 
-class TestIndexCreation(BaseCassEngTestCase):
+class TestIndexCreation(BaseThunderdomeTestCase):
     """
     Tests that automatic index creation works as expected
     """

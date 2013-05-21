@@ -19,7 +19,7 @@
 
 from unittest import skip
 from thunderdome import connection 
-from thunderdome.tests.base import BaseCassEngTestCase
+from thunderdome.tests.base import BaseThunderdomeTestCase
 
 
 from thunderdome import gremlin

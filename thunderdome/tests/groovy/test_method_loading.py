@@ -22,7 +22,7 @@ from unittest import skip
 from uuid import uuid4
 
 from thunderdome.gremlin import ThunderdomeGremlinException
-from thunderdome.tests.base import BaseCassEngTestCase
+from thunderdome.tests.base import BaseThunderdomeTestCase
 
 from thunderdome.models import Vertex
 from thunderdome import properties
@@ -40,7 +40,7 @@ class GroovyTestModel(Vertex):
     arg_test1 = gremlin.GremlinValue()
     arg_test2 = gremlin.GremlinValue()
 
-class TestMethodLoading(BaseCassEngTestCase):
+class TestMethodLoading(BaseThunderdomeTestCase):
     
     def test_method_loads_and_works(self):
         v1 = GroovyTestModel.create(text='cross fingers')
@@ -52,7 +52,7 @@ class TestMethodLoading(BaseCassEngTestCase):
         assert v1.vid == v3[0].vid
         
 
-class TestMethodArgumentHandling(BaseCassEngTestCase):
+class TestMethodArgumentHandling(BaseThunderdomeTestCase):
 
     def test_callable_defaults(self):
         """

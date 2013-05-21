@@ -20,7 +20,7 @@
 from datetime import datetime
 from decimal import Decimal as D
 
-from thunderdome.tests.base import BaseCassEngTestCase
+from thunderdome.tests.base import BaseThunderdomeTestCase
 
 from thunderdome.properties import Column
 from thunderdome.properties import Text
@@ -47,7 +47,7 @@ class DatetimeCoercionTest(Vertex):
     created_at = DateTime(required=False, strict=False)
 
     
-class TestDatetime(BaseCassEngTestCase):
+class TestDatetime(BaseThunderdomeTestCase):
 
     def test_datetime_io(self):
         now = datetime.now()
@@ -85,7 +85,7 @@ class DecimalTest(Vertex):
     test_id = Integer(primary_key=True)
     dec_val = Decimal()
     
-class TestDecimal(BaseCassEngTestCase):
+class TestDecimal(BaseThunderdomeTestCase):
 
     def test_datetime_io(self):
         dt = DecimalTest.create(test_id=0, dec_val=D('0.00'))
@@ -96,21 +96,21 @@ class TestDecimal(BaseCassEngTestCase):
         dt2 = DecimalTest.get(dt.vid)
         assert dt2.dec_val == D('5')
 
-class TestText(BaseCassEngTestCase):
+class TestText(BaseThunderdomeTestCase):
 
     def test_max_length_validation(self):
         """
         Tests that the max_length kwarg works
         """
 
-class TestInteger(BaseCassEngTestCase):
+class TestInteger(BaseThunderdomeTestCase):
 
     def test_non_integral_validation(self):
         """
         Tests that attempting to save non integral values raises a ValidationError
         """
 
-class TestFloat(BaseCassEngTestCase):
+class TestFloat(BaseThunderdomeTestCase):
 
     def test_non_numberic_validation(self):
         """
@@ -121,7 +121,7 @@ class DictionaryTestVertex(Vertex):
     test_id = Integer(primary_key=True)
     map_val = Dictionary()
 
-class TestDictionary(BaseCassEngTestCase):
+class TestDictionary(BaseThunderdomeTestCase):
 
     def test_dictionary_io(self):
         """ Tests that dictionary objects are saved and loaded successfully """
@@ -147,7 +147,7 @@ class ListTestVertex(Vertex):
     test_id = Integer(primary_key=True)
     list_val = List()
 
-class TestList(BaseCassEngTestCase):
+class TestList(BaseThunderdomeTestCase):
 
     def test_dictionary_io(self):
         """ Tests that dictionary objects are saved and loaded successfully """

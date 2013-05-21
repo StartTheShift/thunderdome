@@ -19,7 +19,7 @@
 
 import uuid
 from thunderdome import connection 
-from thunderdome.tests.base import BaseCassEngTestCase
+from thunderdome.tests.base import BaseThunderdomeTestCase
 
 from thunderdome.models import Edge, Vertex, SaveStrategyException
 from thunderdome import properties
@@ -49,7 +49,7 @@ class DefaultModelLevelSaveStrategy(Vertex):
     val = properties.Integer()
 
     
-class TestOnceSaveStrategy(BaseCassEngTestCase):
+class TestOnceSaveStrategy(BaseThunderdomeTestCase):
 
     def test_should_be_able_to_resave_with_once_strategy(self):
         """Once save strategy should allow saving so long as columns haven't changed'"""
@@ -66,7 +66,7 @@ class TestOnceSaveStrategy(BaseCassEngTestCase):
             v.save()
 
             
-class TestOnChangeSaveStrategy(BaseCassEngTestCase):
+class TestOnChangeSaveStrategy(BaseThunderdomeTestCase):
 
     def test_should_be_able_to_save_columns_with_on_change(self):
         """Should be able to resave models with on change save policy"""
@@ -85,7 +85,7 @@ class TestOnChangeSaveStrategy(BaseCassEngTestCase):
         assert v1.val == 2
 
         
-class TestAlwaysSaveStrategy(BaseCassEngTestCase):
+class TestAlwaysSaveStrategy(BaseThunderdomeTestCase):
 
     def test_should_be_able_to_save_with_always(self):
         """Should be able to save with always save strategy"""
@@ -99,7 +99,7 @@ class TestAlwaysSaveStrategy(BaseCassEngTestCase):
         assert v1.val == 2
 
 
-class TestModelLevelSaveStrategy(BaseCassEngTestCase):
+class TestModelLevelSaveStrategy(BaseThunderdomeTestCase):
 
     def test_default_save_strategy_should_be_always(self):
         """Default save strategy should be to always save"""

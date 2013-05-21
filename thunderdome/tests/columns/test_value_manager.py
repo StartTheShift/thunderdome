@@ -20,10 +20,10 @@
 from datetime import datetime, timedelta
 
 from thunderdome.properties import *
-from thunderdome.tests.base import BaseCassEngTestCase
+from thunderdome.tests.base import BaseThunderdomeTestCase
 
 
-class TestChangedProperty(BaseCassEngTestCase):
+class TestChangedProperty(BaseThunderdomeTestCase):
     """
     Tests that the `changed` property works as intended
     """

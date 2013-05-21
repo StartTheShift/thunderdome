@@ -17,7 +17,7 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-from thunderdome.tests.base import BaseCassEngTestCase
+from thunderdome.tests.base import BaseThunderdomeTestCase
 
 from thunderdome.exceptions import ModelException, ThunderdomeException
 from thunderdome.models import Vertex, Edge
@@ -33,7 +33,7 @@ class WildDBNames(Vertex):
 class Stuff(Vertex):
     num = properties.Integer()
 
-class TestModelClassFunction(BaseCassEngTestCase):
+class TestModelClassFunction(BaseThunderdomeTestCase):
     """
     Tests verifying the behavior of the Model metaclass
     """
@@ -94,7 +94,7 @@ class RenamedTest(thunderdome.Vertex):
     vid = thunderdome.UUID(primary_key=True)
     data = thunderdome.Text()
         
-class TestManualTableNaming(BaseCassEngTestCase):
+class TestManualTableNaming(BaseThunderdomeTestCase):
     
     def test_proper_table_naming(self):
         assert RenamedTest.get_element_type() == 'manual_name'
@@ -105,7 +105,7 @@ class BaseAbstractVertex(thunderdome.Vertex):
 
 class DerivedAbstractVertex(BaseAbstractVertex): pass
 
-class TestAbstractElementAttribute(BaseCassEngTestCase):
+class TestAbstractElementAttribute(BaseThunderdomeTestCase):
 
     def test_abstract_property_is_not_inherited(self):
         assert BaseAbstractVertex.__abstract__
@@ -136,7 +136,7 @@ class TestValidationVertex(Vertex):
     def validate_num2(self, value):
         return 5
 
-class TestValidation(BaseCassEngTestCase):
+class TestValidation(BaseThunderdomeTestCase):
 
     def test_custom_validation_method(self):
         v = TestValidationVertex.create(num=6)
