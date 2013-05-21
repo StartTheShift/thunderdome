@@ -17,6 +17,7 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+import copy
 from datetime import datetime
 from decimal import Decimal as D
 import re
@@ -57,10 +58,23 @@ class BaseValueManager(object):
         :type value: mixed
 
         """
+        self._create_private_fields()
+
         self.instance = instance
         self.column = column
         self.previous_value = value
         self.value = value
+
+    def _create_private_fields(self):
+        self._previous_value = None
+
+    @property
+    def previous_value(self):
+        return self._previous_value
+
+    @previous_value.setter
+    def previous_value(self, val):
+        self._previous_value = copy.copy(val)
 
     @property
     def deleted(self):
