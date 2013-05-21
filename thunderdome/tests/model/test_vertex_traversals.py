@@ -43,9 +43,8 @@ class EnrolledIn(Edge):
 
 class TaughtBy(Edge):
     overall_mood = properties.Text(default='Grumpy')
-    
 
-class TestVertexTraversals(BaseCassEngTestCase):
+class BaseTraversalTestCase(BaseCassEngTestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -75,7 +74,9 @@ class TestVertexTraversals(BaseCassEngTestCase):
         cls.blake_beekeeping = TaughtBy.create(cls.beekeeping, cls.blake, overall_mood='Pedantic')
         cls.jon_physics = TaughtBy.create(cls.physics, cls.jon, overall_mood='Creepy')
         cls.eric_theoretics = TaughtBy.create(cls.theoretics, cls.eric, overall_mood='Obtuse')
-        
+
+class TestVertexTraversals(BaseTraversalTestCase):
+
     def test_inV_works(self):
         """Test that inV traversals work as expected"""
         results = self.jon.inV()
@@ -132,6 +133,8 @@ class TestVertexTraversals(BaseCassEngTestCase):
         results = self.blake.bothV()
         assert len(results) == 2
         assert self.beekeeping in results
+
+class TestVertexCentricQueries(BaseTraversalTestCase):
 
     def test_query_vertices(self):
         classes = self.jon.query().labels(EnrolledIn).direction(OUT).vertices()
