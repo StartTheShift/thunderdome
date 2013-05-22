@@ -16,6 +16,10 @@ class OtherTestModel(Vertex):
     count = properties.Integer()
     text  = properties.Text()
 
+class AliasedTestModel(Vertex):
+    count = properties.Integer(db_field='how_many')
+    text  = properties.Text()
+
 class OtherTestEdge(Edge):
     numbers = properties.Integer()
 
@@ -87,6 +91,16 @@ class TestVertexIO(BaseThunderdomeTestCase):
         """ Tests that and instance's reload method does an inplace update of the instance """
         tm0 = TestModel.create(count=8, text='123456789')
         tm1 = TestModel.get(tm0.vid)
+        tm1.count = 7
+        tm1.save()
+
+        tm0.reload()
+        assert tm0.count == 7
+
+    def test_reload_on_aliased_field(self):
+        """ Tests that reload works with aliased fields """
+        tm0 = AliasedTestModel.create(count=8, text='123456789')
+        tm1 = AliasedTestModel.get(tm0.vid)
         tm1.count = 7
         tm1.save()
 

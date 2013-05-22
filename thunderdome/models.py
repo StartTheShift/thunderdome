@@ -289,7 +289,7 @@ class BaseElement(object):
         """
         values = self._reload_values()
         for name, column in self._columns.items():
-            value = values.get(name, None)
+            value = values.get(column.db_field_name, None)
             if value is not None: value = column.to_python(value)
             setattr(self, name, value)
         return self
