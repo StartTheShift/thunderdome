@@ -118,7 +118,7 @@ def setup(hosts, graph_name, username=None, password=None, index_all_fields=Fals
     Records the hosts and connects to one of them.
 
     :param hosts: list of hosts, strings in the <hostname>:<port> or just <hostname> format
-    :type hosts: str
+    :type hosts: list of str
     :param graph_name: The name of the graph as defined in the rexster.xml
     :type graph_name: str
     :param username: The username for the rexster server
@@ -128,7 +128,7 @@ def setup(hosts, graph_name, username=None, password=None, index_all_fields=Fals
     :param index_all_fields: Toggle automatic indexing of all vertex fields
     :type index_all_fields: boolean
     :param statsd: host:port or just host of statsd server to report metrics to
-    :type statsd string
+    :type statsd: str
     :rtype None
     """
     global _hosts
