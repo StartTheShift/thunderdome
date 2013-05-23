@@ -84,10 +84,10 @@ class TestDatetime(BaseThunderdomeTestCase):
 class DecimalTest(Vertex):
     test_id = Integer(primary_key=True)
     dec_val = Decimal()
-    
+
 class TestDecimal(BaseThunderdomeTestCase):
 
-    def test_datetime_io(self):
+    def test_decimal_io(self):
         dt = DecimalTest.create(test_id=0, dec_val=D('0.00'))
         dt2 = DecimalTest.get(dt.vid)
         assert dt2.dec_val == dt.dec_val
@@ -95,6 +95,20 @@ class TestDecimal(BaseThunderdomeTestCase):
         dt = DecimalTest.create(test_id=0, dec_val=5)
         dt2 = DecimalTest.get(dt.vid)
         assert dt2.dec_val == D('5')
+
+    def test_decimal_failure_cases(self):
+        with self.assertRaises(ValidationError):
+            Decimal().validate('asdfas')
+
+        with self.assertRaises(Exception):
+            Decimal().to_python('asdfas')
+
+        #shouldn't raise an exception
+        Decimal().to_database('1,000')
+        Decimal().validate('1,000')
+
+        #shouldn't raise an exception
+        Decimal().to_python('1,000')
 
 class TestText(BaseThunderdomeTestCase):
 

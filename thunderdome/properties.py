@@ -434,12 +434,30 @@ class Decimal(Column):
     def to_python(self, value):
         val = super(Decimal, self).to_python(value)
         if val is not None:
+            if isinstance(val, basestring):
+                val = val.replace(',', '').strip()
             return D(val)
 
     def to_database(self, value):
         val = super(Decimal, self).to_database(value)
         if val is not None:
+            if isinstance(val, basestring):
+                val = val.replace(',', '').strip()
             return str(val)
+
+    def validate(self, value):
+        val = super(Decimal, self).validate(value)
+        if val is None:
+            return None  # required = False
+        if isinstance(val, D):
+            return val
+        else:
+            if isinstance(val, basestring):
+                val = val.replace(',', '').strip()
+            try:
+                return D(val)
+            except Exception:
+                raise ValidationError("'{}' can't be coerced to a decimal value".format(val))
 
 
 class Dictionary(Column):
