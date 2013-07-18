@@ -509,7 +509,9 @@ class Vertex(Element):
             try:
                 objects += [Element.deserialize(r)]
             except KeyError:
-                raise ThunderdomeQueryError('Vertex type "{}" is unknown'.format())
+                raise ThunderdomeQueryError('Vertex type "{}" is unknown'.format(
+                    r.get('element_type', '')
+                ))
             
         if as_dict:
             return {v.vid:v for v in objects}
